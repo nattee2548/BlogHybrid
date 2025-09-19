@@ -1,0 +1,193 @@
+﻿@* Views/Shared/_Layout.cshtml *@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0066cc" id="theme-color">
+    <meta name="color-scheme" content="light dark">
+    <title>@ViewData["Title"] - 404talk.com</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/BlogHybrid.Web.styles.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted">
+                        <i class="fas fa-comments me-2"></i>
+                        ชุมชนสำหรับคนที่กำลังหาคำตอบ
+                    </span>
+                </div>
+                <div class="col-md-6 text-end">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="btn btn-outline-secondary btn-sm me-3" title="เปลี่ยนธีม">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                    </button>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <span class="me-3">สวัสดี, @User.Identity.Name</span>
+                        <a asp-area="" asp-controller="Account" asp-action="Logout" class="text-decoration-none">
+                            <i class="fas fa-sign-out-alt me-1"></i> ออกจากระบบ
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="" asp-controller="Account" asp-action="Login" class="text-decoration-none me-3">
+                            <i class="fas fa-user me-1"></i> เข้าสู่ระบบ
+                        </a>
+                        <a asp-area="" asp-controller="Account" asp-action="Register" class="text-decoration-none">
+                            <i class="fas fa-user-plus me-1"></i> สมัครสมาชิก
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="logo">
+                        <i class="fas fa-search me-2"></i>404talk.com
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <nav class="navbar navbar-expand-lg">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav main-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">หน้าแรก</a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                        หมวดหมู่
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Posts" asp-action="Category" asp-route-slug="career">Career Talk</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Posts" asp-action="Category" asp-route-slug="life">Life Advice</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Posts" asp-action="Category" asp-route-slug="learning">Learning Hub</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Posts" asp-action="Category" asp-route-slug="mental-health">Mental Health</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Posts" asp-action="Category" asp-route-slug="lifestyle">Lifestyle</a></li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Posts" asp-action="Index">บทความทั้งหมด</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">เกี่ยวกับเรา</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact">ติดต่อ</a>
+                                </li>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                            จัดการ
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" asp-area="Admin" asp-controller="Posts" asp-action="Index">จัดการบทความ</a></li>
+                                            <li><a class="dropdown-item" asp-area="Admin" asp-controller="Categories" asp-action="Index">จัดการหมวดหมู่</a></li>
+                                            <li><a class="dropdown-item" asp-area="Admin" asp-controller="Users" asp-action="Index">จัดการผู้ใช้</a></li>
+                                        </ul>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+                <div class="col-md-3">
+                    <form asp-area="" asp-controller="Posts" asp-action="Search" method="get" class="d-flex">
+                        <input type="text" name="q" value="@ViewBag.SearchQuery" class="form-control search-box me-2" placeholder="ค้นหา...">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <h5>404talk.com</h5>
+                    <p>ชุมชนสำหรับคนที่กำลังหาคำตอบในชีวิต มาคุยเรื่องที่หาไม่เจอกันเถอะ</p>
+                    <div class="social-links">
+                        <a href="#" target="_blank"><i class="fab fa-facebook"></i></a>
+                        <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+                        <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="#" target="_blank"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <h5>หมวดหมู่</h5>
+                    <ul class="list-unstyled">
+                        <li><a asp-area="" asp-controller="Posts" asp-action="Category" asp-route-slug="career">Career Talk</a></li>
+                        <li><a asp-area="" asp-controller="Posts" asp-action="Category" asp-route-slug="life">Life Advice</a></li>
+                        <li><a asp-area="" asp-controller="Posts" asp-action="Category" asp-route-slug="learning">Learning Hub</a></li>
+                        <li><a asp-area="" asp-controller="Posts" asp-action="Category" asp-route-slug="mental-health">Mental Health</a></li>
+                        <li><a asp-area="" asp-controller="Posts" asp-action="Category" asp-route-slug="lifestyle">Lifestyle</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>เกี่ยวกับเรา</h5>
+                    <ul class="list-unstyled">
+                        <li><a asp-area="" asp-controller="Home" asp-action="About">เกี่ยวกับ 404talk</a></li>
+                        <li><a asp-area="" asp-controller="Home" asp-action="Contact">ติดต่อเรา</a></li>
+                        <li><a asp-area="" asp-controller="Home" asp-action="Privacy">นโยบายความเป็นส่วนตัว</a></li>
+                        <li><a asp-area="" asp-controller="Home" asp-action="Terms">ข้อกำหนดการใช้งาน</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>ติดตามข่าวสาร</h5>
+                    <p>รับข้อมูลบทความใหม่ๆ ก่อนใคร</p>
+                    <form asp-area="" asp-controller="Newsletter" asp-action="Subscribe" method="post" class="newsletter-form">
+                        <div class="input-group">
+                            <input type="email" name="email" class="form-control" placeholder="อีเมลของคุณ" required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        @Html.AntiForgeryToken()
+                    </form>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>
+                    &copy; @DateTime.Now.Year 404talk.com. สงวนลิขสิทธิ์ทุกประการ |
+                    <a asp-area="" asp-controller="Home" asp-action="Privacy">นโยบายความเป็นส่วนตัว</a> |
+                    <a asp-area="" asp-controller="Home" asp-action="Terms">ข้อกำหนดการใช้งาน</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/theme-toggle.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
