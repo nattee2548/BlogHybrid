@@ -1,5 +1,9 @@
-﻿@{
+﻿@model BlogHybrid.Web.Models.ViewModels.LoginViewModel
+@{
     ViewData["Title"] = "เข้าสู่ระบบ - 404talk.com";
+    var hasEmailError = ViewData.ModelState.ContainsKey("Email") && ViewData.ModelState["Email"].Errors.Count > 0;
+    var hasPasswordError = ViewData.ModelState.ContainsKey("Password") && ViewData.ModelState["Password"].Errors.Count > 0;
+    var hasGeneralErrors = ViewData.ModelState.Where(x => string.IsNullOrEmpty(x.Key)).Any(x => x.Value.Errors.Count > 0);
 }
 
 @section Styles {
@@ -17,27 +21,94 @@
             <p class="auth-subtitle">ยินดีต้อนรับกลับสู่ 404talk.com</p>
         </div>
 
-        <!-- Login Form -->
-        <div class="text-center">
-            <div class="alert alert-info mb-4">
-                <i class="fas fa-info-circle me-2"></i>
-                หน้าเข้าสู่ระบบยังไม่พร้อมใช้งาน
-            </div>
+        <!-- Form Container -->
+        <div id="login-form-container">
+            <form hx-post="@Url.Action("Login", "Account")"
+                  hx-target="#login-form-container"
+                  hx-swap="outerHTML"
+                  hx-indicator="#loading-indicator"
+                  class="auth-form"
+                  novalidate>
 
-            <p class="text-muted mb-4">ระบบกำลังอยู่ในระหว่างการพัฒนา</p>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ReturnUrl" />
 
-            <div class="d-grid gap-2">
-                <a href="@Url.Action("Register", "Account")" class="btn btn-primary">
-                    <i class="fas fa-user-plus me-2"></i>สมัครสมาชิกใหม่
-                </a>
-                <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">
-                    <i class="fas fa-home me-2"></i>กลับหน้าแรก
-                </a>
-            </div>
+                <!-- Display validation summary if there are errors -->
+                @if (hasGeneralErrors)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        @foreach (var modelState in ViewData.ModelState.Where(x => string.IsNullOrEmpty(x.Key)))
+                        {
+                            @foreach (var error in modelState.Value.Errors)
+                            {
+                                <div>@error.ErrorMessage</div>
+                            }
+                        }
+                    </div>
+                }
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">
+                        <i class="fas fa-envelope me-2"></i>อีเมล
+                    </label>
+                    <input asp-for="Email"
+                           class="form-control @(hasEmailError ? "is-invalid" : "")"
+                           type="email"
+                           placeholder="your@email.com"
+                           autocomplete="email"
+                           required />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label">
+                        <i class="fas fa-lock me-2"></i>รหัสผ่าน
+                    </label>
+                    <div class="password-wrapper">
+                        <input asp-for="Password"
+                               class="form-control @(hasPasswordError ? "is-invalid" : "")"
+                               type="password"
+                               placeholder="รหัสผ่านของคุณ"
+                               id="password"
+                               autocomplete="current-password"
+                               required />
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')" aria-label="แสดง/ซ่อนรหัสผ่าน">
+                            <i class="fas fa-eye" id="password-icon"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <!-- Remember Me -->
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label">
+                            จดจำการเข้าสู่ระบบ
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="auth-btn" id="submit-btn">
+                    <span class="submit-text">
+                        <i class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบ
+                    </span>
+                    <span class="loading-text">
+                        <span class="spinner-border spinner-border-sm me-2"></span>กำลังเข้าสู่ระบบ...
+                    </span>
+                </button>
+            </form>
         </div>
 
-        <!-- Footer -->
+        <!-- Footer Links -->
         <div class="text-center mt-4 pt-3 border-top">
+            <p class="mb-2 text-muted small">
+                <a href="#" class="text-decoration-none">ลืมรหัสผ่าน?</a>
+            </p>
             <p class="mb-0 text-muted small">
                 ยังไม่มีบัญชี?
                 <a asp-controller="Account" asp-action="Register" class="text-decoration-none">สมัครสมาชิก</a>
@@ -46,8 +117,62 @@
     </div>
 </div>
 
+<!-- Loading Indicator -->
+<div id="loading-indicator">
+    <div class="d-flex align-items-center">
+        <div class="spinner-border spinner-border-sm me-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span>กำลังดำเนินการ...</span>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(inputId + '-icon');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.auth-form');
+            const submitBtn = document.getElementById('submit-btn');
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (submitBtn) {
+                        submitBtn.classList.add('loading');
+                        submitBtn.disabled = true;
+                    }
+                });
+            }
+
+            document.addEventListener('htmx:afterRequest', function(event) {
+                if (submitBtn) {
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
+                }
+            });
+
+            const firstInput = document.querySelector('input[type="email"]');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        });
+    </script>
+}
+
 @section Meta {
     <meta name="description" content="เข้าสู่ระบบ 404talk.com ชุมชนสำหรับคนที่กำลังหาคำตอบ">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta property="og:title" content="เข้าสู่ระบบ - 404talk.com">
     <meta property="og:description" content="เข้าสู่ระบบ 404talk.com ชุมชนสำหรับคนที่กำลังหาคำตอบ">
 }
