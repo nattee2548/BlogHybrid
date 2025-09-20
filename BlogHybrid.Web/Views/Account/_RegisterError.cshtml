@@ -1,7 +1,11 @@
-﻿<div id="register-form-container" class="text-center">
+﻿@* ========================================= *@
+@* Views/Account/_RegisterError.cshtml *@
+@* ========================================= *@
+
+<div id="register-form-container" class="text-center">
     <div class="error-animation">
         <div class="error-icon">
-            <i class="fas fa-exclamation-triangle text-danger"></i>
+            <i class="fas fa-exclamation-triangle"></i>
         </div>
         <h3 class="text-danger mt-3">เกิดข้อผิดพลาด</h3>
         <p class="text-muted">ไม่สามารถสร้างบัญชีได้ในขณะนี้</p>
@@ -15,3 +19,8 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Trigger error event
+    document.dispatchEvent(new CustomEvent('registration-error'));
+</script>

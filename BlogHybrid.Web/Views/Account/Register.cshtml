@@ -1,251 +1,420 @@
 ﻿@model BlogHybrid.Web.Models.ViewModels.RegisterViewModel
 @{
-    ViewData["Title"] = "สมัครสมาชิก";
+    ViewData["Title"] = "สมัครสมาชิก - 404talk.com";
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="register-card">
-                <!-- Header -->
-                <div class="text-center mb-4">
-                    <div class="register-icon">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                    <h2 class="register-title">สมัครสมาชิก</h2>
-                    <p class="register-subtitle">เข้าร่วมชุมชน 404talk.com</p>
-                </div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+}
 
-                <!-- Register Form -->
-                <div id="register-form-container">
-
-                    <form hx-post="@Url.Action("Register")"
-                          hx-target="#register-form-container"
-                          hx-indicator="#loading-indicator"
-                          hx-swap="outerHTML"
-                          x-data="registerForm()"
-                          x-on:submit="handleSubmit"
-                          novalidate>
-
-                        @Html.AntiForgeryToken()
-
-                        <!-- Display Name -->
-                        <div class="form-group mb-3">
-                            <label asp-for="DisplayName" class="form-label">
-                                <i class="fas fa-user me-2 text-primary"></i>@Html.DisplayNameFor(m => m.DisplayName)
-                            </label>
-                            <input asp-for="DisplayName"
-                                   class="form-control form-control-lg"
-                                   placeholder="ชื่อที่จะแสดงในเว็บไซต์"
-                                   x-model="form.displayName"
-                                   x-on:input="validateField('displayName')"
-                                   autocomplete="name" />
-                            <span asp-validation-for="DisplayName" class="text-danger small"></span>
-                        </div>
-
-                        <!-- Email -->
-                        <div class="form-group mb-3">
-                            <label asp-for="Email" class="form-label">
-                                <i class="fas fa-envelope me-2 text-primary"></i>@Html.DisplayNameFor(m => m.Email)
-                            </label>
-                            <input asp-for="Email"
-                                   class="form-control form-control-lg"
-                                   placeholder="your@email.com"
-                                   x-model="form.email"
-                                   x-on:input="validateField('email')"
-                                   autocomplete="email" />
-                            <span asp-validation-for="Email" class="text-danger small"></span>
-                        </div>
-
-                        <!-- Password -->
-                        <div class="form-group mb-3">
-                            <label asp-for="Password" class="form-label">
-                                <i class="fas fa-lock me-2 text-primary"></i>@Html.DisplayNameFor(m => m.Password)
-                            </label>
-                            <div class="password-input-group">
-                                <input asp-for="Password"
-                                       class="form-control form-control-lg"
-                                       placeholder="อย่างน้อย 6 ตัวอักษร"
-                                       x-model="form.password"
-                                       x-on:input="validateField('password')"
-                                       x-bind:type="showPassword ? 'text' : 'password'"
-                                       autocomplete="new-password" />
-                                <button type="button"
-                                        class="btn password-toggle"
-                                        x-on:click="showPassword = !showPassword"
-                                        x-bind:title="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'">
-                                    <i x-bind:class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                                </button>
-                            </div>
-                            <span asp-validation-for="Password" class="text-danger small"></span>
-                            <!-- Password Strength Indicator -->
-                            <div class="password-strength mt-2" x-show="form.password.length > 0">
-                                <div class="strength-bar">
-                                    <div class="strength-fill"
-                                         x-bind:class="passwordStrength.class"
-                                         x-bind:style="'width: ' + passwordStrength.width + '%'"></div>
-                                </div>
-                                <small class="strength-text"
-                                       x-bind:class="passwordStrength.class"
-                                       x-text="passwordStrength.text"></small>
-                            </div>
-                        </div>
-
-                        <!-- Confirm Password -->
-                        <div class="form-group mb-3">
-                            <label asp-for="ConfirmPassword" class="form-label">
-                                <i class="fas fa-lock me-2 text-primary"></i>@Html.DisplayNameFor(m => m.ConfirmPassword)
-                            </label>
-                            <div class="password-input-group">
-                                <input asp-for="ConfirmPassword"
-                                       class="form-control form-control-lg"
-                                       placeholder="ยืนยันรหัสผ่าน"
-                                       x-model="form.confirmPassword"
-                                       x-on:input="validateField('confirmPassword')"
-                                       x-bind:type="showConfirmPassword ? 'text' : 'password'"
-                                       autocomplete="new-password" />
-                                <button type="button"
-                                        class="btn password-toggle"
-                                        x-on:click="showConfirmPassword = !showConfirmPassword"
-                                        x-bind:title="showConfirmPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'">
-                                    <i x-bind:class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                                </button>
-                            </div>
-                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
-                        </div>
-
-                        <!-- Accept Terms -->
-                        <div class="form-check mb-4">
-                            <input asp-for="AcceptTerms"
-                                   class="form-check-input"
-                                   x-model="form.acceptTerms" />
-                            <label asp-for="AcceptTerms" class="form-check-label">
-                                ฉันยอมรับ <a asp-controller="Home" asp-action="Terms" class="text-primary">ข้อกำหนดการใช้งาน</a>
-                                และ <a asp-controller="Home" asp-action="Privacy" class="text-primary">นโยบายความเป็นส่วนตัว</a>
-                            </label>
-                            <span asp-validation-for="AcceptTerms" class="text-danger small d-block"></span>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div class="d-grid">
-                            <button type="submit"
-                                    class="btn btn-primary btn-lg"
-                                    x-bind:disabled="!isFormValid || isLoading"
-                                    x-bind:class="{ 'btn-loading': isLoading }">
-
-                                <span x-show="!isLoading">
-                                    <i class="fas fa-user-plus me-2"></i>สร้างบัญชี
-                                </span>
-
-                                <span x-show="isLoading" class="d-flex align-items-center justify-content-center">
-                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                    กำลังสร้างบัญชี...
-                                </span>
-                            </button>
-                        </div>
-
-                        <!-- Loading Indicator -->
-                        <div id="loading-indicator" class="loading-overlay" style="display: none;">
-                            <div class="loading-content">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">กำลังโหลด...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Footer Link -->
-                <div class="text-center mt-4 pt-4 border-top">
-                    <p class="mb-0">
-                        มีบัญชีอยู่แล้ว?
-                        <a asp-controller="Account" asp-action="Login" class="text-primary text-decoration-none fw-bold">
-                            เข้าสู่ระบบ
-                        </a>
-                    </p>
-                </div>
+<div class="register-container">
+    <div class="register-card fade-in">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <div class="register-icon">
+                <i class="fas fa-user-plus"></i>
             </div>
+            <h1 class="register-title">สมัครสมาชิก</h1>
+            <p class="register-subtitle">เข้าร่วมชุมชน 404talk.com</p>
+        </div>
+
+        <!-- Register Form Container -->
+        <div id="register-form-container">
+            <form hx-post="@Url.Action("Register", "Account")"
+                  hx-target="#register-form-container"
+                  hx-indicator="#loading-indicator"
+                  hx-swap="outerHTML"
+                  hx-trigger="submit"
+                  data-register-form
+                  novalidate
+                  class="slide-up">
+
+                @Html.AntiForgeryToken()
+
+                <!-- Display Name -->
+                <div class="form-group mb-3">
+                    <label asp-for="DisplayName" class="form-label">
+                        <i class="fas fa-user me-2 text-primary"></i>
+                        ชื่อที่แสดง
+                    </label>
+                    <input asp-for="DisplayName"
+                           class="form-control form-control-lg"
+                           placeholder="ชื่อที่จะแสดงในเว็บไซต์"
+                           data-field="displayName"
+                           autocomplete="name"
+                           required />
+                    <span asp-validation-for="DisplayName" class="text-danger small"></span>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group mb-3">
+                    <label asp-for="Email" class="form-label">
+                        <i class="fas fa-envelope me-2 text-primary"></i>
+                        อีเมล
+                    </label>
+                    <input asp-for="Email"
+                           class="form-control form-control-lg"
+                           placeholder="your@email.com"
+                           type="email"
+                           data-field="email"
+                           autocomplete="email"
+                           required />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group mb-3">
+                    <label asp-for="Password" class="form-label">
+                        <i class="fas fa-lock me-2 text-primary"></i>
+                        รหัสผ่าน
+                    </label>
+                    <div class="password-input-group">
+                        <input asp-for="Password"
+                               class="form-control form-control-lg"
+                               placeholder="อย่างน้อย 6 ตัวอักษร"
+                               type="password"
+                               data-field="password"
+                               data-password-input
+                               autocomplete="new-password"
+                               required />
+                        <button type="button"
+                                class="password-toggle"
+                                data-password-toggle
+                                title="แสดง/ซ่อนรหัสผ่าน"
+                                aria-label="แสดง/ซ่อนรหัสผ่าน">
+                            <i class="fas fa-eye" data-toggle-icon></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+
+                    <!-- Password Strength Indicator -->
+                    <div class="password-strength" data-password-strength style="display: none;">
+                        <div class="strength-bar">
+                            <div class="strength-fill" data-strength-fill></div>
+                        </div>
+                        <small class="strength-text" data-strength-text></small>
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-group mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label">
+                        <i class="fas fa-lock me-2 text-primary"></i>
+                        ยืนยันรหัสผ่าน
+                    </label>
+                    <div class="password-input-group">
+                        <input asp-for="ConfirmPassword"
+                               class="form-control form-control-lg"
+                               placeholder="ยืนยันรหัสผ่าน"
+                               type="password"
+                               data-field="confirmPassword"
+                               data-confirm-password-input
+                               autocomplete="new-password"
+                               required />
+                        <button type="button"
+                                class="password-toggle"
+                                data-confirm-password-toggle
+                                title="แสดง/ซ่อนรหัสผ่าน"
+                                aria-label="แสดง/ซ่อนรหัสผ่าน">
+                            <i class="fas fa-eye" data-confirm-toggle-icon></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                </div>
+
+                <!-- Accept Terms -->
+                <div class="form-check mb-4">
+                    <input asp-for="AcceptTerms"
+                           class="form-check-input"
+                           data-field="acceptTerms"
+                           required />
+                    <label asp-for="AcceptTerms" class="form-check-label">
+                        ฉันยอมรับ
+                        <a asp-controller="Home" asp-action="Terms"
+                           class="text-primary text-decoration-none fw-bold">ข้อกำหนดการใช้งาน</a>
+                        และ
+                        <a asp-controller="Home" asp-action="Privacy"
+                           class="text-primary text-decoration-none fw-bold">นโยบายความเป็นส่วนตัว</a>
+                    </label>
+                    <span asp-validation-for="AcceptTerms" class="text-danger small d-block"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid">
+                    <button type="submit"
+                            class="btn btn-primary btn-lg"
+                            data-submit-btn>
+
+                        <span data-submit-text class="d-flex align-items-center justify-content-center">
+                            <i class="fas fa-user-plus me-2"></i>
+                            สร้างบัญชี
+                        </span>
+
+                        <span data-loading-text class="d-flex align-items-center justify-content-center" style="display: none;">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            กำลังสร้างบัญชี...
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div id="loading-indicator"
+                     class="loading-overlay"
+                     style="display: none;"
+                     role="status"
+                     aria-live="polite">
+                    <div class="loading-content">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">กำลังโหลด...</span>
+                        </div>
+                        <div class="mt-2 text-muted">กำลังสร้างบัญชี...</div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer Link -->
+        <div class="text-center mt-4 pt-4 border-top">
+            <p class="mb-0 text-muted">
+                มีบัญชีอยู่แล้ว?
+                <a asp-controller="Account" asp-action="Login"
+                   class="text-primary text-decoration-none fw-bold">
+                    เข้าสู่ระบบ
+                </a>
+            </p>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        function registerForm() {
-            return {
-                form: {
-                    displayName: '@Model.DisplayName',
-                    email: '@Model.Email',
-                    password: '',
-                    confirmPassword: '',
-                    acceptTerms: @Model.AcceptTerms.ToString().ToLower()
-                },
-                showPassword: false,
-                showConfirmPassword: false,
-                isLoading: false,
-                errors: {},
+        // Register Form Handler (Vanilla JavaScript)
+        class RegisterForm {
+            constructor() {
+                this.form = document.querySelector('[data-register-form]');
+                this.submitBtn = document.querySelector('[data-submit-btn]');
+                this.submitText = document.querySelector('[data-submit-text]');
+                this.loadingText = document.querySelector('[data-loading-text]');
+                this.passwordInput = document.querySelector('[data-password-input]');
+                this.confirmPasswordInput = document.querySelector('[data-confirm-password-input]');
+                this.passwordToggle = document.querySelector('[data-password-toggle]');
+                this.confirmPasswordToggle = document.querySelector('[data-confirm-password-toggle]');
+                this.passwordStrength = document.querySelector('[data-password-strength]');
+                this.strengthFill = document.querySelector('[data-strength-fill]');
+                this.strengthText = document.querySelector('[data-strength-text]');
 
-                init() {
-                    // Listen for HTMX events
-                    document.addEventListener('htmx:beforeRequest', (evt) => {
-                        if (evt.target.closest('#register-form-container')) {
-                            this.isLoading = true;
+                this.isLoading = false;
+                this.showPassword = false;
+                this.showConfirmPassword = false;
+
+                this.init();
+            }
+
+            init() {
+                if (!this.form) return;
+
+                // HTMX Event Listeners
+                document.addEventListener('htmx:beforeRequest', (evt) => {
+                    if (evt.target.closest('#register-form-container')) {
+                        this.setLoading(true);
+                    }
+                });
+
+                document.addEventListener('htmx:afterRequest', (evt) => {
+                    if (evt.target.closest('#register-form-container')) {
+                        this.setLoading(false);
+                    }
+                });
+
+                document.addEventListener('htmx:responseError', (evt) => {
+                    if (evt.target.closest('#register-form-container')) {
+                        this.setLoading(false);
+                        if (window.notyf) {
+                            window.notyf.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
                         }
+                    }
+                });
+
+                // Custom Events
+                document.addEventListener('registration-success', () => {
+                    if (window.notyf) {
+                        window.notyf.success('ยินดีต้อนรับสู่ 404talk.com! บัญชีของคุณถูกสร้างเรียบร้อยแล้ว');
+                    }
+                    setTimeout(() => {
+                        window.location.href = '@Url.Action("Index", "Home")';
+                    }, 2000);
+                });
+
+                document.addEventListener('registration-error', () => {
+                    if (window.notyf) {
+                        window.notyf.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                    }
+                });
+
+                // Form Events
+                this.form.addEventListener('submit', () => {
+                    this.setLoading(true);
+                });
+
+                // Password Events
+                if (this.passwordInput) {
+                    this.passwordInput.addEventListener('input', (e) => {
+                        this.updatePasswordStrength(e.target.value);
+                        this.validateForm();
                     });
+                }
 
-                    document.addEventListener('htmx:afterRequest', (evt) => {
-                        if (evt.target.closest('#register-form-container')) {
-                            this.isLoading = false;
-                        }
+                if (this.confirmPasswordInput) {
+                    this.confirmPasswordInput.addEventListener('input', () => {
+                        this.validateForm();
                     });
+                }
 
-                    // Listen for registration events
-                    document.addEventListener('registration-success', () => {
-                        notyf.success('ยินดีต้อนรับสู่ 404talk.com! บัญชีของคุณถูกสร้างเรียบร้อยแล้ว');
-                        setTimeout(() => {
-                            window.location.href = '@Url.Action("Index", "Home")';
-                        }, 2000);
+                // Password Toggle Events
+                if (this.passwordToggle) {
+                    this.passwordToggle.addEventListener('click', () => {
+                        this.togglePassword();
                     });
+                }
 
-                    document.addEventListener('registration-error', () => {
-                        notyf.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                if (this.confirmPasswordToggle) {
+                    this.confirmPasswordToggle.addEventListener('click', () => {
+                        this.toggleConfirmPassword();
                     });
-                },
+                }
 
-                handleSubmit() {
-                    this.isLoading = true;
-                },
+                // Form Validation Events
+                const inputs = this.form.querySelectorAll('input[required]');
+                inputs.forEach(input => {
+                    input.addEventListener('blur', () => this.validateForm());
+                    input.addEventListener('input', () => this.validateForm());
+                });
 
-                validateField(field) {
-                    // Client-side validation จะเพิ่มในภายหลัง
-                },
+                console.log('Register form initialized');
+            }
 
-                get isFormValid() {
-                    return this.form.displayName.length > 0 &&
-                           this.form.email.length > 0 &&
-                           this.form.password.length >= 6 &&
-                           this.form.confirmPassword === this.form.password &&
-                           this.form.acceptTerms;
-                },
+            setLoading(loading) {
+                this.isLoading = loading;
 
-                get passwordStrength() {
-                    const password = this.form.password;
-                    if (password.length === 0) return { width: 0, class: '', text: '' };
+                if (this.submitBtn) {
+                    this.submitBtn.disabled = loading;
+                }
 
-                    let score = 0;
-                    if (password.length >= 6) score++;
-                    if (password.length >= 8) score++;
-                    if (/[a-z]/.test(password)) score++;
-                    if (/[A-Z]/.test(password)) score++;
-                    if (/[0-9]/.test(password)) score++;
-                    if (/[^A-Za-z0-9]/.test(password)) score++;
-
-                    if (score <= 2) return { width: 25, class: 'text-danger', text: 'อ่อน' };
-                    if (score <= 4) return { width: 50, class: 'text-warning', text: 'ปานกลาง' };
-                    if (score <= 5) return { width: 75, class: 'text-info', text: 'ดี' };
-                    return { width: 100, class: 'text-success', text: 'แข็งแกร่ง' };
+                if (this.submitText && this.loadingText) {
+                    if (loading) {
+                        this.submitText.style.display = 'none';
+                        this.loadingText.style.display = 'flex';
+                    } else {
+                        this.submitText.style.display = 'flex';
+                        this.loadingText.style.display = 'none';
+                    }
                 }
             }
+
+            togglePassword() {
+                this.showPassword = !this.showPassword;
+                const icon = this.passwordToggle.querySelector('[data-toggle-icon]');
+
+                if (this.passwordInput) {
+                    this.passwordInput.type = this.showPassword ? 'text' : 'password';
+                }
+
+                if (icon) {
+                    icon.className = this.showPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+                }
+            }
+
+            toggleConfirmPassword() {
+                this.showConfirmPassword = !this.showConfirmPassword;
+                const icon = this.confirmPasswordToggle.querySelector('[data-confirm-toggle-icon]');
+
+                if (this.confirmPasswordInput) {
+                    this.confirmPasswordInput.type = this.showConfirmPassword ? 'text' : 'password';
+                }
+
+                if (icon) {
+                    icon.className = this.showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+                }
+            }
+
+            updatePasswordStrength(password) {
+                if (!this.passwordStrength || !this.strengthFill || !this.strengthText) return;
+
+                if (password.length === 0) {
+                    this.passwordStrength.style.display = 'none';
+                    return;
+                }
+
+                this.passwordStrength.style.display = 'block';
+
+                let score = 0;
+                if (password.length >= 6) score++;
+                if (password.length >= 8) score++;
+                if (/[a-z]/.test(password)) score++;
+                if (/[A-Z]/.test(password)) score++;
+                if (/[0-9]/.test(password)) score++;
+                if (/[^A-Za-z0-9]/.test(password)) score++;
+
+                let strength = { width: 0, class: '', text: '' };
+
+                if (score <= 2) {
+                    strength = { width: 25, class: 'text-danger', text: 'อ่อน' };
+                    this.strengthFill.style.backgroundColor = '#dc2626';
+                } else if (score <= 4) {
+                    strength = { width: 50, class: 'text-warning', text: 'ปานกลาง' };
+                    this.strengthFill.style.backgroundColor = '#f59e0b';
+                } else if (score <= 5) {
+                    strength = { width: 75, class: 'text-info', text: 'ดี' };
+                    this.strengthFill.style.backgroundColor = '#0ea5e9';
+                } else {
+                    strength = { width: 100, class: 'text-success', text: 'แข็งแกร่ง' };
+                    this.strengthFill.style.backgroundColor = '#059669';
+                }
+
+                this.strengthFill.style.width = strength.width + '%';
+                this.strengthText.textContent = strength.text;
+                this.strengthText.className = `strength-text ${strength.class}`;
+            }
+
+            validateForm() {
+                if (!this.form || !this.submitBtn) return;
+
+                const displayName = this.form.querySelector('[data-field="displayName"]')?.value || '';
+                const email = this.form.querySelector('[data-field="email"]')?.value || '';
+                const password = this.form.querySelector('[data-field="password"]')?.value || '';
+                const confirmPassword = this.form.querySelector('[data-field="confirmPassword"]')?.value || '';
+                const acceptTerms = this.form.querySelector('[data-field="acceptTerms"]')?.checked || false;
+
+                const isValid = displayName.length > 0 &&
+                               email.length > 0 &&
+                               password.length >= 6 &&
+                               confirmPassword === password &&
+                               acceptTerms;
+
+                this.submitBtn.disabled = !isValid || this.isLoading;
+            }
         }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            new RegisterForm();
+        });
     </script>
+}
+
+@* SEO Meta Tags *@
+@section Meta {
+    <meta name="description" content="สมัครสมาชิกฟรี 404talk.com ชุมชนสำหรับคนที่กำลังหาคำตอบ แชร์ประสบการณ์ ปรึกษาปัญหา และเรียนรู้ไปด้วยกัน">
+    <meta name="keywords" content="สมัครสมาชิก, 404talk, ชุมชน, คำตอบ, ประสบการณ์">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="สมัครสมาชิก - 404talk.com">
+    <meta property="og:description" content="เข้าร่วมชุมชน 404talk.com สำหรับคนที่กำลังหาคำตอบ">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="@Url.Action("Register", "Account", null, Context.Request.Scheme)">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="สมัครสมาชิก - 404talk.com">
+    <meta name="twitter:description" content="เข้าร่วมชุมชน 404talk.com สำหรับคนที่กำลังหาคำตอบ">
 }

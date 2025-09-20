@@ -35,18 +35,25 @@ namespace BlogHybrid.Web.Controllers
             return View(new RegisterViewModel());
         }
 
-        // POST: /Account/Register (HTMX)
+        // POST: /Account/Register (HTMX + Regular Form Support)
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             // ตรวจสอบว่าเป็น HTMX request หรือไม่
             var isHtmxRequest = Request.Headers.ContainsKey("HX-Request");
 
+            _logger.LogInformation("Register POST: HTMX={IsHtmx}, ModelValid={ModelValid}",
+                isHtmxRequest, ModelState.IsValid);
+
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Model validation failed: {Errors}",
+                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+
                 if (isHtmxRequest)
                 {
-                    // ส่งกลับ validation errors สำหรับ HTMX
+                    Response.Headers.Append("HX-Retarget", "#register-form-container");
                     return PartialView("_RegisterValidation", model);
                 }
                 return View(model);
@@ -59,15 +66,17 @@ namespace BlogHybrid.Web.Controllers
                 if (existingUser != null)
                 {
                     ModelState.AddModelError("Email", "อีเมลนี้ถูกใช้งานแล้ว");
+                    _logger.LogWarning("Duplicate email registration attempt: {Email}", model.Email);
 
                     if (isHtmxRequest)
                     {
+                        Response.Headers.Append("HX-Retarget", "#register-form-container");
                         return PartialView("_RegisterValidation", model);
                     }
                     return View(model);
                 }
 
-                // สร้าง ApplicationUser ใหม่ (ใช้ Entity ที่มีอยู่แล้ว)
+                // สร้าง ApplicationUser ใหม่
                 var user = new ApplicationUser
                 {
                     UserName = model.Email,
@@ -82,15 +91,24 @@ namespace BlogHybrid.Web.Controllers
 
                 if (result.Succeeded)
                 {
-                    // กำหนด role เป็น User (ใช้ role ที่ seed แล้ว)
-                    await _userManager.AddToRoleAsync(user, "User");
+                    // กำหนด role เป็น User
+                    var roleResult = await _userManager.AddToRoleAsync(user, "User");
+                    if (!roleResult.Succeeded)
+                    {
+                        _logger.LogWarning("Failed to assign User role to {Email}: {Errors}",
+                            user.Email, string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                    }
 
-                    _logger.LogInformation("ผู้ใช้ {Email} สร้างบัญชีใหม่สำเร็จ", user.Email);
+                    // Auto sign in the user
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    _logger.LogInformation("User {Email} registered successfully", user.Email);
 
                     if (isHtmxRequest)
                     {
                         // ส่งสัญญาณให้ HTMX รู้ว่าสำเร็จ
                         Response.Headers.Append("HX-Trigger", "registration-success");
+                        Response.Headers.Append("HX-Retarget", "#register-form-container");
 
                         // ส่ง email ผ่าน ViewBag
                         ViewBag.Email = model.Email;
@@ -104,28 +122,58 @@ namespace BlogHybrid.Web.Controllers
                 // หากมีข้อผิดพลาดจาก Identity
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError(string.Empty, GetLocalizedErrorMessage(error.Code, error.Description));
+                    var localizedError = GetLocalizedErrorMessage(error.Code, error.Description);
+                    ModelState.AddModelError(string.Empty, localizedError);
+                    _logger.LogWarning("Identity error during registration: {Code} - {Description}",
+                        error.Code, error.Description);
                 }
 
                 if (isHtmxRequest)
                 {
+                    Response.Headers.Append("HX-Retarget", "#register-form-container");
                     return PartialView("_RegisterValidation", model);
                 }
                 return View(model);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "เกิดข้อผิดพลาดในการสร้างบัญชีผู้ใช้");
+                _logger.LogError(ex, "Exception during user registration for email: {Email}", model.Email);
 
                 if (isHtmxRequest)
                 {
                     Response.Headers.Append("HX-Trigger", "registration-error");
+                    Response.Headers.Append("HX-Retarget", "#register-form-container");
                     return PartialView("_RegisterError");
                 }
 
-                TempData["ErrorMessage"] = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง";
                 return View(model);
             }
+        }
+
+        // GET: /Account/Login (Placeholder)
+        [HttpGet]
+        public IActionResult Login(string? returnUrl = null)
+        {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
+        // POST: /Account/Logout
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            _logger.LogInformation("User logged out");
+
+            TempData["SuccessMessage"] = "ออกจากระบบเรียบร้อยแล้ว";
+            return RedirectToAction("Index", "Home");
         }
 
         // Helper method สำหรับแปลข้อความ error
@@ -141,6 +189,17 @@ namespace BlogHybrid.Web.Controllers
                 "PasswordRequiresLower" => "รหัสผ่านต้องมีตัวอักษรพิมพ์เล็ก",
                 "PasswordRequiresUpper" => "รหัสผ่านต้องมีตัวอักษรพิมพ์ใหญ่",
                 "PasswordRequiresNonAlphanumeric" => "รหัสผ่านต้องมีอักขระพิเศษ",
+                "PasswordMismatch" => "รหัสผ่านไม่ตรงกัน",
+                "InvalidToken" => "โทเค็นไม่ถูกต้องหรือหมดอายุ",
+                "UserAlreadyExists" => "ผู้ใช้นี้มีอยู่แล้ว",
+                "UserNotFound" => "ไม่พบผู้ใช้",
+                "InvalidUserName" => "ชื่อผู้ใช้ไม่ถูกต้อง",
+                "LoginAlreadyAssociated" => "บัญชีนี้ถูกเชื่อมโยงแล้ว",
+                "UserAlreadyInRole" => "ผู้ใช้มี role นี้อยู่แล้ว",
+                "UserNotInRole" => "ผู้ใช้ไม่มี role นี้",
+                "RoleNotFound" => "ไม่พบ role ที่ระบุ",
+                "UserLockoutNotEnabled" => "การล็อกบัญชีไม่ได้เปิดใช้งาน",
+                "TooManyFailedAttempts" => "ความพยายามล้มเหลวมากเกินไป บัญชีถูกล็อก",
                 _ => defaultMessage
             };
         }
