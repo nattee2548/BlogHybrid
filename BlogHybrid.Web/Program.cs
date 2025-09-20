@@ -1,4 +1,5 @@
 // BlogHybrid.Web/Program.cs
+using BlogHybrid.Application.Commands.Auth;
 using BlogHybrid.Domain.Entities;
 using BlogHybrid.Infrastructure.Data;
 using BlogHybrid.Infrastructure.Data.Seeds;
@@ -83,6 +84,10 @@ else
 // Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddMediatR(cfg => {
+    cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly);
+});
 
 var app = builder.Build();
 
