@@ -1,17 +1,23 @@
-﻿@* _RegisterError.cshtml *@
-
+﻿<!-- Views/Account/_RegisterError.cshtml -->
 <div id="register-form-container">
-    <div class="auth-error">
-        <div class="icon">
-            <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <h3 class="text-danger">เกิดข้อผิดพลาด</h3>
-        <p class="text-muted">ไม่สามารถสร้างบัญชีได้ในขณะนี้</p>
+    <div class="auth-error text-center">
+        <div class="error-animation">
+            <div class="icon mb-3">
+                <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #dc2626;"></i>
+            </div>
+            <h3 class="text-danger mb-3">เกิดข้อผิดพลาด</h3>
+            <p class="text-muted mb-4">ไม่สามารถสร้างบัญชีได้ในขณะนี้<br>กรุณาลองใหม่อีกครั้ง</p>
 
-        <div class="mt-3">
-            <button type="button" class="btn btn-outline-primary" onclick="location.reload()">
-                <i class="fas fa-redo me-2"></i>ลองใหม่อีกครั้ง
-            </button>
+            <div class="d-grid gap-2">
+                <button type="button"
+                        class="btn btn-outline-primary"
+                        onclick="location.reload()">
+                    <i class="fas fa-redo me-2"></i>ลองใหม่อีกครั้ง
+                </button>
+                <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">
+                    <i class="fas fa-home me-2"></i>กลับหน้าแรก
+                </a>
+            </div>
         </div>
     </div>
 </div>

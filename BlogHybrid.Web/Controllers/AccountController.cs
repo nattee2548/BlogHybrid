@@ -47,8 +47,8 @@ namespace BlogHybrid.Web.Controllers
         {
             var isHtmxRequest = Request.Headers.ContainsKey("HX-Request");
 
-            _logger.LogInformation("POST Register: HTMX={IsHtmx}, ModelValid={IsValid}",
-                isHtmxRequest, ModelState.IsValid);
+            //_logger.LogInformation("POST Register: HTMX={IsHtmx}, ModelValid={IsValid}",
+            //    isHtmxRequest, ModelState.IsValid);
 
             if (!ModelState.IsValid)
             {
@@ -119,6 +119,7 @@ namespace BlogHybrid.Web.Controllers
                         Response.Headers.Append("HX-Trigger", "registration-success");
                         Response.Headers.Append("HX-Retarget", "#register-form-container");
                         ViewBag.Email = model.Email;
+                        ViewBag.RedirectToLogin = true;
                         return PartialView("_RegisterSuccess");
                     }
 

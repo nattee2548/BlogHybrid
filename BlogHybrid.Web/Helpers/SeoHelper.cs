@@ -9,8 +9,8 @@ namespace BlogHybrid.Web.Helpers
         public static void SetBasicSeo(this Controller controller,
             string title,
             string description,
-            string keywords = null,
-            string canonicalUrl = null)
+            string? keywords = null,
+            string? canonicalUrl = null)
         {
             controller.ViewData["Title"] = title;
             controller.ViewData["MetaDescription"] = description;
@@ -25,7 +25,7 @@ namespace BlogHybrid.Web.Helpers
         public static void SetOpenGraph(this Controller controller,
             string title,
             string description,
-            string imageUrl = null,
+            string? imageUrl = null,
             string type = "website")
         {
             controller.ViewData["OgTitle"] = title;
@@ -39,7 +39,7 @@ namespace BlogHybrid.Web.Helpers
         public static void SetTwitterCard(this Controller controller,
             string title,
             string description,
-            string imageUrl = null)
+            string? imageUrl = null)
         {
             controller.ViewData["TwitterTitle"] = title;
             controller.ViewData["TwitterDescription"] = description;
@@ -51,15 +51,15 @@ namespace BlogHybrid.Web.Helpers
         public static void SetPostSeo(this Controller controller,
             string title,
             string description,
-            string imageUrl,
+            string? imageUrl,
             string canonicalUrl,
-            string[] tags = null,
+            string[]? tags = null,
             DateTime? publishedDate = null,
             DateTime? modifiedDate = null,
-            string authorName = null)
+            string? authorName = null)
         {
             // Basic SEO
-            controller.SetBasicSeo(title, description, string.Join(", ", tags ?? new string[0]), canonicalUrl);
+            controller.SetBasicSeo(title, description, string.Join(", ", tags ?? Array.Empty<string>()), canonicalUrl);
 
             // Open Graph for articles
             controller.SetOpenGraph(title, description, imageUrl, "article");
@@ -135,10 +135,10 @@ namespace BlogHybrid.Web.Helpers
             return slug;
         }
 
-        public static string TruncateDescription(string text, int maxLength = 160)
+        public static string TruncateDescription(string? text, int maxLength = 160)
         {
             if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
-                return text;
+                return text ?? string.Empty;
 
             var truncated = text.Substring(0, maxLength);
             var lastSpace = truncated.LastIndexOf(' ');
@@ -149,7 +149,7 @@ namespace BlogHybrid.Web.Helpers
             return truncated + "...";
         }
 
-        public static string StripHtmlTags(string html)
+        public static string StripHtmlTags(string? html)
         {
             if (string.IsNullOrEmpty(html))
                 return string.Empty;
@@ -187,7 +187,7 @@ namespace BlogHybrid.Web.Helpers
             string authorName,
             DateTime publishedDate,
             DateTime modifiedDate,
-            string imageUrl,
+            string? imageUrl,
             string articleUrl,
             HttpContext context)
         {

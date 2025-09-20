@@ -1,24 +1,29 @@
-﻿@* _RegisterSuccess.cshtml *@
+﻿<!-- Views/Account/_RegisterSuccess.cshtml -->
 @{
     var email = ViewBag.Email ?? "ไม่ระบุ";
 }
 
 <div id="register-form-container">
-    <div class="auth-success">
-        <div class="icon">
-            <i class="fas fa-check-circle"></i>
-        </div>
-        <h3 class="text-success">สมัครสมาชิกเรียบร้อย!</h3>
-        <p class="text-muted">บัญชีของคุณถูกสร้างเรียบร้อยแล้ว</p>
-        <p class="small text-muted">อีเมล: <strong>@email</strong></p>
+    <div class="auth-success text-center">
+        <div class="success-animation">
+            <div class="icon mb-3">
+                <i class="fas fa-check-circle" style="font-size: 4rem; color: #059669;"></i>
+            </div>
+            <h3 class="text-success mb-3">สำเร็จ!</h3>
+            <p class="text-muted mb-2">บัญชีของคุณถูกสร้างเรียบร้อยแล้ว</p>
+            <p class="small text-muted mb-4">อีเมล: <strong>@email</strong></p>
 
-        <div class="mt-3">
-            <div class="spinner-border spinner-border-sm text-primary me-2"></div>
-            <span class="text-muted">กำลังนำคุณไปหน้าเข้าสู่ระบบ...</span>
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="text-muted">กำลังนำคุณเข้าสู่หน้าแรก...</span>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    // Trigger success event
     document.dispatchEvent(new CustomEvent('registration-success'));
 </script>
