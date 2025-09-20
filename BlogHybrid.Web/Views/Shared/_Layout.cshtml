@@ -1,4 +1,4 @@
-﻿@* Views/Shared/_Layout.cshtml *@
+﻿@* อัพเดท Views/Shared/_Layout.cshtml ที่มีอยู่ *@
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -8,13 +8,21 @@
     <meta name="color-scheme" content="light dark">
     <title>@ViewData["Title"] - 404talk.com</title>
 
+    <!-- CSS ที่มีอยู่แล้ว -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/BlogHybrid.Web.styles.css" asp-append-version="true" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <!-- เพิ่ม Notyf -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+
+    <!-- เพิ่ม HTMX + Alpine.js -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body>
-    <!-- Top Header -->
+    <!-- Top Header ที่มีอยู่แล้ว -->
     <div class="top-header">
         <div class="container">
             <div class="row align-items-center">
@@ -30,20 +38,36 @@
                         <i class="fas fa-moon" id="theme-icon"></i>
                     </button>
 
-                    @if (User.Identity.IsAuthenticated)
+                    @if (User.Identity!.IsAuthenticated)
                     {
-                        <span class="me-3">สวัสดี, @User.Identity.Name</span>
-                        <a asp-area="" asp-controller="Account" asp-action="Logout" class="text-decoration-none">
-                            <i class="fas fa-sign-out-alt me-1"></i> ออกจากระบบ
-                        </a>
+                        <div class="dropdown d-inline-block">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-2"></i>@User.Identity.Name
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                                        <i class="fas fa-user-circle me-2"></i>โปรไฟล์ของฉัน
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i>ออกจากระบบ
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
                     }
                     else
                     {
-                        <a asp-area="" asp-controller="Account" asp-action="Login" class="text-decoration-none me-3">
-                            <i class="fas fa-user me-1"></i> เข้าสู่ระบบ
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-sm me-2">
+                            <i class="fas fa-sign-in-alt me-1"></i>เข้าสู่ระบบ
                         </a>
-                        <a asp-area="" asp-controller="Account" asp-action="Register" class="text-decoration-none">
-                            <i class="fas fa-user-plus me-1"></i> สมัครสมาชิก
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-sm">
+                            <i class="fas fa-user-plus me-1"></i>สมัครสมาชิก
                         </a>
                     }
                 </div>
@@ -51,7 +75,7 @@
         </div>
     </div>
 
-    <!-- Main Header -->
+    <!-- Main Header ที่มีอยู่แล้ว -->
     <header class="main-header">
         <div class="container">
             <div class="row align-items-center">
@@ -125,7 +149,7 @@
         @RenderBody()
     </main>
 
-    <!-- Footer -->
+    <!-- Footer ที่มีอยู่แล้ว -->
     <footer class="footer">
         <div class="container">
             <div class="row">
@@ -183,10 +207,59 @@
         </div>
     </footer>
 
+    <!-- JavaScript ที่มีอยู่แล้ว -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/theme-toggle.js" asp-append-version="true"></script>
+
+    <!-- เพิ่ม Notyf -->
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+
+    <!-- Initialize Notyf และ HTMX Events -->
+    <script>
+        window.notyf = new Notyf({
+            duration: 5000,
+            position: { x: 'right', y: 'top' },
+            ripple: true,
+            dismissible: true,
+            types: [
+                {
+                    type: 'success',
+                    background: 'linear-gradient(135deg, #059669, #10b981)',
+                    icon: {
+                        className: 'fas fa-check-circle',
+                        tagName: 'span',
+                        color: 'white'
+                    }
+                },
+                {
+                    type: 'error',
+                    background: 'linear-gradient(135deg, #dc2626, #ef4444)',
+                    icon: {
+                        className: 'fas fa-exclamation-triangle',
+                        tagName: 'span',
+                        color: 'white'
+                    }
+                }
+            ]
+        });
+
+        // HTMX Integration
+        document.addEventListener('htmx:responseError', function(evt) {
+            notyf.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+        });
+
+        // Handle TempData notifications
+        @if (TempData["SuccessMessage"] != null)
+        {
+                <text>notyf.success('@Html.Raw(TempData["SuccessMessage"])');</text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+                <text>notyf.error('@Html.Raw(TempData["ErrorMessage"])');</text>
+        }
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

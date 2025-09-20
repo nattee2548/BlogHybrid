@@ -1,0 +1,251 @@
+﻿@model BlogHybrid.Web.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "สมัครสมาชิก";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="register-card">
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <div class="register-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h2 class="register-title">สมัครสมาชิก</h2>
+                    <p class="register-subtitle">เข้าร่วมชุมชน 404talk.com</p>
+                </div>
+
+                <!-- Register Form -->
+                <div id="register-form-container">
+
+                    <form hx-post="@Url.Action("Register")"
+                          hx-target="#register-form-container"
+                          hx-indicator="#loading-indicator"
+                          hx-swap="outerHTML"
+                          x-data="registerForm()"
+                          x-on:submit="handleSubmit"
+                          novalidate>
+
+                        @Html.AntiForgeryToken()
+
+                        <!-- Display Name -->
+                        <div class="form-group mb-3">
+                            <label asp-for="DisplayName" class="form-label">
+                                <i class="fas fa-user me-2 text-primary"></i>@Html.DisplayNameFor(m => m.DisplayName)
+                            </label>
+                            <input asp-for="DisplayName"
+                                   class="form-control form-control-lg"
+                                   placeholder="ชื่อที่จะแสดงในเว็บไซต์"
+                                   x-model="form.displayName"
+                                   x-on:input="validateField('displayName')"
+                                   autocomplete="name" />
+                            <span asp-validation-for="DisplayName" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group mb-3">
+                            <label asp-for="Email" class="form-label">
+                                <i class="fas fa-envelope me-2 text-primary"></i>@Html.DisplayNameFor(m => m.Email)
+                            </label>
+                            <input asp-for="Email"
+                                   class="form-control form-control-lg"
+                                   placeholder="your@email.com"
+                                   x-model="form.email"
+                                   x-on:input="validateField('email')"
+                                   autocomplete="email" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="form-group mb-3">
+                            <label asp-for="Password" class="form-label">
+                                <i class="fas fa-lock me-2 text-primary"></i>@Html.DisplayNameFor(m => m.Password)
+                            </label>
+                            <div class="password-input-group">
+                                <input asp-for="Password"
+                                       class="form-control form-control-lg"
+                                       placeholder="อย่างน้อย 6 ตัวอักษร"
+                                       x-model="form.password"
+                                       x-on:input="validateField('password')"
+                                       x-bind:type="showPassword ? 'text' : 'password'"
+                                       autocomplete="new-password" />
+                                <button type="button"
+                                        class="btn password-toggle"
+                                        x-on:click="showPassword = !showPassword"
+                                        x-bind:title="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'">
+                                    <i x-bind:class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                            <!-- Password Strength Indicator -->
+                            <div class="password-strength mt-2" x-show="form.password.length > 0">
+                                <div class="strength-bar">
+                                    <div class="strength-fill"
+                                         x-bind:class="passwordStrength.class"
+                                         x-bind:style="'width: ' + passwordStrength.width + '%'"></div>
+                                </div>
+                                <small class="strength-text"
+                                       x-bind:class="passwordStrength.class"
+                                       x-text="passwordStrength.text"></small>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="form-group mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label">
+                                <i class="fas fa-lock me-2 text-primary"></i>@Html.DisplayNameFor(m => m.ConfirmPassword)
+                            </label>
+                            <div class="password-input-group">
+                                <input asp-for="ConfirmPassword"
+                                       class="form-control form-control-lg"
+                                       placeholder="ยืนยันรหัสผ่าน"
+                                       x-model="form.confirmPassword"
+                                       x-on:input="validateField('confirmPassword')"
+                                       x-bind:type="showConfirmPassword ? 'text' : 'password'"
+                                       autocomplete="new-password" />
+                                <button type="button"
+                                        class="btn password-toggle"
+                                        x-on:click="showConfirmPassword = !showConfirmPassword"
+                                        x-bind:title="showConfirmPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'">
+                                    <i x-bind:class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Accept Terms -->
+                        <div class="form-check mb-4">
+                            <input asp-for="AcceptTerms"
+                                   class="form-check-input"
+                                   x-model="form.acceptTerms" />
+                            <label asp-for="AcceptTerms" class="form-check-label">
+                                ฉันยอมรับ <a asp-controller="Home" asp-action="Terms" class="text-primary">ข้อกำหนดการใช้งาน</a>
+                                และ <a asp-controller="Home" asp-action="Privacy" class="text-primary">นโยบายความเป็นส่วนตัว</a>
+                            </label>
+                            <span asp-validation-for="AcceptTerms" class="text-danger small d-block"></span>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit"
+                                    class="btn btn-primary btn-lg"
+                                    x-bind:disabled="!isFormValid || isLoading"
+                                    x-bind:class="{ 'btn-loading': isLoading }">
+
+                                <span x-show="!isLoading">
+                                    <i class="fas fa-user-plus me-2"></i>สร้างบัญชี
+                                </span>
+
+                                <span x-show="isLoading" class="d-flex align-items-center justify-content-center">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    กำลังสร้างบัญชี...
+                                </span>
+                            </button>
+                        </div>
+
+                        <!-- Loading Indicator -->
+                        <div id="loading-indicator" class="loading-overlay" style="display: none;">
+                            <div class="loading-content">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">กำลังโหลด...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Footer Link -->
+                <div class="text-center mt-4 pt-4 border-top">
+                    <p class="mb-0">
+                        มีบัญชีอยู่แล้ว?
+                        <a asp-controller="Account" asp-action="Login" class="text-primary text-decoration-none fw-bold">
+                            เข้าสู่ระบบ
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function registerForm() {
+            return {
+                form: {
+                    displayName: '@Model.DisplayName',
+                    email: '@Model.Email',
+                    password: '',
+                    confirmPassword: '',
+                    acceptTerms: @Model.AcceptTerms.ToString().ToLower()
+                },
+                showPassword: false,
+                showConfirmPassword: false,
+                isLoading: false,
+                errors: {},
+
+                init() {
+                    // Listen for HTMX events
+                    document.addEventListener('htmx:beforeRequest', (evt) => {
+                        if (evt.target.closest('#register-form-container')) {
+                            this.isLoading = true;
+                        }
+                    });
+
+                    document.addEventListener('htmx:afterRequest', (evt) => {
+                        if (evt.target.closest('#register-form-container')) {
+                            this.isLoading = false;
+                        }
+                    });
+
+                    // Listen for registration events
+                    document.addEventListener('registration-success', () => {
+                        notyf.success('ยินดีต้อนรับสู่ 404talk.com! บัญชีของคุณถูกสร้างเรียบร้อยแล้ว');
+                        setTimeout(() => {
+                            window.location.href = '@Url.Action("Index", "Home")';
+                        }, 2000);
+                    });
+
+                    document.addEventListener('registration-error', () => {
+                        notyf.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                    });
+                },
+
+                handleSubmit() {
+                    this.isLoading = true;
+                },
+
+                validateField(field) {
+                    // Client-side validation จะเพิ่มในภายหลัง
+                },
+
+                get isFormValid() {
+                    return this.form.displayName.length > 0 &&
+                           this.form.email.length > 0 &&
+                           this.form.password.length >= 6 &&
+                           this.form.confirmPassword === this.form.password &&
+                           this.form.acceptTerms;
+                },
+
+                get passwordStrength() {
+                    const password = this.form.password;
+                    if (password.length === 0) return { width: 0, class: '', text: '' };
+
+                    let score = 0;
+                    if (password.length >= 6) score++;
+                    if (password.length >= 8) score++;
+                    if (/[a-z]/.test(password)) score++;
+                    if (/[A-Z]/.test(password)) score++;
+                    if (/[0-9]/.test(password)) score++;
+                    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+                    if (score <= 2) return { width: 25, class: 'text-danger', text: 'อ่อน' };
+                    if (score <= 4) return { width: 50, class: 'text-warning', text: 'ปานกลาง' };
+                    if (score <= 5) return { width: 75, class: 'text-info', text: 'ดี' };
+                    return { width: 100, class: 'text-success', text: 'แข็งแกร่ง' };
+                }
+            }
+        }
+    </script>
+}

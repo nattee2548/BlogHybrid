@@ -1,0 +1,151 @@
+﻿@model BlogHybrid.Web.Models.ViewModels.RegisterViewModel
+
+<div id="register-form-container">
+
+    <form hx-post="@Url.Action("Register")"
+          hx-target="#register-form-container"
+          hx-indicator="#loading-indicator"
+          hx-swap="outerHTML"
+          x-data="registerForm()"
+          x-on:submit="handleSubmit"
+          novalidate>
+
+        @Html.AntiForgeryToken()
+
+        <!-- Display validation summary if there are general errors -->
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Where(x => string.IsNullOrEmpty(x.Key)).Any())
+        {
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                @foreach (var error in ViewData.ModelState.Where(x => string.IsNullOrEmpty(x.Key)).SelectMany(x => x.Value.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <!-- Display Name -->
+        <div class="form-group mb-3">
+            <label asp-for="DisplayName" class="form-label">
+                <i class="fas fa-user me-2 text-primary"></i>@Html.DisplayNameFor(m => m.DisplayName)
+            </label>
+            <input asp-for="DisplayName"
+                   class="form-control form-control-lg @(ViewData.ModelState["DisplayName"]?.Errors.Any() == true ? "is-invalid" : "")"
+                   placeholder="ชื่อที่จะแสดงในเว็บไซต์"
+                   x-model="form.displayName"
+                   x-on:input="validateField('displayName')"
+                   autocomplete="name" />
+            <span asp-validation-for="DisplayName" class="text-danger small"></span>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group mb-3">
+            <label asp-for="Email" class="form-label">
+                <i class="fas fa-envelope me-2 text-primary"></i>@Html.DisplayNameFor(m => m.Email)
+            </label>
+            <input asp-for="Email"
+                   class="form-control form-control-lg @(ViewData.ModelState["Email"]?.Errors.Any() == true ? "is-invalid" : "")"
+                   placeholder="your@email.com"
+                   x-model="form.email"
+                   x-on:input="validateField('email')"
+                   autocomplete="email" />
+            <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group mb-3">
+            <label asp-for="Password" class="form-label">
+                <i class="fas fa-lock me-2 text-primary"></i>@Html.DisplayNameFor(m => m.Password)
+            </label>
+            <div class="password-input-group">
+                <input asp-for="Password"
+                       class="form-control form-control-lg @(ViewData.ModelState["Password"]?.Errors.Any() == true ? "is-invalid" : "")"
+                       placeholder="อย่างน้อย 6 ตัวอักษร"
+                       x-model="form.password"
+                       x-on:input="validateField('password')"
+                       x-bind:type="showPassword ? 'text' : 'password'"
+                       autocomplete="new-password" />
+                <button type="button"
+                        class="btn password-toggle"
+                        x-on:click="showPassword = !showPassword"
+                        x-bind:title="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'">
+                    <i x-bind:class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+            </div>
+            <span asp-validation-for="Password" class="text-danger small"></span>
+            <!-- Password Strength Indicator -->
+            <div class="password-strength mt-2" x-show="form.password.length > 0">
+                <div class="strength-bar">
+                    <div class="strength-fill"
+                         x-bind:class="passwordStrength.class"
+                         x-bind:style="'width: ' + passwordStrength.width + '%'"></div>
+                </div>
+                <small class="strength-text"
+                       x-bind:class="passwordStrength.class"
+                       x-text="passwordStrength.text"></small>
+            </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="form-group mb-3">
+            <label asp-for="ConfirmPassword" class="form-label">
+                <i class="fas fa-lock me-2 text-primary"></i>@Html.DisplayNameFor(m => m.ConfirmPassword)
+            </label>
+            <div class="password-input-group">
+                <input asp-for="ConfirmPassword"
+                       class="form-control form-control-lg @(ViewData.ModelState["ConfirmPassword"]?.Errors.Any() == true ? "is-invalid" : "")"
+                       placeholder="ยืนยันรหัสผ่าน"
+                       x-model="form.confirmPassword"
+                       x-on:input="validateField('confirmPassword')"
+                       x-bind:type="showConfirmPassword ? 'text' : 'password'"
+                       autocomplete="new-password" />
+                <button type="button"
+                        class="btn password-toggle"
+                        x-on:click="showConfirmPassword = !showConfirmPassword"
+                        x-bind:title="showConfirmPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'">
+                    <i x-bind:class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+            </div>
+            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+        </div>
+
+        <!-- Accept Terms -->
+        <div class="form-check mb-4">
+            <input asp-for="AcceptTerms"
+                   class="form-check-input @(ViewData.ModelState["AcceptTerms"]?.Errors.Any() == true ? "is-invalid" : "")"
+                   x-model="form.acceptTerms" />
+            <label asp-for="AcceptTerms" class="form-check-label">
+                ฉันยอมรับ <a asp-controller="Home" asp-action="Terms" class="text-primary">ข้อกำหนดการใช้งาน</a>
+                และ <a asp-controller="Home" asp-action="Privacy" class="text-primary">นโยบายความเป็นส่วนตัว</a>
+            </label>
+            <span asp-validation-for="AcceptTerms" class="text-danger small d-block"></span>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-grid">
+            <button type="submit"
+                    class="btn btn-primary btn-lg"
+                    x-bind:disabled="!isFormValid || isLoading"
+                    x-bind:class="{ 'btn-loading': isLoading }">
+
+                <span x-show="!isLoading">
+                    <i class="fas fa-user-plus me-2"></i>สร้างบัญชี
+                </span>
+
+                <span x-show="isLoading" class="d-flex align-items-center justify-content-center">
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    กำลังสร้างบัญชี...
+                </span>
+            </button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">กำลังโหลด...</span>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
