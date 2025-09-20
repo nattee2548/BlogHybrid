@@ -26,30 +26,38 @@ namespace BlogHybrid.Web.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            _logger.LogInformation("GET Register action called");
+
             // หากล็อกอินแล้วให้ redirect ไปหน้าแรก
             if (User.Identity?.IsAuthenticated == true)
             {
+                _logger.LogInformation("User already authenticated, redirecting to home");
                 return RedirectToAction("Index", "Home");
             }
 
-            return View(new RegisterViewModel());
+            var model = new RegisterViewModel();
+            _logger.LogInformation("Returning Register view with empty model");
+            return View(model);
         }
 
-        // POST: /Account/Register (HTMX + Regular Form Support)
+        // POST: /Account/Register
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            // ตรวจสอบว่าเป็น HTMX request หรือไม่
             var isHtmxRequest = Request.Headers.ContainsKey("HX-Request");
 
-            _logger.LogInformation("Register POST: HTMX={IsHtmx}, ModelValid={ModelValid}",
+            _logger.LogInformation("POST Register: HTMX={IsHtmx}, ModelValid={IsValid}",
                 isHtmxRequest, ModelState.IsValid);
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model validation failed: {Errors}",
-                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                _logger.LogWarning("Model validation failed");
+                foreach (var error in ModelState)
+                {
+                    _logger.LogWarning("Validation error in {Key}: {Errors}",
+                        error.Key, string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage)));
+                }
 
                 if (isHtmxRequest)
                 {
@@ -65,8 +73,8 @@ namespace BlogHybrid.Web.Controllers
                 var existingUser = await _userManager.FindByEmailAsync(model.Email);
                 if (existingUser != null)
                 {
-                    ModelState.AddModelError("Email", "อีเมลนี้ถูกใช้งานแล้ว");
                     _logger.LogWarning("Duplicate email registration attempt: {Email}", model.Email);
+                    ModelState.AddModelError("Email", "อีเมลนี้ถูกใช้งานแล้ว");
 
                     if (isHtmxRequest)
                     {
@@ -87,10 +95,13 @@ namespace BlogHybrid.Web.Controllers
                     IsActive = true
                 };
 
+                _logger.LogInformation("Creating new user with email: {Email}", model.Email);
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
+                    _logger.LogInformation("User {Email} created successfully", user.Email);
+
                     // กำหนด role เป็น User
                     var roleResult = await _userManager.AddToRoleAsync(user, "User");
                     if (!roleResult.Succeeded)
@@ -99,33 +110,29 @@ namespace BlogHybrid.Web.Controllers
                             user.Email, string.Join(", ", roleResult.Errors.Select(e => e.Description)));
                     }
 
-                    // Auto sign in the user
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-
-                    _logger.LogInformation("User {Email} registered successfully", user.Email);
+                    // ไม่ auto sign in - ให้ไป login page
+                    _logger.LogInformation("User {Email} registration completed, redirecting to login", user.Email);
 
                     if (isHtmxRequest)
                     {
-                        // ส่งสัญญาณให้ HTMX รู้ว่าสำเร็จ
+                        _logger.LogInformation("Returning HTMX success response");
                         Response.Headers.Append("HX-Trigger", "registration-success");
                         Response.Headers.Append("HX-Retarget", "#register-form-container");
-
-                        // ส่ง email ผ่าน ViewBag
                         ViewBag.Email = model.Email;
                         return PartialView("_RegisterSuccess");
                     }
 
-                    TempData["SuccessMessage"] = "ยินดีต้อนรับสู่ 404talk.com! บัญชีของคุณถูกสร้างเรียบร้อยแล้ว";
-                    return RedirectToAction("Index", "Home");
+                    TempData["SuccessMessage"] = "สมัครสมาชิกเรียบร้อยแล้ว! กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account");
                 }
 
                 // หากมีข้อผิดพลาดจาก Identity
+                _logger.LogError("Identity errors during user creation:");
                 foreach (var error in result.Errors)
                 {
+                    _logger.LogError("Identity error: {Code} - {Description}", error.Code, error.Description);
                     var localizedError = GetLocalizedErrorMessage(error.Code, error.Description);
                     ModelState.AddModelError(string.Empty, localizedError);
-                    _logger.LogWarning("Identity error during registration: {Code} - {Description}",
-                        error.Code, error.Description);
                 }
 
                 if (isHtmxRequest)
@@ -151,17 +158,46 @@ namespace BlogHybrid.Web.Controllers
             }
         }
 
-        // GET: /Account/Login (Placeholder)
+        // GET: /Account/Login
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
+            _logger.LogInformation("GET Login action called");
+
             if (User.Identity?.IsAuthenticated == true)
             {
                 return RedirectToAction("Index", "Home");
             }
 
             ViewData["ReturnUrl"] = returnUrl;
-            return View();
+
+            // สร้าง simple view สำหรับ Login
+            return Content(@"
+<!DOCTYPE html>
+<html>
+<head>
+    <title>เข้าสู่ระบบ - 404talk.com</title>
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>
+</head>
+<body>
+    <div class='container mt-5'>
+        <div class='row justify-content-center'>
+            <div class='col-md-6'>
+                <div class='card'>
+                    <div class='card-header'>
+                        <h4>เข้าสู่ระบบ</h4>
+                    </div>
+                    <div class='card-body'>
+                        <p>หน้าเข้าสู่ระบบยังไม่พร้อม</p>
+                        <a href='" + Url.Action("Register", "Account") + @"' class='btn btn-primary'>สมัครสมาชิก</a>
+                        <a href='" + Url.Action("Index", "Home") + @"' class='btn btn-secondary'>กลับหน้าแรก</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>", "text/html");
         }
 
         // POST: /Account/Logout

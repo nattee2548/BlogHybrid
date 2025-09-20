@@ -1,173 +1,119 @@
-﻿@* Views/Account/_RegisterValidation.cshtml *@
+﻿@* _RegisterValidation.cshtml *@
 @model BlogHybrid.Web.Models.ViewModels.RegisterViewModel
 
 <div id="register-form-container">
     <form hx-post="@Url.Action("Register", "Account")"
           hx-target="#register-form-container"
-          hx-indicator="#loading-indicator"
           hx-swap="outerHTML"
-          hx-trigger="submit"
-          data-register-form
-          novalidate
-          class="slide-up">
+          class="auth-form"
+          novalidate>
 
         @Html.AntiForgeryToken()
 
-        <!-- Display validation summary if there are general errors -->
-        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Where(x => string.IsNullOrEmpty(x.Key)).Any())
+        @* Show general errors *@
+        @if (!ViewData.ModelState.IsValid)
         {
-            <div class="alert alert-danger" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                @foreach (var error in ViewData.ModelState.Where(x => string.IsNullOrEmpty(x.Key)).SelectMany(x => x.Value.Errors))
+            @foreach (var modelState in ViewData.ModelState.Where(x => string.IsNullOrEmpty(x.Key)))
+            {
+                @if (modelState.Value != null && modelState.Value.Errors.Any())
                 {
-                    <div>@error.ErrorMessage</div>
+                    <div class="alert alert-danger">
+                        @foreach (var error in modelState.Value.Errors)
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
                 }
-            </div>
+            }
         }
 
         <!-- Display Name -->
-        <div class="form-group mb-3">
+        <div class="mb-3">
             <label asp-for="DisplayName" class="form-label">
-                <i class="fas fa-user me-2 text-primary"></i>
-                ชื่อที่แสดง
+                <i class="fas fa-user me-2"></i>ชื่อที่แสดง
             </label>
             <input asp-for="DisplayName"
-                   class="form-control form-control-lg @(ViewData.ModelState["DisplayName"]?.Errors.Any() == true ? "is-invalid" : "")"
+                   class="form-control @(ViewData.ModelState["DisplayName"]?.Errors.Any() == true ? "is-invalid" : "")"
                    placeholder="ชื่อที่จะแสดงในเว็บไซต์"
-                   data-field="displayName"
-                   autocomplete="name"
                    required />
             <span asp-validation-for="DisplayName" class="text-danger small"></span>
         </div>
 
         <!-- Email -->
-        <div class="form-group mb-3">
+        <div class="mb-3">
             <label asp-for="Email" class="form-label">
-                <i class="fas fa-envelope me-2 text-primary"></i>
-                อีเมล
+                <i class="fas fa-envelope me-2"></i>อีเมล
             </label>
             <input asp-for="Email"
-                   class="form-control form-control-lg @(ViewData.ModelState["Email"]?.Errors.Any() == true ? "is-invalid" : "")"
-                   placeholder="your@email.com"
+                   class="form-control @(ViewData.ModelState["Email"]?.Errors.Any() == true ? "is-invalid" : "")"
                    type="email"
-                   data-field="email"
-                   autocomplete="email"
+                   placeholder="your@email.com"
                    required />
             <span asp-validation-for="Email" class="text-danger small"></span>
         </div>
 
         <!-- Password -->
-        <div class="form-group mb-3">
+        <div class="mb-3">
             <label asp-for="Password" class="form-label">
-                <i class="fas fa-lock me-2 text-primary"></i>
-                รหัสผ่าน
+                <i class="fas fa-lock me-2"></i>รหัสผ่าน
             </label>
-            <div class="password-input-group">
+            <div class="password-wrapper">
                 <input asp-for="Password"
-                       class="form-control form-control-lg @(ViewData.ModelState["Password"]?.Errors.Any() == true ? "is-invalid" : "")"
-                       placeholder="อย่างน้อย 6 ตัวอักษร"
+                       class="form-control @(ViewData.ModelState["Password"]?.Errors.Any() == true ? "is-invalid" : "")"
                        type="password"
-                       data-field="password"
-                       data-password-input
-                       autocomplete="new-password"
+                       placeholder="อย่างน้อย 6 ตัวอักษร"
+                       id="password"
                        required />
-                <button type="button"
-                        class="password-toggle"
-                        data-password-toggle
-                        title="แสดง/ซ่อนรหัสผ่าน"
-                        aria-label="แสดง/ซ่อนรหัสผ่าน">
-                    <i class="fas fa-eye" data-toggle-icon></i>
+                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                    <i class="fas fa-eye" id="password-icon"></i>
                 </button>
             </div>
             <span asp-validation-for="Password" class="text-danger small"></span>
-
-            <!-- Password Strength Indicator -->
-            <div class="password-strength" data-password-strength style="display: none;">
-                <div class="strength-bar">
-                    <div class="strength-fill" data-strength-fill></div>
-                </div>
-                <small class="strength-text" data-strength-text></small>
-            </div>
         </div>
 
         <!-- Confirm Password -->
-        <div class="form-group mb-3">
+        <div class="mb-3">
             <label asp-for="ConfirmPassword" class="form-label">
-                <i class="fas fa-lock me-2 text-primary"></i>
-                ยืนยันรหัสผ่าน
+                <i class="fas fa-lock me-2"></i>ยืนยันรหัสผ่าน
             </label>
-            <div class="password-input-group">
+            <div class="password-wrapper">
                 <input asp-for="ConfirmPassword"
-                       class="form-control form-control-lg @(ViewData.ModelState["ConfirmPassword"]?.Errors.Any() == true ? "is-invalid" : "")"
-                       placeholder="ยืนยันรหัสผ่าน"
+                       class="form-control @(ViewData.ModelState["ConfirmPassword"]?.Errors.Any() == true ? "is-invalid" : "")"
                        type="password"
-                       data-field="confirmPassword"
-                       data-confirm-password-input
-                       autocomplete="new-password"
+                       placeholder="ยืนยันรหัสผ่าน"
+                       id="confirm-password"
                        required />
-                <button type="button"
-                        class="password-toggle"
-                        data-confirm-password-toggle
-                        title="แสดง/ซ่อนรหัสผ่าน"
-                        aria-label="แสดง/ซ่อนรหัสผ่าน">
-                    <i class="fas fa-eye" data-confirm-toggle-icon></i>
+                <button type="button" class="password-toggle" onclick="togglePassword('confirm-password')">
+                    <i class="fas fa-eye" id="confirm-password-icon"></i>
                 </button>
             </div>
             <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
         </div>
 
         <!-- Accept Terms -->
-        <div class="form-check mb-4">
-            <input asp-for="AcceptTerms"
-                   class="form-check-input @(ViewData.ModelState["AcceptTerms"]?.Errors.Any() == true ? "is-invalid" : "")"
-                   data-field="acceptTerms"
-                   required />
-            <label asp-for="AcceptTerms" class="form-check-label">
-                ฉันยอมรับ
-                <a asp-controller="Home" asp-action="Terms"
-                   class="text-primary text-decoration-none fw-bold">ข้อกำหนดการใช้งาน</a>
-                และ
-                <a asp-controller="Home" asp-action="Privacy"
-                   class="text-primary text-decoration-none fw-bold">นโยบายความเป็นส่วนตัว</a>
-            </label>
-            <span asp-validation-for="AcceptTerms" class="text-danger small d-block"></span>
+        <div class="mb-4">
+            <div class="form-check">
+                <input asp-for="AcceptTerms"
+                       class="form-check-input @(ViewData.ModelState["AcceptTerms"]?.Errors.Any() == true ? "is-invalid" : "")"
+                       required />
+                <label asp-for="AcceptTerms" class="form-check-label">
+                    ฉันยอมรับ
+                    <a href="#" class="text-decoration-none">ข้อกำหนดการใช้งาน</a>
+                    และ
+                    <a href="#" class="text-decoration-none">นโยบายความเป็นส่วนตัว</a>
+                </label>
+            </div>
+            <span asp-validation-for="AcceptTerms" class="text-danger small"></span>
         </div>
 
         <!-- Submit Button -->
-        <div class="d-grid">
-            <button type="submit"
-                    class="btn btn-primary btn-lg"
-                    data-submit-btn>
-
-                <span data-submit-text class="d-flex align-items-center justify-content-center">
-                    <i class="fas fa-user-plus me-2"></i>
-                    สร้างบัญชี
-                </span>
-
-                <span data-loading-text class="d-flex align-items-center justify-content-center" style="display: none;">
-                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    กำลังสร้างบัญชี...
-                </span>
-            </button>
-        </div>
-
-        <!-- Loading Indicator -->
-        <div id="loading-indicator"
-             class="loading-overlay"
-             style="display: none;"
-             role="status"
-             aria-live="polite">
-            <div class="loading-content">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">กำลังโหลด...</span>
-                </div>
-                <div class="mt-2 text-muted">กำลังสร้างบัญชี...</div>
-            </div>
-        </div>
+        <button type="submit" class="auth-btn" id="submit-btn">
+            <span class="submit-text">
+                <i class="fas fa-user-plus me-2"></i>สร้างบัญชี
+            </span>
+            <span class="loading-text">
+                <span class="spinner-border spinner-border-sm me-2"></span>กำลังสร้างบัญชี...
+            </span>
+        </button>
     </form>
 </div>
-
-<script>
-    // Re-initialize form after HTMX swap
-    new RegisterForm();
-</script>
