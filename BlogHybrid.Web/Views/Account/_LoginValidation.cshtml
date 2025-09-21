@@ -38,6 +38,7 @@
                    type="email"
                    placeholder="your@email.com"
                    autocomplete="email"
+                   tabindex="1"
                    required />
             <span asp-validation-for="Email" class="text-danger small"></span>
         </div>
@@ -53,8 +54,9 @@
                        placeholder="รหัสผ่านของคุณ"
                        id="password"
                        autocomplete="current-password"
+                       tabindex="2"
                        required />
-                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                <button type="button" class="password-toggle" onclick="togglePassword('password')" tabindex="-1">
                     <i class="fas fa-eye" id="password-icon"></i>
                 </button>
             </div>
@@ -63,14 +65,14 @@
 
         <div class="mb-4">
             <div class="form-check">
-                <input asp-for="RememberMe" class="form-check-input" />
+                <input asp-for="RememberMe" class="form-check-input" tabindex="3" />
                 <label asp-for="RememberMe" class="form-check-label">
                     จดจำการเข้าสู่ระบบ
                 </label>
             </div>
         </div>
 
-        <button type="submit" class="auth-btn" id="submit-btn">
+        <button type="submit" class="auth-btn" id="submit-btn" tabindex="4">
             <span class="submit-text">
                 <i class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบ
             </span>
@@ -80,3 +82,18 @@
         </button>
     </form>
 </div>
+
+<script>
+    setupEnterKeyNavigation();
+
+    // Show error toast if there are validation errors
+    var hasErrors = @Json.Serialize(hasGeneralErrors || hasEmailError || hasPasswordError);
+    if (hasErrors && typeof window.notyf !== 'undefined') {
+        window.notyf.error('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+    }
+
+    var firstError = document.querySelector('.is-invalid');
+    if (firstError) {
+        firstError.focus();
+    }
+</script>

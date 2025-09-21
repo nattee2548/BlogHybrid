@@ -1,0 +1,113 @@
+﻿<!-- BlogHybrid.Web/Views/Shared/_AdminBreadcrumb.cshtml -->
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var area = ViewContext.RouteData.Values["area"]?.ToString();
+
+    // Define breadcrumb mappings
+    var breadcrumbs = new List<(string Title, string? Url, string Icon)>();
+
+    // Always start with Admin Home
+    breadcrumbs.Add(("Admin", Url.Action("Index", "Dashboard", new { area = "Admin" }), "fas fa-home"));
+
+    // Add controller-specific breadcrumbs
+    switch (controller?.ToLower())
+    {
+        case "dashboard":
+            if (action?.ToLower() != "index")
+            {
+                breadcrumbs.Add(("Dashboard", null, "fas fa-tachometer-alt"));
+            }
+            break;
+
+        case "category":
+            breadcrumbs.Add(("จัดการหมวดหมู่", Url.Action("Index", "Category", new { area = "Admin" }), "fas fa-folder"));
+            if (action?.ToLower() == "create")
+                breadcrumbs.Add(("เพิ่มหมวดหมู่ใหม่", null, "fas fa-plus"));
+            else if (action?.ToLower() == "edit")
+                breadcrumbs.Add(("แก้ไขหมวดหมู่", null, "fas fa-edit"));
+            break;
+
+        case "user":
+            breadcrumbs.Add(("จัดการผู้ใช้", Url.Action("Index", "User", new { area = "Admin" }), "fas fa-users"));
+            if (action?.ToLower() == "details")
+                breadcrumbs.Add(("รายละเอียดผู้ใช้", null, "fas fa-user"));
+            else if (action?.ToLower() == "edit")
+                breadcrumbs.Add(("แก้ไขผู้ใช้", null, "fas fa-user-edit"));
+            break;
+
+        case "post":
+            breadcrumbs.Add(("จัดการบทความ", Url.Action("Index", "Post", new { area = "Admin" }), "fas fa-file-alt"));
+            if (action?.ToLower() == "create")
+                breadcrumbs.Add(("สร้างบทความใหม่", null, "fas fa-plus"));
+            else if (action?.ToLower() == "edit")
+                breadcrumbs.Add(("แก้ไขบทความ", null, "fas fa-edit"));
+            break;
+
+        case "comment":
+            breadcrumbs.Add(("จัดการความคิดเห็น", Url.Action("Index", "Comment", new { area = "Admin" }), "fas fa-comments"));
+            break;
+
+        case "moderation":
+            breadcrumbs.Add(("การตรวจสอบ", Url.Action("Index", "Moderation", new { area = "Admin" }), "fas fa-shield-alt"));
+            if (action?.ToLower() == "reports")
+                breadcrumbs.Add(("รายงาน", null, "fas fa-flag"));
+            break;
+
+        case "analytics":
+            breadcrumbs.Add(("สถิติการใช้งาน", Url.Action("Index", "Analytics", new { area = "Admin" }), "fas fa-chart-bar"));
+            break;
+
+        case "settings":
+            breadcrumbs.Add(("ตั้งค่าระบบ", Url.Action("Index", "Settings", new { area = "Admin" }), "fas fa-cog"));
+            break;
+
+        case "role":
+            breadcrumbs.Add(("สิทธิ์ & บทบาท", Url.Action("Index", "Role", new { area = "Admin" }), "fas fa-user-shield"));
+            break;
+
+        case "tag":
+            breadcrumbs.Add(("จัดการแท็ก", Url.Action("Index", "Tag", new { area = "Admin" }), "fas fa-tags"));
+            break;
+
+        case "backup":
+            breadcrumbs.Add(("สำรองข้อมูล", Url.Action("Index", "Backup", new { area = "Admin" }), "fas fa-database"));
+            break;
+
+        case "logs":
+            breadcrumbs.Add(("ประวัติการใช้งาน", Url.Action("Index", "Logs", new { area = "Admin" }), "fas fa-file-alt"));
+            break;
+
+        default:
+            if (!string.IsNullOrEmpty(controller))
+            {
+                breadcrumbs.Add((controller, null, "fas fa-circle"));
+            }
+            break;
+    }
+}
+
+<nav aria-label="breadcrumb" class="admin-breadcrumb-nav">
+    <ol class="breadcrumb">
+        @for (int i = 0; i < breadcrumbs.Count; i++)
+        {
+            var (title, url, icon) = breadcrumbs[i];
+            var isLast = i == breadcrumbs.Count - 1;
+
+            <li class="breadcrumb-item @(isLast ? "active" : "")">
+                @if (isLast || string.IsNullOrEmpty(url))
+                {
+                    <i class="@icon me-1"></i>
+                    @title
+                }
+                else
+                {
+                    <a href="@url" class="breadcrumb-link">
+                        <i class="@icon me-1"></i>
+                        @title
+                    </a>
+                }
+            </li>
+        }
+    </ol>
+</nav>

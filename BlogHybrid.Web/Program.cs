@@ -112,6 +112,13 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
+// Admin Area routes (ต้องมาก่อน default route)
+app.MapControllerRoute(
+    name: "admin",
+    pattern: "Admin/{controller=Dashboard}/{action=Index}/{id?}",
+    defaults: new { area = "Admin" },
+    constraints: new { area = "Admin" });
+
 // Configure routes
 app.MapControllerRoute(
     name: "areas",

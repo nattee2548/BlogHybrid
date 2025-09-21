@@ -2,6 +2,29 @@
 @{
     var email = ViewBag.Email ?? "ไม่ระบุ";
     var redirectUrl = ViewBag.RedirectUrl ?? "/";
+
+    // ตรวจสอบปลายทางเพื่อแสดงข้อความที่เหมาะสม
+    var isAdminArea = redirectUrl.Contains("/Admin/");
+    var isModeratorArea = redirectUrl.Contains("/Admin/Moderation");
+
+    string destinationMessage;
+    string iconClass;
+
+    if (isModeratorArea)
+    {
+        destinationMessage = "กำลังนำคุณเข้าสู่หน้า Moderation...";
+        iconClass = "fas fa-shield-alt";
+    }
+    else if (isAdminArea)
+    {
+        destinationMessage = "กำลังนำคุณเข้าสู่ Admin Dashboard...";
+        iconClass = "fas fa-crown";
+    }
+    else
+    {
+        destinationMessage = "กำลังนำคุณเข้าสู่หน้าหลัก...";
+        iconClass = "fas fa-home";
+    }
 }
 
 <div id="login-form-container">
@@ -14,12 +37,23 @@
             <p class="text-muted mb-2">ยินดีต้อนรับกลับมา</p>
             <p class="small text-muted mb-4">อีเมล: <strong>@email</strong></p>
 
-            <div class="d-flex align-items-center justify-content-center">
-                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                    <span class="visually-hidden">Loading...</span>
+            <!-- Role-based destination message -->
+            @if (isAdminArea)
+            {
+                <div class="alert alert-info border-0 mb-4" style="background: rgba(0, 102, 204, 0.1);">
+                    <i class="@iconClass me-2" style="color: #0066cc;"></i>
+                    <span style="color: #0066cc;">@destinationMessage</span>
                 </div>
-                <span class="text-muted">กำลังนำคุณเข้าสู่หน้าหลัก...</span>
-            </div>
+            }
+            else
+            {
+                <div class="d-flex align-items-center justify-content-center">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="text-muted">@destinationMessage</span>
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -28,8 +62,9 @@
     // Trigger success event
     document.dispatchEvent(new CustomEvent('login-success'));
 
-    // Redirect after 2 seconds
+    // Redirect after 2 seconds (3 seconds for admin to read the message)
+    var redirectDelay = @(isAdminArea ? "3000" : "2000");
     setTimeout(function() {
         window.location.href = '@Html.Raw(redirectUrl)';
-    }, 2000);
+    }, redirectDelay);
 </script>

@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿﻿
+<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="utf-8" />
@@ -254,19 +255,19 @@
         // TempData notifications
         @if (TempData["SuccessMessage"] != null)
         {
-                <text>
-                document.addEventListener('DOMContentLoaded', function() {
-                    notyf.success('@Html.Raw(TempData["SuccessMessage"])');
-                });
-                </text>
+                    <text>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        notyf.success('@Html.Raw(TempData["SuccessMessage"])');
+                    });
+                    </text>
         }
         @if (TempData["ErrorMessage"] != null)
         {
-                <text>
-                document.addEventListener('DOMContentLoaded', function() {
-                    notyf.error('@Html.Raw(TempData["ErrorMessage"])');
-                });
-                </text>
+                    <text>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        notyf.error('@Html.Raw(TempData["ErrorMessage"])');
+                    });
+                    </text>
         }
     </script>
 

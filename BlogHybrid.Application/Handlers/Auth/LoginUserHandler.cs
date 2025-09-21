@@ -71,8 +71,8 @@ namespace BlogHybrid.Application.Handlers.Auth
                     return new LoginUserResult
                     {
                         Success = true,
-                        Message = "เข้าสู่ระบบสำเร็จ",
-                        RedirectUrl = !string.IsNullOrEmpty(request.ReturnUrl) ? request.ReturnUrl : "/"
+                        Message = "เข้าสู่ระบบสำเร็จ"
+                        // ลบ RedirectUrl ออก - ให้ Controller จัดการเอง
                     };
                 }
 

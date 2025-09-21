@@ -1,0 +1,182 @@
+﻿<!-- BlogHybrid.Web/Views/Shared/_AdminSidebar.cshtml -->
+<div class="sidebar-header">
+    <div class="admin-user-card">
+        <div class="user-avatar">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="user-details">
+            <div class="user-name">@User.Identity!.Name</div>
+            <div class="user-role">
+                @if (User.IsInRole("Admin"))
+                {
+                    <span class="role-badge admin">Administrator</span>
+                }
+                else if (User.IsInRole("Moderator"))
+                {
+                    <span class="role-badge moderator">Moderator</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav class="sidebar-nav">
+    <!-- Dashboard -->
+    <div class="nav-section">
+        <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })"
+           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
+            <i class="fas fa-tachometer-alt nav-icon"></i>
+            <span class="nav-text">Dashboard</span>
+        </a>
+    </div>
+
+    <!-- Content Management -->
+    <div class="nav-section">
+        <div class="nav-section-title">
+            <i class="fas fa-file-alt me-2"></i>
+            จัดการเนื้อหา
+        </div>
+
+        @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+        {
+            <a href="@Url.Action("Index", "Post", new { area = "Admin" })"
+               class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Post" ? "active" : "")">
+                <i class="fas fa-file-alt nav-icon"></i>
+                <span class="nav-text">บทความ</span>
+                <span class="nav-badge">12</span>
+            </a>
+        }
+
+        @if (User.IsInRole("Admin"))
+        {
+            <a href="@Url.Action("Index", "Category", new { area = "Admin" })"
+               class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")">
+                <i class="fas fa-folder nav-icon"></i>
+                <span class="nav-text">หมวดหมู่</span>
+                <span class="nav-badge">6</span>
+            </a>
+        }
+
+        @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+        {
+            <a href="@Url.Action("Index", "Comment", new { area = "Admin" })"
+               class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Comment" ? "active" : "")">
+                <i class="fas fa-comments nav-icon"></i>
+                <span class="nav-text">ความคิดเห็น</span>
+                <span class="nav-badge pending">3</span>
+            </a>
+        }
+
+        <a href="@Url.Action("Index", "Tag", new { area = "Admin" })"
+           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Tag" ? "active" : "")">
+            <i class="fas fa-tags nav-icon"></i>
+            <span class="nav-text">แท็ก</span>
+        </a>
+    </div>
+
+    <!-- User Management -->
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="nav-section">
+            <div class="nav-section-title">
+                <i class="fas fa-users me-2"></i>
+                จัดการผู้ใช้
+            </div>
+
+            <a href="@Url.Action("Index", "User", new { area = "Admin" })"
+               class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "User" ? "active" : "")">
+                <i class="fas fa-users nav-icon"></i>
+                <span class="nav-text">ผู้ใช้ทั้งหมด</span>
+                <span class="nav-badge">156</span>
+            </a>
+
+            <a href="@Url.Action("Index", "Role", new { area = "Admin" })"
+               class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Role" ? "active" : "")">
+                <i class="fas fa-user-shield nav-icon"></i>
+                <span class="nav-text">สิทธิ์ & บทบาท</span>
+            </a>
+        </div>
+    }
+
+    <!-- Moderation -->
+    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+    {
+        <div class="nav-section">
+            <div class="nav-section-title">
+                <i class="fas fa-shield-alt me-2"></i>
+                การตรวจสอบ
+            </div>
+
+            <a href="@Url.Action("Index", "Moderation", new { area = "Admin" })"
+               class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Moderation" ? "active" : "")">
+                <i class="fas fa-shield-alt nav-icon"></i>
+                <span class="nav-text">คิวตรวจสอบ</span>
+                <span class="nav-badge pending">5</span>
+            </a>
+
+            <a href="@Url.Action("Reports", "Moderation", new { area = "Admin" })"
+               class="nav-item">
+                <i class="fas fa-flag nav-icon"></i>
+                <span class="nav-text">รายงาน</span>
+                <span class="nav-badge warning">2</span>
+            </a>
+        </div>
+    }
+
+    <!-- Analytics & Reports -->
+    <div class="nav-section">
+        <div class="nav-section-title">
+            <i class="fas fa-chart-line me-2"></i>
+            รายงาน & สถิติ
+        </div>
+
+        <a href="@Url.Action("Index", "Analytics", new { area = "Admin" })"
+           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Analytics" ? "active" : "")">
+            <i class="fas fa-chart-bar nav-icon"></i>
+            <span class="nav-text">สถิติการใช้งาน</span>
+        </a>
+
+        <a href="@Url.Action("Index", "Reports", new { area = "Admin" })"
+           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reports" ? "active" : "")">
+            <i class="fas fa-file-chart nav-icon"></i>
+            <span class="nav-text">รายงาน</span>
+        </a>
+    </div>
+
+    <!-- System Settings -->
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="nav-section">
+            <div class="nav-section-title">
+                <i class="fas fa-cogs me-2"></i>
+                ระบบ
+            </div>
+
+            <a href="@Url.Action("Index", "Settings", new { area = "Admin" })"
+               class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Settings" ? "active" : "")">
+                <i class="fas fa-cog nav-icon"></i>
+                <span class="nav-text">ตั้งค่าระบบ</span>
+            </a>
+
+            <a href="@Url.Action("Index", "Backup", new { area = "Admin" })"
+               class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Backup" ? "active" : "")">
+                <i class="fas fa-database nav-icon"></i>
+                <span class="nav-text">สำรองข้อมูล</span>
+            </a>
+
+            <a href="@Url.Action("Index", "Logs", new { area = "Admin" })"
+               class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Logs" ? "active" : "")">
+                <i class="fas fa-file-alt nav-icon"></i>
+                <span class="nav-text">ประวัติการใช้งาน</span>
+            </a>
+        </div>
+    }
+</nav>
+
+<!-- Sidebar Footer -->
+<div class="sidebar-footer">
+    <a href="@Url.Action("Index", "Home")" target="_blank" class="btn btn-outline-primary btn-sm w-100">
+        <i class="fas fa-external-link-alt me-2"></i>
+        ดูเว็บไซต์
+    </a>
+</div>
