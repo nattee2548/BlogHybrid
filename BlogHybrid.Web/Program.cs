@@ -1,8 +1,10 @@
 // BlogHybrid.Web/Program.cs
 using BlogHybrid.Application.Commands.Auth;
+using BlogHybrid.Application.Interfaces.Repositories;
 using BlogHybrid.Domain.Entities;
 using BlogHybrid.Infrastructure.Data;
 using BlogHybrid.Infrastructure.Data.Seeds;
+using BlogHybrid.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -88,6 +90,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMediatR(cfg => {
     cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly);
 });
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();
 
