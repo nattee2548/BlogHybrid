@@ -63,8 +63,10 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(
     typeof(BlogHybrid.Application.Handlers.Auth.LoginUserHandler).Assembly));
 
 // AutoMapper
-builder.Services.AddAutoMapper(typeof(CategoryMappingProfile));
-
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<CategoryMappingProfile>();
+});
 // Repository Pattern & Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
