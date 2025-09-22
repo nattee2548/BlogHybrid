@@ -1,0 +1,316 @@
+﻿@model BlogHybrid.Web.Models.ViewModels.Admin.CreateCategoryViewModel
+@{
+    ViewData["Title"] = "เพิ่มหมวดหมู่ใหม่";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-page-header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 admin-text-primary">
+                <i class="fas fa-folder-plus me-2"></i>
+                เพิ่มหมวดหมู่ใหม่
+            </h1>
+            <p class="admin-text-secondary mb-0">สร้างหมวดหมู่สำหรับจัดกลุ่มบทความ</p>
+        </div>
+        <div>
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>กลับไปรายการ
+            </a>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Create" method="post" class="admin-form" novalidate>
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        <!-- Main Form -->
+        <div class="col-lg-8">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        ข้อมูลหมวดหมู่
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <!-- Category Name -->
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label required">ชื่อหมวดหมู่</label>
+                        <input asp-for="Name" class="form-control" placeholder="เช่น Career Talk, Life Advice">
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                        <div class="form-text">
+                            ชื่อหมวดหมู่ที่จะแสดงในเว็บไซต์
+                        </div>
+                    </div>
+
+                    <!-- Slug Preview -->
+                    <div class="mb-3">
+                        <label class="form-label">URL Slug (สร้างอัตโนมัติ)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">404talk.com/category/</span>
+                            <input type="text" class="form-control" id="slugPreview" readonly placeholder="career-talk">
+                        </div>
+                        <div class="form-text">
+                            URL ที่จะใช้สำหรับหมวดหมู่นี้ (สร้างอัตโนมัติจากชื่อ)
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">คำอธิบาย</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"
+                                  placeholder="อธิบายเกี่ยวกับหมวดหมู่นี้..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                        <div class="form-text">
+                            คำอธิบายเกี่ยวกับหมวดหมู่นี้ (ไม่บังคับ)
+                        </div>
+                    </div>
+
+                    <!-- Image URL -->
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label">URL รูปภาพ</label>
+                        <div class="input-group">
+                            <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg">
+                            <button type="button" class="btn btn-outline-secondary" onclick="previewImage()">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                        <div class="form-text">
+                            URL รูปภาพประจำหมวดหมู่ (ไม่บังคับ)
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" class="mt-2" style="display: none;">
+                            <img id="previewImg" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 150px;">
+                        </div>
+                    </div>
+
+                    <!-- Color -->
+                    <div class="mb-3">
+                        <label asp-for="Color" class="form-label required">สีประจำหมวดหมู่</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <input asp-for="Color" type="color" class="form-control form-control-color" style="width: 60px;">
+                            <input asp-for="Color" type="text" class="form-control" style="width: 120px;"
+                                   pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" placeholder="#0066cc">
+                            <div class="color-preview" id="colorPreview"
+                                 style="width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--admin-border);">
+                            </div>
+                        </div>
+                        <span asp-validation-for="Color" class="text-danger"></span>
+                        <div class="form-text">
+                            สีที่จะใช้แสดงหมวดหมู่นี้
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Settings Card -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        การตั้งค่า
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox">
+                            <label asp-for="IsActive" class="form-check-label">เปิดใช้งานหมวดหมู่</label>
+                        </div>
+                        <div class="form-text">
+                            หมวดหมู่ที่ปิดใช้งานจะไม่แสดงในเว็บไซต์
+                        </div>
+                    </div>
+
+                    <!-- Sort Order -->
+                    <div class="mb-3">
+                        <label asp-for="SortOrder" class="form-label">ลำดับการแสดง</label>
+                        <input asp-for="SortOrder" type="number" class="form-control" min="0" max="999">
+                        <span asp-validation-for="SortOrder" class="text-danger"></span>
+                        <div class="form-text">
+                            ตัวเลขน้อยจะแสดงก่อน (0 = กำหนดอัตโนมัติ)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Card -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-eye me-2"></i>
+                        ตัวอย่าง
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="category-preview-card">
+                        <div class="d-flex align-items-center mb-2">
+                            <div id="previewColorBox" class="me-2"
+                                 style="width: 20px; height: 20px; border-radius: 4px; background-color: #0066cc;">
+                            </div>
+                            <strong id="previewName">ชื่อหมวดหมู่</strong>
+                        </div>
+                        <p id="previewDescription" class="text-muted small mb-2">คำอธิบายหมวดหมู่...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                URL: /category/<span id="previewSlug">slug</span>
+                            </small>
+                            <span id="previewStatus" class="badge bg-success">เปิดใช้งาน</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>บันทึกหมวดหมู่
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>ยกเลิก
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.getElementById('Name');
+            const colorInput = document.querySelector('input[type="color"]');
+            const colorTextInput = document.querySelector('input[type="text"][name="Color"]');
+            const isActiveInput = document.getElementById('IsActive');
+            const descriptionInput = document.getElementById('Description');
+
+            // Update preview when inputs change
+            nameInput.addEventListener('input', updatePreview);
+            colorInput.addEventListener('input', updateColorInputs);
+            colorTextInput.addEventListener('input', updateColorFromText);
+            isActiveInput.addEventListener('change', updatePreview);
+            descriptionInput.addEventListener('input', updatePreview);
+
+            // Initialize preview
+            updatePreview();
+            updateColorPreview();
+        });
+
+        function updatePreview() {
+            const name = document.getElementById('Name').value || 'ชื่อหมวดหมู่';
+            const description = document.getElementById('Description').value || 'คำอธิบายหมวดหมู่...';
+            const isActive = document.getElementById('IsActive').checked;
+            const color = document.querySelector('input[name="Color"]').value;
+
+            // Update preview elements
+            document.getElementById('previewName').textContent = name;
+            document.getElementById('previewDescription').textContent = description;
+            document.getElementById('previewColorBox').style.backgroundColor = color;
+
+            // Update status badge
+            const statusBadge = document.getElementById('previewStatus');
+            if (isActive) {
+                statusBadge.className = 'badge bg-success';
+                statusBadge.textContent = 'เปิดใช้งาน';
+            } else {
+                statusBadge.className = 'badge bg-secondary';
+                statusBadge.textContent = 'ปิดใช้งาน';
+            }
+
+            // Update slug preview
+            const slug = generateSlug(name);
+            document.getElementById('slugPreview').value = slug;
+            document.getElementById('previewSlug').textContent = slug;
+        }
+
+        function updateColorInputs() {
+            const colorPicker = document.querySelector('input[type="color"]');
+            const colorText = document.querySelector('input[type="text"][name="Color"]');
+
+            colorText.value = colorPicker.value;
+            updateColorPreview();
+            updatePreview();
+        }
+
+        function updateColorFromText() {
+            const colorText = document.querySelector('input[type="text"][name="Color"]');
+            const colorPicker = document.querySelector('input[type="color"]');
+
+            if (isValidHexColor(colorText.value)) {
+                colorPicker.value = colorText.value;
+                updateColorPreview();
+                updatePreview();
+            }
+        }
+
+        function updateColorPreview() {
+            const color = document.querySelector('input[name="Color"]').value;
+            document.getElementById('colorPreview').style.backgroundColor = color;
+        }
+
+        function generateSlug(name) {
+            if (!name) return '';
+
+            return name.toLowerCase()
+                      .replace(/\s+/g, '-')
+                      .replace(/[^a-z0-9\-ก-๏]/g, '')
+                      .replace(/-+/g, '-')
+                      .replace(/^-|-$/g, '');
+        }
+
+        function isValidHexColor(color) {
+            return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
+        }
+
+        function previewImage() {
+            const imageUrl = document.getElementById('ImageUrl').value;
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+
+            if (imageUrl) {
+                previewImg.src = imageUrl;
+                preview.style.display = 'block';
+
+                previewImg.onerror = function() {
+                    preview.style.display = 'none';
+                    adminNotyf.error('ไม่สามารถโหลดรูปภาพได้');
+                };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+    </script>
+
+    <style>
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+
+        .category-preview-card {
+            padding: 1rem;
+            border: 1px solid var(--admin-border);
+            border-radius: 0.5rem;
+            background: var(--admin-bg-tertiary);
+        }
+
+        .form-control-color {
+            padding: 0.25rem;
+            border: 1px solid var(--admin-border);
+        }
+
+        .admin-form .form-control:focus {
+            border-color: var(--admin-accent-primary);
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+    </style>
+}

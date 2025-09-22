@@ -1,168 +1,132 @@
-// BlogHybrid.Web/Program.cs
-using BlogHybrid.Application.Commands.Auth;
+using AutoMapper;
 using BlogHybrid.Application.Interfaces.Repositories;
+using BlogHybrid.Application.Mappings;
 using BlogHybrid.Domain.Entities;
 using BlogHybrid.Infrastructure.Data;
 using BlogHybrid.Infrastructure.Data.Seeds;
 using BlogHybrid.Infrastructure.Repositories;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
-builder.Host.UseSerilog((context, configuration) =>
-    configuration.ReadFrom.Configuration(context.Configuration));
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// Database Configuration
+// Database Context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (string.IsNullOrEmpty(connectionString))
-    {
-        // Fallback for development
-        connectionString = "Host=localhost;Database=bloghybrid_dev;Username=postgres;Password=postgres";
-    }
-    options.UseNpgsql(connectionString);
-});
+    options.UseNpgsql(connectionString));
 
-// Identity Configuration
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+// Identity
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Configure Identity Options
+builder.Services.Configure<IdentityOptions>(options =>
 {
     // Password settings
-    options.Password.RequiredLength = 6;
     options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
-    options.Password.RequireLowercase = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 0;
 
     // Lockout settings
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
 
     // User settings
-    options.User.RequireUniqueEmail = true;
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    options.User.RequireUniqueEmail = true;
 
-    // Sign in settings
+    // Sign-in settings
     options.SignIn.RequireConfirmedEmail = false;
     options.SignIn.RequireConfirmedPhoneNumber = false;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
-
-// Cookie Configuration
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/Account/AccessDenied";
-    options.ExpireTimeSpan = TimeSpan.FromDays(30);
-    options.SlidingExpiration = true;
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
-// Redis Cache (if connection string is provided)
-var redisConnection = builder.Configuration.GetConnectionString("Redis");
-if (!string.IsNullOrEmpty(redisConnection))
-{
-    builder.Services.AddStackExchangeRedisCache(options =>
-    {
-        options.Configuration = redisConnection;
-    });
-}
-else
-{
-    // Fallback to memory cache
-    builder.Services.AddMemoryCache();
-}
+// MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(
+    typeof(BlogHybrid.Application.Handlers.Auth.LoginUserHandler).Assembly));
 
-// Add Swagger for API documentation
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(CategoryMappingProfile));
 
-builder.Services.AddMediatR(cfg => {
-    cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly);
-});
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+// Repository Pattern & Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+// FluentValidation
+builder.Services.AddValidatorsFromAssembly(typeof(BlogHybrid.Application.Handlers.Auth.LoginUserHandler).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+// Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("ModeratorOrAdmin", policy => policy.RequireRole("Admin", "Moderator"));
+});
+
+// MVC
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
+// Database Seeding
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        await DatabaseSeeder.SeedAllAsync(scope.ServiceProvider);
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
+}
+
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-else
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
 
-// Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
-// Admin Area routes (ต้องมาก่อน default route)
+// Admin Area Route (must come before default route)
 app.MapControllerRoute(
     name: "admin",
-    pattern: "Admin/{controller=Dashboard}/{action=Index}/{id?}",
-    defaults: new { area = "Admin" },
-    constraints: new { area = "Admin" });
-
-// Configure routes
-app.MapControllerRoute(
-    name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Database initialization and seeding
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-
-    try
-    {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-
-        // Ensure database is created and apply migrations
-        await context.Database.MigrateAsync();
-        logger.LogInformation("Database migration completed successfully.");
-
-        // Seed roles and default data
-        await DatabaseSeeder.SeedAllAsync(services);
-        logger.LogInformation("Database seeding completed successfully.");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "An error occurred while initializing the database.");
-        // Don't rethrow in production, log and continue
-        if (app.Environment.IsDevelopment())
-        {
-            throw;
-        }
-    }
-}
-
-// Add Serilog request logging
-app.UseSerilogRequestLogging();
+app.MapRazorPages();
 
 app.Run();

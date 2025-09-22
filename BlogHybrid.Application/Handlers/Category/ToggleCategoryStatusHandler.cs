@@ -33,11 +33,27 @@ namespace BlogHybrid.Application.Handlers.Category
                 {
                     return new ToggleCategoryStatusResult
                     {
-                        Success = true,
-                        NewStatus = category.IsActive,
-                        Message = $"เปลี่ยนสถานะเป็น{(category.IsActive ? "เปิดใช้งาน" : "ปิดใช้งาน")}แล้ว"
+                        Success = false,
+                        Errors = new List<string> { "ไม่พบหมวดหมู่ที่ต้องการเปลี่ยนสถานะ" }
                     };
                 }
+
+                // Toggle the status
+                category.IsActive = request.IsActive;
+
+                await _unitOfWork.Categories.UpdateAsync(category, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                _logger.LogInformation("Category status toggled: {CategoryId} - {Status}",
+                    category.Id, request.IsActive ? "Active" : "Inactive");
+
+                return new ToggleCategoryStatusResult
+                {
+                    Success = true,
+                    NewStatus = category.IsActive,
+                    Message = $"เปลี่ยนสถานะเป็น{(category.IsActive ? "เปิดใช้งาน" : "ปิดใช้งาน")}แล้ว"
+                };
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error toggling category status: {CategoryId}", request.Id);
