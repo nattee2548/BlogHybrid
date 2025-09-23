@@ -112,23 +112,23 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
 
         // POST: /Admin/Image/UploadCategory
         [HttpPost]
-        public async Task<IActionResult> UploadCategory(IFormFile categoryImage)
+        public async Task<IActionResult> UploadCategory(IFormFile file)
         {
-            return await Upload(categoryImage, "categories");
+            return await Upload(file, "categories");
         }
 
         // POST: /Admin/Image/UploadPost  
         [HttpPost]
-        public async Task<IActionResult> UploadPost(IFormFile postImage)
+        public async Task<IActionResult> UploadPost(IFormFile file)
         {
-            return await Upload(postImage, "posts");
+            return await Upload(file, "posts");
         }
 
         // POST: /Admin/Image/UploadAvatar
         [HttpPost]
-        public async Task<IActionResult> UploadAvatar(IFormFile avatarImage)
+        public async Task<IActionResult> UploadAvatar(IFormFile file)
         {
-            return await Upload(avatarImage, "avatars");
+            return await Upload(file, "avatars");
         }
 
         // GET: /Admin/Image/Test (สำหรับทดสอบ)
