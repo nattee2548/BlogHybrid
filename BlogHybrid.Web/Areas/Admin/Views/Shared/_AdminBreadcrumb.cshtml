@@ -3,110 +3,298 @@
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var action = ViewContext.RouteData.Values["action"]?.ToString();
     var area = ViewContext.RouteData.Values["area"]?.ToString();
-
-    // Define breadcrumb mappings
-    var breadcrumbs = new List<(string Title, string? Url, string Icon)>();
-
-    // Always start with Admin Home
-    breadcrumbs.Add(("Admin", Url.Action("Index", "Dashboard", new { area = "Admin" }), "fas fa-home"));
-
-    // Add controller-specific breadcrumbs
-    switch (controller?.ToLower())
-    {
-        case "dashboard":
-            if (action?.ToLower() != "index")
-            {
-                breadcrumbs.Add(("Dashboard", null, "fas fa-tachometer-alt"));
-            }
-            break;
-
-        case "category":
-            breadcrumbs.Add(("จัดการหมวดหมู่", Url.Action("Index", "Category", new { area = "Admin" }), "fas fa-folder"));
-            if (action?.ToLower() == "create")
-                breadcrumbs.Add(("เพิ่มหมวดหมู่ใหม่", null, "fas fa-plus"));
-            else if (action?.ToLower() == "edit")
-                breadcrumbs.Add(("แก้ไขหมวดหมู่", null, "fas fa-edit"));
-            break;
-
-        case "user":
-            breadcrumbs.Add(("จัดการผู้ใช้", Url.Action("Index", "User", new { area = "Admin" }), "fas fa-users"));
-            if (action?.ToLower() == "details")
-                breadcrumbs.Add(("รายละเอียดผู้ใช้", null, "fas fa-user"));
-            else if (action?.ToLower() == "edit")
-                breadcrumbs.Add(("แก้ไขผู้ใช้", null, "fas fa-user-edit"));
-            break;
-
-        case "post":
-            breadcrumbs.Add(("จัดการบทความ", Url.Action("Index", "Post", new { area = "Admin" }), "fas fa-file-alt"));
-            if (action?.ToLower() == "create")
-                breadcrumbs.Add(("สร้างบทความใหม่", null, "fas fa-plus"));
-            else if (action?.ToLower() == "edit")
-                breadcrumbs.Add(("แก้ไขบทความ", null, "fas fa-edit"));
-            break;
-
-        case "comment":
-            breadcrumbs.Add(("จัดการความคิดเห็น", Url.Action("Index", "Comment", new { area = "Admin" }), "fas fa-comments"));
-            break;
-
-        case "moderation":
-            breadcrumbs.Add(("การตรวจสอบ", Url.Action("Index", "Moderation", new { area = "Admin" }), "fas fa-shield-alt"));
-            if (action?.ToLower() == "reports")
-                breadcrumbs.Add(("รายงาน", null, "fas fa-flag"));
-            break;
-
-        case "analytics":
-            breadcrumbs.Add(("สถิติการใช้งาน", Url.Action("Index", "Analytics", new { area = "Admin" }), "fas fa-chart-bar"));
-            break;
-
-        case "settings":
-            breadcrumbs.Add(("ตั้งค่าระบบ", Url.Action("Index", "Settings", new { area = "Admin" }), "fas fa-cog"));
-            break;
-
-        case "role":
-            breadcrumbs.Add(("สิทธิ์ & บทบาท", Url.Action("Index", "Role", new { area = "Admin" }), "fas fa-user-shield"));
-            break;
-
-        case "tag":
-            breadcrumbs.Add(("จัดการแท็ก", Url.Action("Index", "Tag", new { area = "Admin" }), "fas fa-tags"));
-            break;
-
-        case "backup":
-            breadcrumbs.Add(("สำรองข้อมูล", Url.Action("Index", "Backup", new { area = "Admin" }), "fas fa-database"));
-            break;
-
-        case "logs":
-            breadcrumbs.Add(("ประวัติการใช้งาน", Url.Action("Index", "Logs", new { area = "Admin" }), "fas fa-file-alt"));
-            break;
-
-        default:
-            if (!string.IsNullOrEmpty(controller))
-            {
-                breadcrumbs.Add((controller, null, "fas fa-circle"));
-            }
-            break;
-    }
 }
 
-<nav aria-label="breadcrumb" class="admin-breadcrumb-nav">
+<nav class="admin-breadcrumb-nav" aria-label="breadcrumb">
     <ol class="breadcrumb">
-        @for (int i = 0; i < breadcrumbs.Count; i++)
-        {
-            var (title, url, icon) = breadcrumbs[i];
-            var isLast = i == breadcrumbs.Count - 1;
+        <li class="breadcrumb-item">
+            <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="breadcrumb-link">
+                <i class="fas fa-home me-1"></i>หน้าหลัก
+            </a>
+        </li>
 
-            <li class="breadcrumb-item @(isLast ? "active" : "")">
-                @if (isLast || string.IsNullOrEmpty(url))
+        @if (controller == "Dashboard")
+        {
+            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+        }
+        else if (controller == "Post")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">จัดการเนื้อหา</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
                 {
-                    <i class="@icon me-1"></i>
-                    @title
+                    <text>บทความ</text>
+                }
+                else if (action == "Create")
+                {
+
+                    <text>เขียนบทความใหม่</text>
+                }
+                else if (action == "Edit")
+                {
+
+                    <text>แก้ไขบทความ</text>
+                }
+                else if (action == "Details")
+                {
+
+                    <text>รายละเอียดบทความ</text>
                 }
                 else
                 {
-                    <a href="@url" class="breadcrumb-link">
-                        <i class="@icon me-1"></i>
-                        @title
-                    </a>
+
+                    <text>บทความ</text>
                 }
+            </li>
+        }
+        else if (controller == "Category")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">จัดการเนื้อหา</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>หมวดหมู่</text>
+                }
+                else if (action == "Create")
+                {
+
+                    <text>สร้างหมวดหมู่ใหม่</text>
+                }
+                else if (action == "Edit")
+                {
+
+                    <text>แก้ไขหมวดหมู่</text>
+                }
+                else
+                {
+
+                    <text>หมวดหมู่</text>
+                }
+            </li>
+        }
+        else if (controller == "Comment")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">จัดการเนื้อหา</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>ความคิดเห็น</text>
+                }
+                else if (action == "Details")
+                {
+
+                    <text>รายละเอียดความคิดเห็น</text>
+                }
+                else
+                {
+
+                    <text>ความคิดเห็น</text>
+                }
+            </li>
+        }
+        else if (controller == "Tag")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">จัดการเนื้อหา</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>แท็ก</text>
+                }
+                else if (action == "Create")
+                {
+
+                    <text>สร้างแท็กใหม่</text>
+                }
+                else if (action == "Edit")
+                {
+
+                    <text>แก้ไขแท็ก</text>
+                }
+                else
+                {
+
+                    <text>แท็ก</text>
+                }
+            </li>
+        }
+        else if (controller == "User")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">จัดการผู้ใช้</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>ผู้ใช้ทั้งหมด</text>
+                }
+                else if (action == "Create")
+                {
+
+                    <text>เพิ่มผู้ใช้ใหม่</text>
+                }
+                else if (action == "Edit")
+                {
+
+                    <text>แก้ไขผู้ใช้</text>
+                }
+                else if (action == "Details")
+                {
+
+                    <text>รายละเอียดผู้ใช้</text>
+                }
+                else
+                {
+
+                    <text>ผู้ใช้</text>
+                }
+            </li>
+        }
+        else if (controller == "Role")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">จัดการผู้ใช้</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>สิทธิ์ & บทบาท</text>
+                }
+                else if (action == "Create")
+                {
+
+                    <text>สร้างบทบาทใหม่</text>
+                }
+                else if (action == "Edit")
+                {
+
+                    <text>แก้ไขบทบาท</text>
+                }
+                else
+                {
+
+                    <text>สิทธิ์ & บทบาท</text>
+                }
+            </li>
+        }
+        else if (controller == "Moderation")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">การตรวจสอบ</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>คิวตรวจสอบ</text>
+                }
+                else if (action == "Reports")
+                {
+
+                    <text>รายงาน</text>
+                }
+                else
+                {
+
+                    <text>การตรวจสอบ</text>
+                }
+            </li>
+        }
+        else if (controller == "Analytics")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">รายงาน & สถิติ</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>สถิติการใช้งาน</text>
+                }
+                else
+                {
+
+                    <text>สถิติ</text>
+                }
+            </li>
+        }
+        else if (controller == "Reports")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">รายงาน & สถิติ</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>รายงาน</text>
+                }
+                else
+                {
+
+                    <text>รายงาน</text>
+                }
+            </li>
+        }
+        else if (controller == "Settings")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">ระบบ</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>ตั้งค่าระบบ</text>
+                }
+                else
+                {
+
+                    <text>ตั้งค่า</text>
+                }
+            </li>
+        }
+        else if (controller == "Backup")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">ระบบ</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>สำรองข้อมูล</text>
+                }
+                else
+                {
+
+                    <text>สำรองข้อมูล</text>
+                }
+            </li>
+        }
+        else if (controller == "Logs")
+        {
+            <li class="breadcrumb-item">
+                <a href="#" class="breadcrumb-link">ระบบ</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @if (action == "Index")
+                {
+                    <text>ประวัติการใช้งาน</text>
+                }
+                else
+                {
+
+                    <text>ประวัติ</text>
+                }
+            </li>
+        }
+        else
+        {
+            <li class="breadcrumb-item active" aria-current="page">
+                @(ViewData["Title"] ?? "หน้าที่ไม่รู้จัก")
             </li>
         }
     </ol>
