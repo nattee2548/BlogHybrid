@@ -110,6 +110,7 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                 var command = new CreateCategoryCommand
                 {
                     Name = model.Name,
+                    Slug = model.Slug,
                     Description = model.Description,
                     ImageUrl = model.ImageUrl,
                     Color = model.Color,

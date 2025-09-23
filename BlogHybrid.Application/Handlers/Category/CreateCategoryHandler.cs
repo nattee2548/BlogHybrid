@@ -1,10 +1,8 @@
 ﻿using BlogHybrid.Application.Commands.Category;
 using BlogHybrid.Application.Common;
 using BlogHybrid.Application.Interfaces.Repositories;
-using BlogHybrid.Application.Queries.Category;
 using MediatR;
 using Microsoft.Extensions.Logging;
-
 
 namespace BlogHybrid.Application.Handlers.Category
 {
@@ -38,11 +36,31 @@ namespace BlogHybrid.Application.Handlers.Category
                     };
                 }
 
-                // Generate unique slug
-                var slug = await SlugGenerator.GenerateUniqueSlug(
-                    request.Name,
-                    async (slugToCheck, excludeId) => await _unitOfWork.Categories.SlugExistsAsync(slugToCheck, excludeId, cancellationToken)
-                );
+                // เริ่ม Transaction
+                await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+                // เช็คว่ามี slug มาจาก view หรือไม่ ถ้าไม่มีให้ generate
+                string slug;
+                if (!string.IsNullOrWhiteSpace(request.Slug))
+                {
+                    slug = SlugGenerator.GenerateSlug(request.Slug);
+
+                    var slugExists = await _unitOfWork.Categories.SlugExistsAsync(slug, null, cancellationToken);
+                    if (slugExists)
+                    {
+                        slug = await SlugGenerator.GenerateUniqueSlug(
+                            request.Slug,
+                            async (slugToCheck, excludeId) => await _unitOfWork.Categories.SlugExistsAsync(slugToCheck, excludeId, cancellationToken)
+                        );
+                    }
+                }
+                else
+                {
+                    slug = await SlugGenerator.GenerateUniqueSlug(
+                        request.Name,
+                        async (slugToCheck, excludeId) => await _unitOfWork.Categories.SlugExistsAsync(slugToCheck, excludeId, cancellationToken)
+                    );
+                }
 
                 // Auto-assign sort order if not provided
                 if (request.SortOrder <= 0)
@@ -57,29 +75,35 @@ namespace BlogHybrid.Application.Handlers.Category
                     Name = request.Name.Trim(),
                     Slug = slug,
                     Description = request.Description?.Trim() ?? string.Empty,
+                    Color = request.Color?.Trim() ?? "#0066cc",
                     ImageUrl = request.ImageUrl?.Trim(),
-                    Color = request.Color.Trim(),
-                    IsActive = request.IsActive,
                     SortOrder = request.SortOrder,
+                    IsActive = request.IsActive,
                     CreatedAt = DateTime.UtcNow
                 };
 
                 await _unitOfWork.Categories.AddAsync(category, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation("Category created: {CategoryId} - {CategoryName}", category.Id, category.Name);
+                // Commit Transaction
+                await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+                _logger.LogInformation("Created category: {CategoryName} with slug: {Slug}", category.Name, category.Slug);
 
                 return new CreateCategoryResult
                 {
                     Success = true,
                     CategoryId = category.Id,
-                    Slug = category.Slug,
-                    Message = "สร้างหมวดหมู่เรียบร้อยแล้ว"
+                    Slug = category.Slug
                 };
             }
             catch (Exception ex)
             {
+                // Rollback Transaction
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+
                 _logger.LogError(ex, "Error creating category: {CategoryName}", request.Name);
+
                 return new CreateCategoryResult
                 {
                     Success = false,
