@@ -2,6 +2,7 @@ using Amazon.S3;
 using BlogHybrid.Application.Interfaces.Repositories;
 using BlogHybrid.Application.Interfaces.Services;
 using BlogHybrid.Application.Mappings;
+using BlogHybrid.Application.Services;
 using BlogHybrid.Domain.Entities;
 using BlogHybrid.Infrastructure.Configuration;
 using BlogHybrid.Infrastructure.Data;
@@ -59,6 +60,7 @@ builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
 
 // Register Image Service
 builder.Services.AddScoped<IImageService, CloudflareR2ImageService>();
+builder.Services.AddScoped<ISlugService, SlugService>();
 
 // เพิ่ม HttpContextAccessor สำหรับ Image Service
 builder.Services.AddHttpContextAccessor();

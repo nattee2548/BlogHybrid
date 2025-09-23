@@ -184,11 +184,17 @@
     </div>
 </div>
 
+
+
 @section Scripts {
+    <!-- โหลด SlugService ก่อน -->
+    <script src="~/js/slugService.js" asp-append-version="true"></script>
+    
     <script>
         let currentImagePath = null;
+        let isSlugManuallyEdited = false;
 
-        // Check if adminNotyf exists, if not create a simple fallback
+        // ตรวจสอบ adminNotyf
         if (typeof adminNotyf === 'undefined') {
             window.adminNotyf = {
                 success: function(message) {
@@ -205,186 +211,12 @@
             };
         }
 
-        // Image Upload Functions
-        async function previewAndUploadImage() {
-            console.log('previewAndUploadImage called');
-
-            const fileInput = document.getElementById('categoryImageFile');
-            if (!fileInput) {
-                console.error('File input not found');
-                return;
-            }
-
-            const file = fileInput.files[0];
-            if (!file) {
-                console.log('No file selected');
-                return;
-            }
-
-            console.log('File selected:', file.name, file.type, file.size);
-
-            // Validate file type
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-            if (!allowedTypes.includes(file.type)) {
-                adminNotyf.error('กรุณาเลือกไฟล์รูปภาพ (.jpg, .png, .gif, .webp)');
-                fileInput.value = '';
-                return;
-            }
-
-            // Validate file size (5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                adminNotyf.error('ขนาดไฟล์ต้องไม่เกิน 5MB');
-                fileInput.value = '';
-                return;
-            }
-
-            // Show progress
-            showUploadProgress();
-
-            // Clear any previous error messages
-            clearImageValidationError();
-
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                console.log('Uploading file...');
-
-                const response = await fetch('@Url.Action("UploadCategory", "Image", new { area = "Admin" })', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-                console.log('Upload result:', result);
-
-                if (result.success) {
-                    // Update hidden input - แก้ไข ID ให้ถูกต้อง
-                    const imageUrlInput = document.getElementById('ImageUrl'); // ใช้ ImageUrl แทน imageUrlInput
-                    if (imageUrlInput) {
-                        imageUrlInput.value = result.imagePath;
-                        console.log('Updated hidden input:', result.imagePath);
-                    } else {
-                        console.error('ImageUrl input not found');
-                    }
-
-                    // Show uploaded image
-                    showCurrentImage(result.imageUrl || result.imagePath);
-
-                    // Store current path for deletion
-                    currentImagePath = result.imagePath;
-
-                    adminNotyf.success('อัพโหลดรูปภาพสำเร็จ');
-
-                    // Clear file input
-                    fileInput.value = '';
-
-                } else {
-                    adminNotyf.error(result.message || 'เกิดข้อผิดพลาดในการอัพโหลด');
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                adminNotyf.error('เกิดข้อผิดพลาดในการอัพโหลด: ' + error.message);
-            } finally {
-                hideUploadProgress();
-            }
-        }
-
-        function showCurrentImage(imageUrl) {
-            console.log('Showing image:', imageUrl);
-
-            const currentImage = document.getElementById('currentImage');
-            const currentImageContainer = document.getElementById('currentImageContainer');
-            const uploadContainer = document.getElementById('uploadContainer');
-
-            if (currentImage) {
-                currentImage.src = imageUrl;
-                currentImage.onerror = function() {
-                    console.error('Failed to load image:', imageUrl);
-                    adminNotyf.error('ไม่สามารถโหลดรูปภาพได้');
-                    // Reset to upload state
-                    if (currentImageContainer) currentImageContainer.style.display = 'none';
-                    if (uploadContainer) uploadContainer.style.display = 'block';
-                };
-            }
-
-            if (currentImageContainer) {
-                currentImageContainer.style.display = 'block';
-            }
-
-            if (uploadContainer) {
-                uploadContainer.style.display = 'none';
-            }
-        }
-
-        function removeCurrentImage() {
-            console.log('Removing current image');
-
-            // Clear hidden input
-            const imageUrlInput = document.getElementById('ImageUrl');
-            if (imageUrlInput) {
-                imageUrlInput.value = '';
-            }
-
-            // Show upload container, hide preview
-            const currentImageContainer = document.getElementById('currentImageContainer');
-            const uploadContainer = document.getElementById('uploadContainer');
-
-            if (currentImageContainer) {
-                currentImageContainer.style.display = 'none';
-            }
-
-            if (uploadContainer) {
-                uploadContainer.style.display = 'block';
-            }
-
-            // Clear current path
-            currentImagePath = null;
-
-            adminNotyf.success('ลบรูปภาพแล้ว');
-        }
-
-        function clearImageValidationError() {
-            // Clear validation error messages
-            const imageError = document.querySelector('span[data-valmsg-for="ImageUrl"]');
-            if (imageError) {
-                imageError.textContent = '';
-            }
-
-            // Clear any custom error displays
-            const customError = document.getElementById('imageError');
-            if (customError) {
-                customError.textContent = '';
-            }
-        }
-
-        function showUploadProgress() {
-            const progressContainer = document.getElementById('uploadProgress');
-            if (progressContainer) {
-                progressContainer.style.display = 'block';
-            }
-        }
-
-        function hideUploadProgress() {
-            const progressContainer = document.getElementById('uploadProgress');
-            if (progressContainer) {
-                progressContainer.style.display = 'none';
-            }
-        }
-
-        // Slug Generation Functions
-        let isSlugManuallyEdited = false;
-
+        // ===== SLUG FUNCTIONS (ใช้ SlugService) =====
         function generateSlug(name) {
             if (!name || isSlugManuallyEdited) return;
 
-            const slug = name
-                .toLowerCase()
-                .trim()
-                .replace(/[^\u0E00-\u0E7Fa-z0-9\s-]/g, '') // Keep Thai, English, numbers, spaces, hyphens
-                .replace(/\s+/g, '-') // Replace spaces with hyphens
-                .replace(/-+/g, '-') // Replace multiple hyphens with single
-                .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+            // ใช้ SlugService แปลงภาษาไทยเป็นอังกฤษ
+            const slug = SlugService.generateSlug(name, 50);
 
             const slugInput = document.getElementById('Slug');
             if (slugInput) {
@@ -402,25 +234,17 @@
             if (!slugInput || !statusDiv) return;
 
             const slug = slugInput.value.trim();
-
             if (!slug) {
                 statusDiv.innerHTML = '';
                 return;
             }
 
-            try {
-                const response = await fetch(`@Url.Action("CheckSlug", "Category", new { area = "Admin" })?slug=${encodeURIComponent(slug)}`);
-                const result = await response.json();
-
-                if (result.exists) {
-                    statusDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times me-1"></i>URL นี้ถูกใช้งานแล้ว</span>';
-                } else {
-                    statusDiv.innerHTML = '<span class="text-success"><i class="fas fa-check me-1"></i>URL พร้อมใช้งาน</span>';
-                }
-            } catch (error) {
-                console.error('Slug check error:', error);
-                statusDiv.innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>ไม่สามารถตรวจสอบ URL ได้</span>';
-            }
+            // ใช้ SlugService
+            await SlugService.updateSlugStatus(
+                slug,
+                '@Url.Action("CheckSlug", "Category", new { area = "Admin" })',
+                statusDiv
+            );
         }
 
         function showSlugInfo() {
@@ -430,7 +254,111 @@
             });
         }
 
-        // Color Functions
+        // ===== IMAGE UPLOAD FUNCTIONS =====
+        async function previewAndUploadImage() {
+            const fileInput = document.getElementById('categoryImageFile');
+            if (!fileInput) return;
+
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                adminNotyf.error('กรุณาเลือกไฟล์รูปภาพ (.jpg, .png, .gif, .webp)');
+                fileInput.value = '';
+                return;
+            }
+
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                adminNotyf.error('ขนาดไฟล์ต้องไม่เกิน 5MB');
+                fileInput.value = '';
+                return;
+            }
+
+            showUploadProgress();
+            clearImageValidationError();
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('@Url.Action("UploadCategory", "Image", new { area = "Admin" })', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const imageUrlInput = document.getElementById('ImageUrl');
+                    if (imageUrlInput) {
+                        imageUrlInput.value = result.imagePath;
+                    }
+
+                    showCurrentImage(result.imageUrl || result.imagePath);
+                    currentImagePath = result.imagePath;
+                    adminNotyf.success('อัพโหลดรูปภาพสำเร็จ');
+                    fileInput.value = '';
+                } else {
+                    adminNotyf.error(result.message || 'เกิดข้อผิดพลาดในการอัพโหลด');
+                }
+            } catch (error) {
+                adminNotyf.error('เกิดข้อผิดพลาดในการอัพโหลด');
+            } finally {
+                hideUploadProgress();
+            }
+        }
+
+        function showCurrentImage(imageUrl) {
+            const currentImage = document.getElementById('currentImage');
+            const currentImageContainer = document.getElementById('currentImageContainer');
+            const uploadContainer = document.getElementById('uploadContainer');
+
+            if (currentImage) {
+                currentImage.src = imageUrl;
+            }
+            if (currentImageContainer) {
+                currentImageContainer.style.display = 'block';
+            }
+            if (uploadContainer) {
+                uploadContainer.style.display = 'none';
+            }
+        }
+
+        function removeCurrentImage() {
+            const imageUrlInput = document.getElementById('ImageUrl');
+            const currentImageContainer = document.getElementById('currentImageContainer');
+            const uploadContainer = document.getElementById('uploadContainer');
+
+            if (imageUrlInput) imageUrlInput.value = '';
+            if (currentImageContainer) currentImageContainer.style.display = 'none';
+            if (uploadContainer) uploadContainer.style.display = 'block';
+
+            currentImagePath = null;
+            adminNotyf.success('ลบรูปภาพแล้ว');
+        }
+
+        function clearImageValidationError() {
+            const imageError = document.querySelector('span[data-valmsg-for="ImageUrl"]');
+            if (imageError) imageError.textContent = '';
+            
+            const customError = document.getElementById('imageError');
+            if (customError) customError.textContent = '';
+        }
+
+        function showUploadProgress() {
+            const progressContainer = document.getElementById('uploadProgress');
+            if (progressContainer) progressContainer.style.display = 'block';
+        }
+
+        function hideUploadProgress() {
+            const progressContainer = document.getElementById('uploadProgress');
+            if (progressContainer) progressContainer.style.display = 'none';
+        }
+
+        // ===== COLOR FUNCTIONS =====
         function updateColorPicker(color) {
             if (color.match(/^#[0-9A-F]{6}$/i)) {
                 const colorInput = document.getElementById('Color');
@@ -441,7 +369,7 @@
             }
         }
 
-        // Preview Functions
+        // ===== PREVIEW FUNCTIONS =====
         function updatePreview() {
             const nameInput = document.getElementById('Name');
             const descInput = document.getElementById('Description');
@@ -464,11 +392,9 @@
             }
         }
 
-        // Event Listeners
+        // ===== EVENT LISTENERS =====
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing...');
-
-            // Name input for auto-generate slug
+            // Name input
             const nameInput = document.getElementById('Name');
             if (nameInput) {
                 nameInput.addEventListener('input', function() {
@@ -477,7 +403,7 @@
                 });
             }
 
-            // Slug input - mark as manually edited when user types
+            // Slug input
             const slugInput = document.getElementById('Slug');
             if (slugInput) {
                 slugInput.addEventListener('input', function() {
@@ -513,10 +439,8 @@
                 });
             }
 
-            // Initialize preview
+            // Initialize
             updatePreview();
-
-            console.log('Initialization complete');
         });
     </script>
 
@@ -568,17 +492,6 @@
 
         #categoryImageFile {
             cursor: pointer;
-        }
-
-        /* Additional debug styles */
-        .debug-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 0.25rem;
-            padding: 0.5rem;
-            margin: 0.5rem 0;
-            font-size: 0.875rem;
-            font-family: monospace;
         }
     </style>
 }
