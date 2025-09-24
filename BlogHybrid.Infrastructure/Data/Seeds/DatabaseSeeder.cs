@@ -22,8 +22,8 @@ namespace BlogHybrid.Infrastructure.Data.Seeds
                 // Seed roles first
                 await RoleSeeder.SeedRolesAsync(serviceProvider);
 
-                // Then seed categories
-                await CategorySeeder.SeedCategoriesAsync(serviceProvider);
+                //// Then seed categories
+                //await CategorySeeder.SeedCategoriesAsync(serviceProvider);
 
                 logger.LogInformation("Database seeding completed successfully.");
             }

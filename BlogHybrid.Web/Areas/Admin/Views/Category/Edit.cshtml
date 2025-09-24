@@ -1,255 +1,214 @@
 ﻿@model BlogHybrid.Web.Models.ViewModels.Admin.EditCategoryViewModel
 @{
-    ViewData["Title"] = "แก้ไขหมวดหมู่: " + Model.Name;
+    ViewData["Title"] = "แก้ไขหมวดหมู่";
     Layout = "_AdminLayout";
 }
 
-<div class="admin-page-header">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-1 admin-text-primary">
-                <i class="fas fa-edit me-2"></i>
-                แก้ไขหมวดหมู่
-            </h1>
-            <p class="admin-text-secondary mb-0">แก้ไขข้อมูลหมวดหมู่: <strong>@Model.Name</strong></p>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        แก้ไขหมวดหมู่: @Model.Name
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <form asp-action="Edit" method="post" class="admin-form" data-warn-unsaved="true">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="Id" type="hidden" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Name -->
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label required">ชื่อหมวดหมู่</label>
+                            <input asp-for="Name" class="form-control" id="Name" placeholder="เช่น เทคโนโลยี, ข่าวสาร, บทความ">
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                            <div class="form-text">
+                                ชื่อหมวดหมู่ที่จะแสดงในเว็บไซต์
+                            </div>
+                        </div>
+
+                        <!-- Current Slug Display -->
+                        <div class="mb-3">
+                            <label class="form-label">URL Slug ปัจจุบัน</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted">/category/</span>
+                                <input type="text" class="form-control bg-light" value="@Model.CurrentSlug" readonly>
+                                <button type="button" class="btn btn-outline-info" onclick="showSlugInfo()">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                URL slug ของหมวดหมู่นี้ (ไม่สามารถเปลี่ยนได้หลังจากสร้างแล้ว)
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">คำอธิบาย</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" id="Description"
+                                      placeholder="อธิบายเกี่ยวกับหมวดหมู่นี้..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                            <div class="form-text">
+                                คำอธิบายเกี่ยวกับหมวดหมู่นี้ (ไม่บังคับ)
+                            </div>
+                        </div>
+
+                        <!-- Image Upload -->
+                        <div class="mb-3">
+                            <label class="form-label">รูปภาพประจำหมวดหมู่</label>
+
+                            <!-- Current Image Display -->
+                            <div id="currentImageContainer" style="display: @(!string.IsNullOrEmpty(Model.FullImageUrl) ? "block" : "none");" class="mb-3">
+                                <div class="current-image-wrapper">
+                                    <img id="currentImage" src="@Model.ImageUrl" alt="Current Image" class="img-thumbnail" style="max-width: 200px; max-height: 150px;">
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeCurrentImage()">
+                                            <i class="fas fa-times me-1"></i>ลบรูปภาพ
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Upload Form -->
+                            <div id="uploadContainer" style="display: @(string.IsNullOrEmpty(Model.ImageUrl) ? "block" : "none");">
+                                <div class="input-group">
+                                    <input type="file"
+                                           class="form-control"
+                                           id="categoryImageFile"
+                                           accept="image/*"
+                                           onchange="previewAndUploadImage()">
+                                    <button type="button"
+                                            class="btn btn-outline-secondary"
+                                            onclick="document.getElementById('categoryImageFile').click()">
+                                        <i class="fas fa-upload"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    รองรับไฟล์: .jpg, .png, .gif, .webp | ขนาดไม่เกิน 5MB
+                                </div>
+                            </div>
+
+                            <!-- Hidden input to store the uploaded image path -->
+                            <input type="hidden" asp-for="ImageUrl" id="ImageUrl" />
+                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                            <div id="imageError" class="text-danger"></div>
+
+                            <!-- Upload Progress -->
+                            <div id="uploadProgress" class="mt-2" style="display: none;">
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                         role="progressbar"
+                                         style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted">กำลังอัพโหลด...</small>
+                            </div>
+
+                            <!-- Upload Status -->
+                            <div id="uploadStatus" class="mt-2"></div>
+                        </div>
+
+                        <!-- Color -->
+                        <div class="mb-3">
+                            <label asp-for="Color" class="form-label required">สีประจำหมวดหมู่</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <input asp-for="Color" type="color" class="form-control form-control-color" style="width: 60px;" id="Color">
+                                <div class="flex-grow-1">
+                                    <input type="text" class="form-control" placeholder="#0066cc" id="ColorText" value="@Model.Color" onchange="updateColorPicker(this.value)">
+                                    <div class="form-text">เลือกสีที่เหมาะสมกับหมวดหมู่</div>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Color" class="text-danger"></span>
+                        </div>
+
+                        <!-- Sort Order -->
+                        <div class="mb-3">
+                            <label asp-for="SortOrder" class="form-label">ลำดับการแสดงผล</label>
+                            <input asp-for="SortOrder" type="number" class="form-control" min="0" id="SortOrder">
+                            <span asp-validation-for="SortOrder" class="text-danger"></span>
+                            <div class="form-text">
+                                ลำดับการแสดงผลในเว็บไซต์ (เลขน้อยแสดงก่อน)
+                            </div>
+                        </div>
+
+                        <!-- Is Active -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsActive" type="checkbox" class="form-check-input" id="IsActive" value="true">
+                                <input name="IsActive" type="hidden" value="false">
+                                <label asp-for="IsActive" class="form-check-label">
+                                    เปิดใช้งานหมวดหมู่นี้
+                                </label>
+                            </div>
+                        </div>
+
+                        @if (Model.PostCount > 0)
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                หมวดหมู่นี้มีบทความทั้งหมด <strong>@Model.PostCount</strong> รายการ
+                            </div>
+                        }
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>บันทึกการเปลี่ยนแปลง
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="forceCancel()">
+                                <i class="fas fa-times me-2"></i>ยกเลิก
+                            </button>
+                            @if (Model.PostCount == 0)
+                            {
+                                <button type="button" class="btn btn-outline-danger" onclick="confirmDelete(@Model.Id)">
+                                    <i class="fas fa-trash me-2"></i>ลบหมวดหมู่
+                                </button>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>กลับไปรายการ
-            </a>
-            @if (Model.HasPosts)
-            {
-                <a href="#" class="btn btn-outline-info" onclick="showPostsList()">
-                    <i class="fas fa-file-alt me-2"></i>ดูบทความ (@Model.PostCount)
-                </a>
-            }
+
+        <!-- Preview Column -->
+        <div class="col-lg-4 mx-auto">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-eye me-2"></i>
+                        ตัวอย่าง
+                    </h6>
+                </div>
+                <div class="admin-card-body">
+                    <div class="category-preview-card">
+                        <div class="d-flex align-items-center">
+                            <div class="category-preview-icon me-3" id="previewIcon" style="background-color: @Model.Color;">
+                                <i class="fas fa-folder"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1" id="previewName">@Model.Name</h6>
+                                <small class="text-muted" id="previewDescription">@(string.IsNullOrEmpty(Model.Description) ? "คำอธิบายหมวดหมู่" : Model.Description)</small>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-muted">
+                                URL: /category/<span id="previewSlug">@Model.CurrentSlug</span>
+                            </small>
+                            <span id="previewStatus" class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
+                                @(Model.IsActive ? "เปิดใช้งาน" : "ปิดใช้งาน")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-@if (Model.HasPosts)
-{
-    <div class="alert alert-info mb-4">
-        <i class="fas fa-info-circle me-2"></i>
-        หมวดหมู่นี้มีบทความ <strong>@Model.PostCount รายการ</strong>
-        การเปลี่ยนแปลงจะส่งผลต่อบทความทั้งหมด
-    </div>
-}
-
-<form asp-action="Edit" method="post" class="admin-form" novalidate>
-    @Html.AntiForgeryToken()
-    <input asp-for="Id" type="hidden">
-
-    <div class="row">
-        <!-- Main Form -->
-        <div class="col-lg-8">
-            <div class="admin-card">
-                <div class="admin-card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
-                        ข้อมูลหมวดหมู่
-                    </h5>
-                </div>
-                <div class="admin-card-body">
-                    <!-- Category Name -->
-                    <div class="mb-3">
-                        <label asp-for="Name" class="form-label required">ชื่อหมวดหมู่</label>
-                        <input asp-for="Name" class="form-control" placeholder="เช่น Career Talk, Life Advice">
-                        <span asp-validation-for="Name" class="text-danger"></span>
-                        <div class="form-text">
-                            ชื่อหมวดหมู่ที่จะแสดงในเว็บไซต์
-                        </div>
-                    </div>
-
-                    <!-- Current Slug Display -->
-                    <div class="mb-3">
-                        <label class="form-label">URL Slug ปัจจุบัน</label>
-                        <div class="input-group">
-                            <span class="input-group-text">404talk.com/category/</span>
-                            <input type="text" class="form-control" value="@Model.CurrentSlug" readonly>
-                            <button type="button" class="btn btn-outline-info" onclick="showSlugInfo()">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
-                        </div>
-                        <div class="form-text">
-                            URL slug จะอัพเดทอัตโนมัติหากเปลี่ยนชื่อหมวดหมู่
-                        </div>
-                    </div>
-
-                    <!-- Description -->
-                    <div class="mb-3">
-                        <label asp-for="Description" class="form-label">คำอธิบาย</label>
-                        <textarea asp-for="Description" class="form-control" rows="4"
-                                  placeholder="อธิบายเกี่ยวกับหมวดหมู่นี้..."></textarea>
-                        <span asp-validation-for="Description" class="text-danger"></span>
-                        <div class="form-text">
-                            คำอธิบายเกี่ยวกับหมวดหมู่นี้ (ไม่บังคับ)
-                        </div>
-                    </div>
-
-                    <!-- Image URL -->
-                    <div class="mb-3">
-                        <label asp-for="ImageUrl" class="form-label">URL รูปภาพ</label>
-                        <div class="input-group">
-                            <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg">
-                            <button type="button" class="btn btn-outline-secondary" onclick="previewImage()">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                            {
-                                <button type="button" class="btn btn-outline-danger" onclick="clearImage()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            }
-                        </div>
-                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
-                        <div class="form-text">
-                            URL รูปภาพประจำหมวดหมู่ (ไม่บังคับ)
-                        </div>
-
-                        <!-- Image Preview -->
-                        <div id="imagePreview" class="mt-2" style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "display: none;" : "")">
-                            <img id="previewImg" src="@Model.ImageUrl" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 150px;">
-                        </div>
-                    </div>
-
-                    <!-- Color -->
-                    <div class="mb-3">
-                        <label asp-for="Color" class="form-label required">สีประจำหมวดหมู่</label>
-                        <div class="d-flex align-items-center gap-3">
-                            <input asp-for="Color" type="color" class="form-control form-control-color" style="width: 60px;">
-                            <input asp-for="Color" type="text" class="form-control" style="width: 120px;"
-                                   pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" placeholder="#0066cc">
-                            <div class="color-preview" id="colorPreview"
-                                 style="width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--admin-border); background-color: @Model.Color;">
-                            </div>
-                        </div>
-                        <span asp-validation-for="Color" class="text-danger"></span>
-                        <div class="form-text">
-                            สีที่จะใช้แสดงหมวดหมู่นี้
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Settings Card -->
-            <div class="admin-card mb-4">
-                <div class="admin-card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-cog me-2"></i>
-                        การตั้งค่า
-                    </h5>
-                </div>
-                <div class="admin-card-body">
-                    <!-- Status -->
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input asp-for="IsActive" class="form-check-input" type="checkbox">
-                            <label asp-for="IsActive" class="form-check-label">เปิดใช้งานหมวดหมู่</label>
-                        </div>
-                        <div class="form-text">
-                            หมวดหมู่ที่ปิดใช้งานจะไม่แสดงในเว็บไซต์
-                        </div>
-                        @if (Model.HasPosts && !Model.IsActive)
-                        {
-                            <div class="alert alert-warning mt-2 p-2">
-                                <small>
-                                    <i class="fas fa-exclamation-triangle me-1"></i>
-                                    การปิดใช้งานจะซ่อนบทความ @Model.PostCount รายการ
-                                </small>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Sort Order -->
-                    <div class="mb-3">
-                        <label asp-for="SortOrder" class="form-label">ลำดับการแสดง</label>
-                        <input asp-for="SortOrder" type="number" class="form-control" min="0" max="999">
-                        <span asp-validation-for="SortOrder" class="text-danger"></span>
-                        <div class="form-text">
-                            ตัวเลขน้อยจะแสดงก่อน
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Statistics Card -->
-            <div class="admin-card mb-4">
-                <div class="admin-card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        สถิติ
-                    </h5>
-                </div>
-                <div class="admin-card-body">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div class="stat-item">
-                                <div class="stat-number text-primary">@Model.PostCount</div>
-                                <div class="stat-label">บทความ</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="stat-item">
-                                <div class="stat-number text-success">#@Model.SortOrder</div>
-                                <div class="stat-label">ลำดับ</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Preview Card -->
-            <div class="admin-card mb-4">
-                <div class="admin-card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-eye me-2"></i>
-                        ตัวอย่าง
-                    </h5>
-                </div>
-                <div class="admin-card-body">
-                    <div class="category-preview-card">
-                        <div class="d-flex align-items-center mb-2">
-                            <div id="previewColorBox" class="me-2"
-                                 style="width: 20px; height: 20px; border-radius: 4px; background-color: @Model.Color;">
-                            </div>
-                            <strong id="previewName">@Model.Name</strong>
-                        </div>
-                        <p id="previewDescription" class="text-muted small mb-2">@(string.IsNullOrEmpty(Model.Description) ? "คำอธิบายหมวดหมู่..." : Model.Description)</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                URL: /category/<span id="previewSlug">@Model.CurrentSlug</span>
-                            </small>
-                            <span id="previewStatus" class="badge @Model.StatusClass">@Model.StatusBadge</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="d-grid gap-2 mt-4">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i>บันทึกการเปลี่ยนแปลง
-                </button>
-                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
-                    <i class="fas fa-times me-2"></i>ยกเลิก
-                </a>
-                @if (!Model.HasPosts)
-                {
-                    <button type="button" class="btn btn-outline-danger" onclick="confirmDelete()">
-                        <i class="fas fa-trash me-2"></i>ลบหมวดหมู่
-                    </button>
-                }
-            </div>
-        </div>
-    </div>
-</form>
-
 <!-- Delete Form (Hidden) -->
-@if (!Model.HasPosts)
+@if (Model.PostCount == 0)
 {
     <form id="deleteForm" asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: none;">
         @Html.AntiForgeryToken()
@@ -257,145 +216,24 @@
 }
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <!-- โหลด EditCategoryForm JavaScript -->
+    <script src="~/js/admin/EditCategoryForm.js" asp-append-version="true"></script>
 
+    <!-- ส่ง URL variables จาก Razor ไปยัง JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const nameInput = document.getElementById('Name');
-            const colorInput = document.querySelector('input[type="color"]');
-            const colorTextInput = document.querySelector('input[type="text"][name="Color"]');
-            const isActiveInput = document.getElementById('IsActive');
-            const descriptionInput = document.getElementById('Description');
+        // กำหนดตัวแปรที่ JavaScript ต้องใช้
+        const uploadImageUrl = '@Url.Action("UploadCategory", "Image", new { area = "Admin" })';
 
-            // Update preview when inputs change
-            nameInput.addEventListener('input', updatePreview);
-            colorInput.addEventListener('input', updateColorInputs);
-            colorTextInput.addEventListener('input', updateColorFromText);
-            isActiveInput.addEventListener('change', updatePreview);
-            descriptionInput.addEventListener('input', updatePreview);
-
-            // Initialize preview
-            updateColorPreview();
-        });
-
-        function updatePreview() {
-            const name = document.getElementById('Name').value || 'ชื่อหมวดหมู่';
-            const description = document.getElementById('Description').value || 'คำอธิบายหมวดหมู่...';
-            const isActive = document.getElementById('IsActive').checked;
-            const color = document.querySelector('input[name="Color"]').value;
-
-            // Update preview elements
-            document.getElementById('previewName').textContent = name;
-            document.getElementById('previewDescription').textContent = description;
-            document.getElementById('previewColorBox').style.backgroundColor = color;
-
-            // Update status badge
-            const statusBadge = document.getElementById('previewStatus');
-            if (isActive) {
-                statusBadge.className = 'badge bg-success';
-                statusBadge.textContent = 'เปิดใช้งาน';
-            } else {
-                statusBadge.className = 'badge bg-secondary';
-                statusBadge.textContent = 'ปิดใช้งาน';
-            }
-
-            // Update slug preview (show that it will change)
-            if (name !== '@Model.Name') {
-                const newSlug = generateSlug(name);
-                document.getElementById('previewSlug').textContent = newSlug;
-                document.getElementById('previewSlug').style.color = '#f59e0b';
-                document.getElementById('previewSlug').title = 'Slug จะเปลี่ยนเป็น: ' + newSlug;
-            } else {
-                document.getElementById('previewSlug').textContent = '@Model.CurrentSlug';
-                document.getElementById('previewSlug').style.color = '';
-                document.getElementById('previewSlug').title = '';
-            }
-        }
-
-        function updateColorInputs() {
-            const colorPicker = document.querySelector('input[type="color"]');
-            const colorText = document.querySelector('input[type="text"][name="Color"]');
-
-            colorText.value = colorPicker.value;
-            updateColorPreview();
-            updatePreview();
-        }
-
-        function updateColorFromText() {
-            const colorText = document.querySelector('input[type="text"][name="Color"]');
-            const colorPicker = document.querySelector('input[type="color"]');
-
-            if (isValidHexColor(colorText.value)) {
-                colorPicker.value = colorText.value;
-                updateColorPreview();
-                updatePreview();
-            }
-        }
-
-        function updateColorPreview() {
-            const color = document.querySelector('input[name="Color"]').value;
-            document.getElementById('colorPreview').style.backgroundColor = color;
-        }
-
-        function generateSlug(name) {
-            if (!name) return '';
-
-            return name.toLowerCase()
-                      .replace(/\s+/g, '-')
-                      .replace(/[^a-z0-9\-ก-๏]/g, '')
-                      .replace(/-+/g, '-')
-                      .replace(/^-|-$/g, '');
-        }
-
-        function isValidHexColor(color) {
-            return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
-        }
-
-        function previewImage() {
-            const imageUrl = document.getElementById('ImageUrl').value;
-            const preview = document.getElementById('imagePreview');
-            const previewImg = document.getElementById('previewImg');
-
-            if (imageUrl) {
-                previewImg.src = imageUrl;
-                preview.style.display = 'block';
-
-                previewImg.onerror = function() {
-                    preview.style.display = 'none';
-                    adminNotyf.error('ไม่สามารถโหลดรูปภาพได้');
-                };
-            } else {
-                preview.style.display = 'none';
-            }
-        }
-
-        function clearImage() {
-            document.getElementById('ImageUrl').value = '';
-            document.getElementById('imagePreview').style.display = 'none';
-        }
-
-        function showSlugInfo() {
-            adminNotyf.open({
-                type: 'info',
-                message: 'URL Slug จะอัพเดทอัตโนมัติหากคุณเปลี่ยนชื่อหมวดหมู่ ลิงก์เก่าจะยังใช้งานได้'
-            });
-        }
-
-        function showPostsList() {
-            // This would typically open a modal or navigate to posts filtered by this category
-            adminNotyf.open({
-                type: 'info',
-                message: 'ฟีเจอร์นี้จะพร้อมใช้งานเมื่อระบบจัดการบทความเสร็จสมบูรณ์'
-            });
-        }
-
-        function confirmDelete() {
-            if (confirm('ต้องการลบหมวดหมู่ "@Model.Name" หรือไม่?\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้')) {
+        // Delete confirmation function
+        function confirmDelete(categoryId) {
+            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบหมวดหมู่นี้?\nการลบจะไม่สามารถกู้คืนได้')) {
                 document.getElementById('deleteForm').submit();
             }
         }
     </script>
+}
 
+@section Styles {
     <style>
         .required::after {
             content: " *";
@@ -409,6 +247,17 @@
             background: var(--admin-bg-tertiary);
         }
 
+        .category-preview-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
         .form-control-color {
             padding: 0.25rem;
             border: 1px solid var(--admin-border);
@@ -419,19 +268,46 @@
             box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
         }
 
-        .stat-item {
-            padding: 0.5rem;
+        .current-image-wrapper {
+            padding: 1rem;
+            border: 1px solid var(--admin-border);
+            border-radius: 0.5rem;
+            background: var(--admin-bg-tertiary);
+            text-align: center;
         }
 
-        .stat-number {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
+        .progress {
+            height: 4px;
         }
 
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--admin-text-muted);
+        #categoryImageFile {
+            cursor: pointer;
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+            .is-invalid:focus {
+                border-color: #dc3545 !important;
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.4) !important;
+            }
+
+        .input-group-text.bg-light {
+            background-color: #f8f9fa !important;
+            border-color: #dee2e6;
+        }
+
+        .form-control.bg-light {
+            background-color: #f8f9fa !important;
+            color: #6c757d;
+        }
+
+        .alert-info {
+            border-color: #b8daff;
+            background-color: #d1ecf1;
+            color: #0c5460;
         }
     </style>
 }

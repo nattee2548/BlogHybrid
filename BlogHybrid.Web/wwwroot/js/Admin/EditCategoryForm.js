@@ -1,11 +1,10 @@
-﻿// ไฟล์: BlogHybrid.Web/wwwroot/js/admin/CreateCategoryForm.js
+﻿// ไฟล์: BlogHybrid.Web/wwwroot/js/admin/EditCategoryForm.js
 
-class CreateCategoryForm {
+class EditCategoryForm {
     constructor() {
         this.currentImagePath = null;
-        this.isSlugManuallyEdited = false;
-        this.slugCheckTimeout = null; // สำหรับ debounce
-        this.lastCheckedSlug = null;  // เก็บ slug ที่เช็คล่าสุด
+        this.lastCheckedSlug = null;
+        this.originalData = {};
 
         // ตรวจสอบ adminNotyf
         if (typeof adminNotyf === 'undefined') {
@@ -20,17 +19,93 @@ class CreateCategoryForm {
     }
 
     init() {
+        // รอให้แน่ใจว่า DOM โหลดเสร็จแล้ว
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.delayedInit();
+            });
+        } else {
+            this.delayedInit();
+        }
+
         this.setupFormValidation();
         this.setupEnterKeyNavigation();
         this.setupColorFieldNavigation();
         this.addTextareaHint();
         this.setupInputListeners();
-        this.updatePreview();
+    }
+
+    delayedInit() {
+        setTimeout(() => {
+            console.log('=== DELAYED INIT START ===');
+            this.captureOriginalData();
+            this.initializeCurrentImage();
+            this.updatePreview();
+            console.log('=== DELAYED INIT END ===');
+        }, 1000); // เพิ่มเวลารอเป็น 1 วินาที
+    }
+
+    // ===== CAPTURE ORIGINAL DATA =====
+    captureOriginalData() {
+        console.log('=== DEBUG ORIGINAL DATA ===');
+
+        const nameInput = document.getElementById('Name');
+        const descInput = document.getElementById('Description');
+        const colorInput = document.getElementById('Color');
+        const sortOrderInput = document.getElementById('SortOrder');
+        const isActiveInput = document.getElementById('IsActive');
+        const imageUrlInput = document.getElementById('ImageUrl');
+
+        console.log('Name input:', nameInput, 'Value:', nameInput?.value);
+        console.log('Description input:', descInput, 'Value:', descInput?.value);
+        console.log('Color input:', colorInput, 'Value:', colorInput?.value);
+        console.log('SortOrder input:', sortOrderInput, 'Value:', sortOrderInput?.value);
+        console.log('IsActive input:', isActiveInput, 'Checked:', isActiveInput?.checked);
+        console.log('ImageUrl input:', imageUrlInput, 'Value:', imageUrlInput?.value);
+
+        this.originalData = {
+            name: nameInput?.value || '',
+            description: descInput?.value || '',
+            color: colorInput?.value || '#0066cc',
+            sortOrder: sortOrderInput?.value || '1',
+            isActive: isActiveInput?.checked || false,
+            imageUrl: imageUrlInput?.value || ''
+        };
+
+        console.log('Original data captured:', this.originalData);
+        this.currentImagePath = imageUrlInput?.value || null;
     }
 
     // ===== CONFIRMATION MODAL =====
     forceCancel() {
-        this.createCenteredConfirmation();
+        if (this.hasUnsavedChanges()) {
+            this.createCenteredConfirmation();
+        } else {
+            adminNotyf.open({
+                type: 'info',
+                message: '<i class="fas fa-spinner fa-spin me-2"></i>กำลังกลับสู่หน้ารายการ...',
+                duration: 1500
+            });
+            this.performCancel();
+        }
+    }
+
+    hasUnsavedChanges() {
+        const nameInput = document.getElementById('Name');
+        const descInput = document.getElementById('Description');
+        const colorInput = document.getElementById('Color');
+        const sortOrderInput = document.getElementById('SortOrder');
+        const isActiveInput = document.getElementById('IsActive');
+        const imageUrlInput = document.getElementById('ImageUrl');
+
+        return (
+            nameInput?.value !== this.originalData.name ||
+            descInput?.value !== this.originalData.description ||
+            colorInput?.value !== this.originalData.color ||
+            sortOrderInput?.value !== this.originalData.sortOrder ||
+            isActiveInput?.checked !== this.originalData.isActive ||
+            imageUrlInput?.value !== this.originalData.imageUrl
+        );
     }
 
     createCenteredConfirmation() {
@@ -69,10 +144,10 @@ class CreateCategoryForm {
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <h3 style="color: #1f2937; font-weight: 600; margin-bottom: 0.5rem; font-size: 1.25rem;">
-                    ยกเลิกการสร้างหมวดหมู่?
+                    ยกเลิกการแก้ไขหมวดหมู่?
                 </h3>
                 <p style="color: #6b7280; margin: 0; font-size: 0.95rem; line-height: 1.5;">
-                    ข้อมูลที่คุณกรอกไว้จะหายไป<br>และไม่สามารถกู้คืนได้
+                    การเปลี่ยนแปลงที่คุณทำไว้จะหายไป<br>และไม่สามารถกู้คืนได้
                 </p>
             </div>
             <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
@@ -157,168 +232,6 @@ class CreateCategoryForm {
         }, 800);
     }
 
-    // ===== IMPROVED SLUG FUNCTIONS =====
-    async generateSlug(name) {
-        if (!name || this.isSlugManuallyEdited) return;
-
-        // Generate base slug
-        const baseSlug = SlugService.generateSlug(name, 50);
-
-        // Auto-generate unique slug
-        const uniqueSlug = await this.generateUniqueSlug(baseSlug);
-
-        const slugInput = document.getElementById('Slug');
-        if (slugInput) {
-            slugInput.value = uniqueSlug;
-            this.updateSlugStatus(uniqueSlug, 'success', 'พร้อมใช้งาน');
-        }
-
-        this.updatePreview();
-    }
-
-    async generateUniqueSlug(baseSlug) {
-        let slug = baseSlug;
-        let counter = 1;
-
-        // เช็ค slug เริ่มต้น
-        let exists = await this.checkSlugExists(slug);
-
-        // ถ้าซ้ำ ให้เพิ่มเลขท้าย
-        while (exists) {
-            slug = `${baseSlug}-${counter}`;
-            exists = await this.checkSlugExists(slug);
-            counter++;
-
-            // ป้องกัน infinite loop
-            if (counter > 100) {
-                slug = `${baseSlug}-${Date.now()}`;
-                break;
-            }
-        }
-
-        return slug;
-    }
-
-    async checkSlugExists(slug) {
-        try {
-            const response = await fetch(`${checkSlugUrl}?slug=${encodeURIComponent(slug)}`);
-            const result = await response.json();
-            return result.exists;
-        } catch (error) {
-            console.error('Error checking slug:', error);
-            return false; // ถ้า error ให้ถือว่าไม่ซ้ำ
-        }
-    }
-
-    async checkSlugAvailability(slug = null) {
-        const slugInput = document.getElementById('Slug');
-        const statusDiv = document.getElementById('slugStatus');
-
-        if (!slugInput || !statusDiv) return;
-
-        const currentSlug = slug || slugInput.value.trim();
-
-        if (!currentSlug) {
-            this.updateSlugStatus('', 'info', 'กรุณากรอก URL Slug');
-            return;
-        }
-
-        // ตรวจสอบรูปแบบ slug
-        const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-        if (!slugPattern.test(currentSlug)) {
-            this.updateSlugStatus(currentSlug, 'error', 'URL Slug ต้องเป็นตัวอักษรเล็ก ตัวเลข และเครื่องหมาย - เท่านั้น');
-            return;
-        }
-
-        // ถ้าเป็น slug เดียวกับที่เช็คล่าสุด ไม่ต้องเช็คใหม่
-        if (currentSlug === this.lastCheckedSlug) return;
-
-        // Show loading state
-        this.updateSlugStatus(currentSlug, 'loading', 'กำลังตรวจสอบ...');
-
-        try {
-            const exists = await this.checkSlugExists(currentSlug);
-            this.lastCheckedSlug = currentSlug;
-
-            if (exists) {
-                this.updateSlugStatus(currentSlug, 'error', 'URL Slug นี้ถูกใช้แล้ว กรุณาเลือกอันใหม่');
-
-                // แนะนำ slug ทางเลือก
-                if (!this.isSlugManuallyEdited) {
-                    const alternativeSlug = await this.generateUniqueSlug(currentSlug);
-                    if (alternativeSlug !== currentSlug) {
-                        this.suggestAlternativeSlug(alternativeSlug);
-                    }
-                }
-            } else {
-                this.updateSlugStatus(currentSlug, 'success', 'พร้อมใช้งาน');
-            }
-        } catch (error) {
-            console.error('Error checking slug availability:', error);
-            this.updateSlugStatus(currentSlug, 'warning', 'ไม่สามารถตรวจสอบได้ กรุณาลองใหม่');
-        }
-    }
-
-    updateSlugStatus(slug, type, message) {
-        const statusDiv = document.getElementById('slugStatus');
-        if (!statusDiv) return;
-
-        const icons = {
-            loading: '<i class="fas fa-spinner fa-spin me-1"></i>',
-            success: '<i class="fas fa-check-circle me-1"></i>',
-            error: '<i class="fas fa-times-circle me-1"></i>',
-            warning: '<i class="fas fa-exclamation-triangle me-1"></i>',
-            info: '<i class="fas fa-info-circle me-1"></i>'
-        };
-
-        const colors = {
-            loading: 'text-primary',
-            success: 'text-success',
-            error: 'text-danger',
-            warning: 'text-warning',
-            info: 'text-muted'
-        };
-
-        statusDiv.innerHTML = `
-            <small class="${colors[type]}">
-                ${icons[type]}${message}
-            </small>
-        `;
-    }
-
-    suggestAlternativeSlug(alternativeSlug) {
-        const statusDiv = document.getElementById('slugStatus');
-        if (!statusDiv) return;
-
-        statusDiv.innerHTML += `
-            <div class="mt-2">
-                <small class="text-muted">แนะนำ: </small>
-                <button type="button" 
-                        class="btn btn-link btn-sm p-0 text-decoration-none" 
-                        onclick="useAlternativeSlug('${alternativeSlug}')"
-                        style="vertical-align: baseline; font-size: inherit;">
-                    <strong>${alternativeSlug}</strong>
-                </button>
-            </div>
-        `;
-    }
-
-    useAlternativeSlug(slug) {
-        const slugInput = document.getElementById('Slug');
-        if (slugInput) {
-            slugInput.value = slug;
-            this.isSlugManuallyEdited = false; // รีเซ็ตสถานะ
-            this.checkSlugAvailability(slug);
-        }
-    }
-
-    showSlugInfo() {
-        adminNotyf.open({
-            type: 'info',
-            message: 'URL Slug คือส่วนที่จะปรากฏใน URL ของหมวดหมู่ เช่น example.com/category/your-slug'
-        });
-    }
-
     // ===== IMAGE UPLOAD FUNCTIONS =====
     async previewAndUploadImage() {
         const fileInput = document.getElementById('categoryImageFile');
@@ -384,6 +297,13 @@ class CreateCategoryForm {
         }
     }
 
+    initializeCurrentImage() {
+        const imageUrlInput = document.getElementById('ImageUrl');
+        if (imageUrlInput?.value) {
+            this.showCurrentImage(imageUrlInput.value);
+        }
+    }
+
     showCurrentImage(imageUrl) {
         const elements = {
             currentImage: document.getElementById('currentImage'),
@@ -409,6 +329,7 @@ class CreateCategoryForm {
 
         this.currentImagePath = null;
         adminNotyf.success('ลบรูปภาพแล้ว');
+        this.updatePreview();
     }
 
     clearImageValidationError() {
@@ -444,13 +365,15 @@ class CreateCategoryForm {
         const inputs = {
             name: document.getElementById('Name'),
             desc: document.getElementById('Description'),
-            color: document.getElementById('Color')
+            color: document.getElementById('Color'),
+            isActive: document.getElementById('IsActive')
         };
 
         const previews = {
             name: document.getElementById('previewName'),
             desc: document.getElementById('previewDescription'),
-            icon: document.getElementById('previewIcon')
+            icon: document.getElementById('previewIcon'),
+            status: document.getElementById('previewStatus')
         };
 
         if (previews.name && inputs.name) {
@@ -464,11 +387,24 @@ class CreateCategoryForm {
         if (previews.icon && inputs.color) {
             previews.icon.style.backgroundColor = inputs.color.value || '#0066cc';
         }
+
+        if (previews.status && inputs.isActive) {
+            const isActive = inputs.isActive.checked;
+            previews.status.className = `badge ${isActive ? 'bg-success' : 'bg-secondary'}`;
+            previews.status.textContent = isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+        }
+    }
+
+    showSlugInfo() {
+        adminNotyf.open({
+            type: 'info',
+            message: 'URL Slug จะอัพเดทอัตโนมัติหากเปลี่ยนชื่อหมวดหมู่'
+        });
     }
 
     // ===== NAVIGATION & VALIDATION =====
     setupEnterKeyNavigation() {
-        const fieldOrder = ['Name', 'Slug', 'Description', 'categoryImageFile', 'ColorText', 'SortOrder', 'IsActive'];
+        const fieldOrder = ['Name', 'Description', 'categoryImageFile', 'ColorText', 'SortOrder', 'IsActive'];
 
         fieldOrder.forEach((fieldId, index) => {
             const field = document.getElementById(fieldId);
@@ -549,16 +485,6 @@ class CreateCategoryForm {
                     return false;
                 }
 
-                // เช็ค slug status หากมีการกรอก slug
-                const slugInput = document.getElementById('Slug');
-                const slugStatus = document.getElementById('slugStatus');
-                if (slugInput?.value?.trim() && slugStatus?.querySelector('.text-danger')) {
-                    e.preventDefault();
-                    adminNotyf.error('กรุณาแก้ไขปัญหา URL Slug ก่อนบันทึก');
-                    slugInput.focus();
-                    return false;
-                }
-
                 // ✅ ผ่าน validation แล้ว - ให้ form submit
                 console.log('Form validation passed, submitting to server...');
 
@@ -571,7 +497,7 @@ class CreateCategoryForm {
                     setTimeout(() => {
                         if (submitBtn.disabled) {
                             submitBtn.disabled = false;
-                            submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>บันทึก';
+                            submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>บันทึกการเปลี่ยนแปลง';
                         }
                     }, 5000);
                 }
@@ -580,28 +506,13 @@ class CreateCategoryForm {
             });
         }
     }
+
     validateForm() {
         const errors = [];
 
         const nameInput = document.getElementById('Name');
         if (!nameInput?.value?.trim()) {
             errors.push({ field: nameInput, message: 'กรุณากรอกชื่อหมวดหมู่' });
-        }
-
-        const slugInput = document.getElementById('Slug');
-        if (slugInput?.value?.trim()) {
-            const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-            if (!slugPattern.test(slugInput.value.trim())) {
-                errors.push({ field: slugInput, message: 'URL Slug ต้องเป็นตัวอักษรเล็ก ตัวเลข และเครื่องหมาย - เท่านั้น' });
-            }
-
-            // เช็คว่า slug status เป็น error หรือไม่
-            const statusDiv = document.getElementById('slugStatus');
-            if (statusDiv && statusDiv.querySelector('.text-danger')) {
-                errors.push({ field: slugInput, message: 'URL Slug นี้ไม่สามารถใช้ได้' });
-            }
-        } else {
-            errors.push({ field: slugInput, message: 'กรุณากรอก URL Slug' });
         }
 
         const colorInput = document.getElementById('Color');
@@ -657,36 +568,7 @@ class CreateCategoryForm {
     setupInputListeners() {
         const nameInput = document.getElementById('Name');
         if (nameInput) {
-            nameInput.addEventListener('input', async () => {
-                await this.generateSlug(nameInput.value);
-                this.updatePreview();
-            });
-        }
-
-        const slugInput = document.getElementById('Slug');
-        if (slugInput) {
-            // เช็คแบบ real-time พร้อม debounce
-            slugInput.addEventListener('input', () => {
-                this.isSlugManuallyEdited = true;
-
-                // Clear previous timeout
-                if (this.slugCheckTimeout) {
-                    clearTimeout(this.slugCheckTimeout);
-                }
-
-                // Set new timeout (debounce)
-                this.slugCheckTimeout = setTimeout(() => {
-                    this.checkSlugAvailability();
-                }, 500); // รอ 500ms หลังจากหยุดพิมพ์
-            });
-
-            slugInput.addEventListener('blur', () => {
-                // เช็คทันทีเมื่อออกจาก field
-                if (this.slugCheckTimeout) {
-                    clearTimeout(this.slugCheckTimeout);
-                }
-                this.checkSlugAvailability();
-            });
+            nameInput.addEventListener('input', () => this.updatePreview());
         }
 
         const descInput = document.getElementById('Description');
@@ -697,7 +579,8 @@ class CreateCategoryForm {
         const colorInput = document.getElementById('Color');
         if (colorInput) {
             colorInput.addEventListener('change', () => {
-                document.getElementById('ColorText').value = colorInput.value;
+                const colorTextInput = document.getElementById('ColorText');
+                if (colorTextInput) colorTextInput.value = colorInput.value;
                 this.updatePreview();
             });
         }
@@ -708,37 +591,38 @@ class CreateCategoryForm {
                 this.updateColorPicker(colorTextInput.value);
             });
         }
+
+        const isActiveInput = document.getElementById('IsActive');
+        if (isActiveInput) {
+            isActiveInput.addEventListener('change', () => this.updatePreview());
+        }
     }
 }
 
 // Global functions สำหรับเรียกจาก HTML onclick
-let createCategoryFormInstance;
+let editCategoryFormInstance;
 
 function forceCancel() {
-    if (createCategoryFormInstance) createCategoryFormInstance.forceCancel();
+    if (editCategoryFormInstance) editCategoryFormInstance.forceCancel();
 }
 
 function showSlugInfo() {
-    if (createCategoryFormInstance) createCategoryFormInstance.showSlugInfo();
+    if (editCategoryFormInstance) editCategoryFormInstance.showSlugInfo();
 }
 
 function previewAndUploadImage() {
-    if (createCategoryFormInstance) createCategoryFormInstance.previewAndUploadImage();
+    if (editCategoryFormInstance) editCategoryFormInstance.previewAndUploadImage();
 }
 
 function removeCurrentImage() {
-    if (createCategoryFormInstance) createCategoryFormInstance.removeCurrentImage();
+    if (editCategoryFormInstance) editCategoryFormInstance.removeCurrentImage();
 }
 
 function updateColorPicker(color) {
-    if (createCategoryFormInstance) createCategoryFormInstance.updateColorPicker(color);
-}
-
-function useAlternativeSlug(slug) {
-    if (createCategoryFormInstance) createCategoryFormInstance.useAlternativeSlug(slug);
+    if (editCategoryFormInstance) editCategoryFormInstance.updateColorPicker(color);
 }
 
 // Initialize เมื่อ DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-    createCategoryFormInstance = new CreateCategoryForm();
+    editCategoryFormInstance = new EditCategoryForm();
 });

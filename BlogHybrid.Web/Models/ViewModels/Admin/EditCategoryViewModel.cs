@@ -19,7 +19,7 @@ namespace BlogHybrid.Web.Models.ViewModels.Admin
         [Url(ErrorMessage = "รูปแบบ URL ไม่ถูกต้อง")]
         [Display(Name = "URL รูปภาพ")]
         public string? ImageUrl { get; set; }
-
+        public string? FullImageUrl { get; set; }
         [Required(ErrorMessage = "กรุณาเลือกสี")]
         [RegularExpression(@"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$", ErrorMessage = "รูปแบบสีไม่ถูกต้อง")]
         [Display(Name = "สีประจำหมวดหมู่")]

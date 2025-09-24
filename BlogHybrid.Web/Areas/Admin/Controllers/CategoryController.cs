@@ -15,13 +15,15 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ILogger<CategoryController> _logger;
-
+        private readonly IConfiguration _configuration;
         public CategoryController(
             IMediator mediator,
-            ILogger<CategoryController> logger)
+            ILogger<CategoryController> logger,
+            IConfiguration configuration)
         {
             _mediator = mediator;
             _logger = logger;
+            _configuration = configuration;
         }
 
         #region Index & List
@@ -174,13 +176,17 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                     TempData["ErrorMessage"] = "ไม่พบหมวดหมู่ที่ต้องการแก้ไข";
                     return RedirectToAction(nameof(Index));
                 }
+                var fullImageUrl = string.IsNullOrEmpty(category.ImageUrl)
+           ? null
+           : $"{_configuration["CloudflareR2:PublicDomain"]}{category.ImageUrl}";
 
                 var viewModel = new EditCategoryViewModel
                 {
                     Id = category.Id,
                     Name = category.Name,
                     Description = category.Description,
-                    ImageUrl = category.ImageUrl,
+                    ImageUrl = fullImageUrl,
+                    FullImageUrl = fullImageUrl,
                     Color = category.Color,
                     IsActive = category.IsActive,
                     SortOrder = category.SortOrder,
