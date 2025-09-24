@@ -16,7 +16,7 @@ namespace BlogHybrid.Web.Models.ViewModels.Admin
         public string Description { get; set; } = string.Empty;
 
         [StringLength(255, ErrorMessage = "URL รูปภาพต้องมีความยาวไม่เกิน 255 ตัวอักษร")]
-        [Url(ErrorMessage = "รูปแบบ URL ไม่ถูกต้อง")]
+        //[Url(ErrorMessage = "รูปแบบ URL ไม่ถูกต้อง")]
         [Display(Name = "URL รูปภาพ")]
         public string? ImageUrl { get; set; }
         public string? FullImageUrl { get; set; }
