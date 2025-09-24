@@ -21,7 +21,7 @@
 
                         <!-- Name -->
                         <div class="mb-3">
-                            <label asp-for="Name"  class="form-label required">ชื่อหมวดหมู่</label>
+                            <label asp-for="Name" class="form-label required">ชื่อหมวดหมู่</label>
                             <input asp-for="Name" name="Name" class="form-control" placeholder="เช่น เทคโนโลยี, ข่าวสาร, บทความ" id="Name">
                             <span asp-validation-for="Name" class="text-danger"></span>
                             <div class="form-text">
@@ -136,7 +136,6 @@
                         <!-- Is Active -->
                         <div class="mb-3">
                             <div class="form-check">
-                                @* <input asp-for="IsActive" type="checkbox" name="IsActive" class="form-check-input" id="IsActive" checked> *@
                                 <input asp-for="IsActive" name="IsActive" type="checkbox" class="form-check-input" id="IsActive" value="true" checked>
                                 <input name="IsActive" type="hidden" value="false">
                                 <label asp-for="IsActive" class="form-check-label">
@@ -150,9 +149,9 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>บันทึก
                             </button>
-                            <a asp-action="Index" class="btn btn-secondary">
+                            <button type="button" class="btn btn-secondary" onclick="forceCancel()">
                                 <i class="fas fa-times me-2"></i>ยกเลิก
-                            </a>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -190,436 +189,18 @@
     <!-- โหลด SlugService ก่อน -->
     <script src="~/js/slugService.js" asp-append-version="true"></script>
 
+    <!-- โหลด CategoryForm JavaScript แยกไฟล์ -->
+    <script src="~/js/admin/CreateCategoryForm.js" asp-append-version="true"></script>
+
+    <!-- ส่ง URL variables จาก Razor ไปยัง JavaScript -->
     <script>
-        let currentImagePath = null;
-        let isSlugManuallyEdited = false;
-
-        // ตรวจสอบ adminNotyf
-        if (typeof adminNotyf === 'undefined') {
-            window.adminNotyf = {
-                success: function(message) {
-                    alert('✅ ' + message);
-                    console.log('Success:', message);
-                },
-                error: function(message) {
-                    alert('❌ ' + message);
-                    console.error('Error:', message);
-                },
-                open: function(options) {
-                    alert(options.type + ': ' + options.message);
-                }
-            };
-        }
-
-        // ===== SLUG FUNCTIONS (ใช้ SlugService) =====
-        function generateSlug(name) {
-            if (!name || isSlugManuallyEdited) return;
-
-            // ใช้ SlugService แปลงภาษาไทยเป็นอังกฤษ
-            const slug = SlugService.generateSlug(name, 50);
-
-            const slugInput = document.getElementById('Slug');
-            if (slugInput) {
-                slugInput.value = slug;
-                checkSlugAvailability();
-            }
-
-            updatePreview();
-        }
-
-        async function checkSlugAvailability() {
-            const slugInput = document.getElementById('Slug');
-            const statusDiv = document.getElementById('slugStatus');
-
-            if (!slugInput || !statusDiv) return;
-
-            const slug = slugInput.value.trim();
-            if (!slug) {
-                statusDiv.innerHTML = '';
-                return;
-            }
-
-            // ใช้ SlugService
-            await SlugService.updateSlugStatus(
-                slug,
-                '@Url.Action("CheckSlug", "Category", new { area = "Admin" })',
-                statusDiv
-            );
-        }
-
-        function showSlugInfo() {
-            adminNotyf.open({
-                type: 'info',
-                message: 'URL Slug คือส่วนที่จะปรากฏใน URL ของหมวดหมู่ เช่น example.com/category/your-slug'
-            });
-        }
-
-        // ===== IMAGE UPLOAD FUNCTIONS =====
-        async function previewAndUploadImage() {
-            const fileInput = document.getElementById('categoryImageFile');
-            if (!fileInput) return;
-
-            const file = fileInput.files[0];
-            if (!file) return;
-
-            // Validate file type
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-            if (!allowedTypes.includes(file.type)) {
-                adminNotyf.error('กรุณาเลือกไฟล์รูปภาพ (.jpg, .png, .gif, .webp)');
-                fileInput.value = '';
-                return;
-            }
-
-            // Validate file size (5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                adminNotyf.error('ขนาดไฟล์ต้องไม่เกิน 5MB');
-                fileInput.value = '';
-                return;
-            }
-
-            showUploadProgress();
-            clearImageValidationError();
-
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                const response = await fetch('@Url.Action("UploadCategory", "Image", new { area = "Admin" })', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    const imageUrlInput = document.getElementById('ImageUrl');
-                    if (imageUrlInput) {
-                        imageUrlInput.value = result.imagePath;
-                    }
-
-                    showCurrentImage(result.imageUrl || result.imagePath);
-                    currentImagePath = result.imagePath;
-                    adminNotyf.success('อัพโหลดรูปภาพสำเร็จ');
-                    fileInput.value = '';
-                } else {
-                    adminNotyf.error(result.message || 'เกิดข้อผิดพลาดในการอัพโหลด');
-                }
-            } catch (error) {
-                adminNotyf.error('เกิดข้อผิดพลาดในการอัพโหลด');
-            } finally {
-                hideUploadProgress();
-            }
-        }
-
-        function showCurrentImage(imageUrl) {
-            const currentImage = document.getElementById('currentImage');
-            const currentImageContainer = document.getElementById('currentImageContainer');
-            const uploadContainer = document.getElementById('uploadContainer');
-
-            if (currentImage) {
-                currentImage.src = imageUrl;
-            }
-            if (currentImageContainer) {
-                currentImageContainer.style.display = 'block';
-            }
-            if (uploadContainer) {
-                uploadContainer.style.display = 'none';
-            }
-        }
-
-        function removeCurrentImage() {
-            const imageUrlInput = document.getElementById('ImageUrl');
-            const currentImageContainer = document.getElementById('currentImageContainer');
-            const uploadContainer = document.getElementById('uploadContainer');
-
-            if (imageUrlInput) imageUrlInput.value = '';
-            if (currentImageContainer) currentImageContainer.style.display = 'none';
-            if (uploadContainer) uploadContainer.style.display = 'block';
-
-            currentImagePath = null;
-            adminNotyf.success('ลบรูปภาพแล้ว');
-        }
-
-        function clearImageValidationError() {
-            const imageError = document.querySelector('span[data-valmsg-for="ImageUrl"]');
-            if (imageError) imageError.textContent = '';
-
-            const customError = document.getElementById('imageError');
-            if (customError) customError.textContent = '';
-        }
-
-        function showUploadProgress() {
-            const progressContainer = document.getElementById('uploadProgress');
-            if (progressContainer) progressContainer.style.display = 'block';
-        }
-
-        function hideUploadProgress() {
-            const progressContainer = document.getElementById('uploadProgress');
-            if (progressContainer) progressContainer.style.display = 'none';
-        }
-
-        // ===== COLOR FUNCTIONS =====
-        function updateColorPicker(color) {
-            if (color.match(/^#[0-9A-F]{6}$/i)) {
-                const colorInput = document.getElementById('Color');
-                if (colorInput) {
-                    colorInput.value = color;
-                    updatePreview();
-                }
-            }
-        }
-
-        // ===== PREVIEW FUNCTIONS =====
-        function updatePreview() {
-            const nameInput = document.getElementById('Name');
-            const descInput = document.getElementById('Description');
-            const colorInput = document.getElementById('Color');
-
-            const previewName = document.getElementById('previewName');
-            const previewDesc = document.getElementById('previewDescription');
-            const previewIcon = document.getElementById('previewIcon');
-
-            if (previewName && nameInput) {
-                previewName.textContent = nameInput.value || 'ชื่อหมวดหมู่';
-            }
-
-            if (previewDesc && descInput) {
-                previewDesc.textContent = descInput.value || 'คำอธิบายหมวดหมู่';
-            }
-
-            if (previewIcon && colorInput) {
-                previewIcon.style.backgroundColor = colorInput.value || '#0066cc';
-            }
-        }
-
-        // ===== ENTER KEY NAVIGATION =====
-        function setupEnterKeyNavigation() {
-            const fieldOrder = [
-                'Name',
-                'Slug',
-                'Description',
-                'categoryImageFile',
-                'ColorText',
-                'SortOrder',
-                'IsActive'
-            ];
-
-            fieldOrder.forEach((fieldId, index) => {
-                const field = document.getElementById(fieldId);
-                if (field) {
-                    field.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            if (field.tagName === 'TEXTAREA' && !e.ctrlKey) {
-                                return;
-                            }
-
-                            e.preventDefault();
-
-                            const nextIndex = index + 1;
-                            if (nextIndex < fieldOrder.length) {
-                                const nextField = document.getElementById(fieldOrder[nextIndex]);
-                                if (nextField) {
-                                    if (nextField.type === 'checkbox') {
-                                        nextField.focus();
-                                    } else if (nextField.type === 'file') {
-                                        nextField.click();
-                                    } else {
-                                        nextField.focus();
-                                        if (nextField.select && nextField.type === 'text') {
-                                            nextField.select();
-                                        }
-                                    }
-                                }
-                            } else {
-                                const submitBtn = document.querySelector('button[type="submit"]');
-                                if (submitBtn) {
-                                    submitBtn.focus();
-                                }
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        function setupColorFieldNavigation() {
-            const colorInput = document.getElementById('Color');
-            if (colorInput) {
-                colorInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const sortOrderField = document.getElementById('SortOrder');
-                        if (sortOrderField) {
-                            sortOrderField.focus();
-                            sortOrderField.select();
-                        }
-                    }
-                });
-            }
-        }
-
-        function addTextareaHint() {
-            const descField = document.getElementById('Description');
-            if (descField) {
-                const formText = descField.parentNode.querySelector('.form-text');
-                if (formText) {
-                    formText.innerHTML += ' <span class="text-muted small">(กด Ctrl+Enter เพื่อไปต่อ)</span>';
-                }
-            }
-        }
-
-        // ===== FORM VALIDATION =====
-        function validateForm() {
-            const errors = [];
-
-            const nameInput = document.getElementById('Name');
-            if (!nameInput?.value?.trim()) {
-                errors.push({
-                    field: nameInput,
-                    message: 'กรุณากรอกชื่อหมวดหมู่'
-                });
-            }
-
-            const slugInput = document.getElementById('Slug');
-            if (slugInput?.value?.trim()) {
-                const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-                if (!slugPattern.test(slugInput.value.trim())) {
-                    errors.push({
-                        field: slugInput,
-                        message: 'URL Slug ต้องเป็นตัวอักษรเล็ก ตัวเลข และเครื่องหมาย - เท่านั้น'
-                    });
-                }
-            }
-
-            const colorInput = document.getElementById('Color');
-            if (!colorInput?.value) {
-                errors.push({
-                    field: colorInput,
-                    message: 'กรุณาเลือกสีประจำหมวดหมู่'
-                });
-            }
-
-            const sortOrderInput = document.getElementById('SortOrder');
-            if (sortOrderInput?.value && (isNaN(sortOrderInput.value) || parseInt(sortOrderInput.value) < 0)) {
-                errors.push({
-                    field: sortOrderInput,
-                    message: 'ลำดับการแสดงผลต้องเป็นตัวเลขบวกหรือ 0'
-                });
-            }
-
-            return errors;
-        }
-
-        function showValidationToast(errors) {
-            if (!errors || errors.length === 0) return;
-
-            const errorMessages = errors.map(error => `• ${error.message}`);
-            const combinedMessage = `พบข้อผิดพลาด ${errors.length} รายการ:\n\n${errorMessages.join('\n')}`;
-
-            if (typeof adminNotyf !== 'undefined' && adminNotyf.error) {
-                adminNotyf.error(combinedMessage);
-            } else {
-                alert(combinedMessage);
-            }
-
-            errors.forEach(error => {
-                if (error.field) {
-                    highlightField(error.field);
-                }
-            });
-
-            if (errors[0]?.field) {
-                errors[0].field.focus();
-                errors[0].field.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        function highlightField(field) {
-            field.classList.add('is-invalid');
-
-            const removeHighlight = function() {
-                field.classList.remove('is-invalid');
-                field.removeEventListener('input', removeHighlight);
-                field.removeEventListener('change', removeHighlight);
-            };
-
-            field.addEventListener('input', removeHighlight);
-            field.addEventListener('change', removeHighlight);
-        }
-
-        function clearValidationStates() {
-            document.querySelectorAll('.is-invalid').forEach(field => {
-                field.classList.remove('is-invalid');
-            });
-        }
-
-        // ===== MAIN DOM CONTENT LOADED =====
-        document.addEventListener('DOMContentLoaded', function() {
-            // Setup form validation
-            const form = document.querySelector('.admin-form');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    clearValidationStates();
-                    const errors = validateForm();
-
-                    if (errors.length > 0) {
-                        e.preventDefault();
-                        showValidationToast(errors);
-                        return false;
-                    }
-                });
-            }
-
-            // Setup enter key navigation
-            setupEnterKeyNavigation();
-            setupColorFieldNavigation();
-            addTextareaHint();
-
-            // Setup input event listeners
-            const nameInput = document.getElementById('Name');
-            if (nameInput) {
-                nameInput.addEventListener('input', function() {
-                    generateSlug(this.value);
-                    updatePreview();
-                });
-            }
-
-            const slugInput = document.getElementById('Slug');
-            if (slugInput) {
-                slugInput.addEventListener('input', function() {
-                    isSlugManuallyEdited = true;
-                    checkSlugAvailability();
-                });
-                slugInput.addEventListener('blur', function() {
-                    checkSlugAvailability();
-                });
-            }
-
-            const descInput = document.getElementById('Description');
-            if (descInput) {
-                descInput.addEventListener('input', updatePreview);
-            }
-
-            const colorInput = document.getElementById('Color');
-            if (colorInput) {
-                colorInput.addEventListener('change', function() {
-                    document.getElementById('ColorText').value = this.value;
-                    updatePreview();
-                });
-            }
-
-            const colorTextInput = document.getElementById('ColorText');
-            if (colorTextInput) {
-                colorTextInput.addEventListener('input', function() {
-                    updateColorPicker(this.value);
-                });
-            }
-
-            // Initialize
-            updatePreview();
-        });
+        // กำหนดตัวแปรที่ JavaScript ต้องใช้
+        const checkSlugUrl = '@Url.Action("CheckSlug", "Category", new { area = "Admin" })';
+        const uploadImageUrl = '@Url.Action("UploadCategory", "Image", new { area = "Admin" })';
     </script>
+}
 
+@section Styles {
     <style>
         .required::after {
             content: " *";
@@ -679,5 +260,37 @@
                 border-color: #dc3545 !important;
                 box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.4) !important;
             }
+
+        #slugStatus {
+            min-height: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+            #slugStatus .btn-link {
+                font-size: inherit !important;
+            }
+
+                #slugStatus .btn-link:hover {
+                    text-decoration: underline !important;
+                }
+
+        .slug-suggestion {
+            animation: slideIn 0.3s ease;
+        }
+
+        @@keyframes slideIn {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
     </style>
 }

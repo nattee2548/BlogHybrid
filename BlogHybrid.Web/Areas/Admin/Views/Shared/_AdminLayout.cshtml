@@ -203,6 +203,37 @@
         });
     </script>
 
+    <!-- แยก TempData เป็น script tags ต่างหาก -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                adminNotyf.success('@Html.Raw(TempData["SuccessMessage"])');
+            });
+        </script>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                adminNotyf.error('@Html.Raw(TempData["ErrorMessage"])');
+            });
+        </script>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                adminNotyf.open({
+                    type: 'warning',
+                    message: '@Html.Raw(TempData["WarningMessage"])'
+                });
+            });
+        </script>
+    }
+
     <!-- Page-specific Scripts -->
     @await RenderSectionAsync("Scripts", required: false)
 </body>

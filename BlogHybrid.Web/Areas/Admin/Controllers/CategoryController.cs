@@ -107,6 +107,22 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
 
             try
             {
+                if (!string.IsNullOrEmpty(model.Slug))
+                {
+                    var slugExistsQuery = new CheckCategorySlugExistsQuery
+                    {
+                        Slug = model.Slug,
+                        ExcludeId = null
+                    };
+
+                    var slugExists = await _mediator.Send(slugExistsQuery);
+                    if (slugExists)
+                    {
+                        ModelState.AddModelError(nameof(model.Slug), "URL Slug นี้ถูกใช้แล้ว");
+                        return View(model);
+                    }
+                }
+
                 var command = new CreateCategoryCommand
                 {
                     Name = model.Name,
