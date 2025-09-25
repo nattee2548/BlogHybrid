@@ -182,6 +182,7 @@
 }
 
 @section Scripts {
+    <script src="~/js/admin/CategoryDeleteConfirm.js" asp-append-version="true"></script>
     <script>
         let isReorderMode = false;
         let selectedCategories = [];
@@ -271,99 +272,216 @@
         }
 
         function toggleCategoryStatus(categoryId, currentStatus) {
-            const newStatus = !currentStatus;
+    const newStatus = !currentStatus;
+    
+    fetch('@Url.Action("ToggleStatus")', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: JSON.stringify({
+            id: categoryId,
+            isActive: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update UI
+            const statusBadge = document.querySelector(`#status-${categoryId}`);
+            const toggleBtn = document.querySelector(`#toggle-${categoryId}`);
             
-            fetch('@Url.Action("ToggleStatus")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                },
-                body: JSON.stringify({
-                    id: categoryId,
-                    isActive: newStatus
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update UI
-                    const statusBadge = document.querySelector(`#status-${categoryId}`);
-                    const toggleBtn = document.querySelector(`#toggle-${categoryId}`);
-                    
-                    if (data.newStatus) {
-                        statusBadge.className = 'badge bg-success';
-                        statusBadge.textContent = 'เปิดใช้งาน';
-                        toggleBtn.className = 'btn btn-outline-secondary btn-sm';
-                        toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                        toggleBtn.title = 'ปิดใช้งาน';
-                    } else {
-                        statusBadge.className = 'badge bg-secondary';
-                        statusBadge.textContent = 'ปิดใช้งาน';
-                        toggleBtn.className = 'btn btn-outline-success btn-sm';
-                        toggleBtn.innerHTML = '<i class="fas fa-eye"></i>';
-                        toggleBtn.title = 'เปิดใช้งาน';
-                    }
-                    
-                    if (window.adminNotyf) {
-                        window.adminNotyf.success(data.message);
-                    }
-                } else {
-                    if (window.adminNotyf) {
-                        window.adminNotyf.error(data.message || 'เกิดข้อผิดพลาด');
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                if (window.adminNotyf) {
-                    window.adminNotyf.error('เกิดข้อผิดพลาดในการเปลี่ยนสถานะ');
-                }
-            });
-        }
-
-        function confirmDelete(categoryId, categoryName, postCount) {
-            if (postCount > 0) {
-                if (window.adminNotyf) {
-                    window.adminNotyf.error(`ไม่สามารถลบได้ เนื่องจากมีบทความ ${postCount} รายการ`);
-                }
-                return;
+            if (data.newStatus) {
+                // เปิดใช้งาน
+                statusBadge.className = 'badge bg-success';
+                statusBadge.textContent = 'เปิดใช้งาน';
+                toggleBtn.className = 'btn btn-outline-secondary btn-sm';
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i>'; // แสดงไอคอนปิดตา
+                toggleBtn.title = 'ปิดใช้งาน';
+            } else {
+                // ปิดใช้งาน
+                statusBadge.className = 'badge bg-secondary';
+                statusBadge.textContent = 'ปิดใช้งาน';
+                toggleBtn.className = 'btn btn-outline-success btn-sm';
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i>'; // แสดงไอคอนเปิดตา
+                toggleBtn.title = 'เปิดใช้งาน';
             }
-
-            if (confirm(`ต้องการลบหมวดหมู่ "${categoryName}" หรือไม่?\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '@Url.Action("Delete")/' + categoryId;
-                
-                const token = document.createElement('input');
-                token.type = 'hidden';
-                token.name = '__RequestVerificationToken';
-                token.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
-                
-                form.appendChild(token);
-                document.body.appendChild(form);
-                form.submit();
+            
+            // อัพเดท onclick attribute ด้วย
+            toggleBtn.setAttribute('onclick', `toggleCategoryStatus(${categoryId}, ${data.newStatus})`);
+            
+            if (window.adminNotyf) {
+                window.adminNotyf.success(data.message);
+            }
+        } else {
+            if (window.adminNotyf) {
+                window.adminNotyf.error(data.message || 'เกิดข้อผิดพลาด');
             }
         }
-
-        function bulkToggleStatus(status) {
-            const checkboxes = document.querySelectorAll('input[name="selectedCategories"]:checked');
-            
-            if (checkboxes.length === 0) {
-                if (window.adminNotyf) {
-                    window.adminNotyf.error('กรุณาเลือกหมวดหมู่ที่ต้องการเปลี่ยนสถานะ');
-                }
-                return;
-            }
-
-            const statusText = status ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
-            
-            if (confirm(`ต้องการ${statusText}หมวดหมู่ ${checkboxes.length} รายการที่เลือกหรือไม่?`)) {
-                checkboxes.forEach(checkbox => {
-                    toggleCategoryStatus(parseInt(checkbox.value), !status);
-                });
-            }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (window.adminNotyf) {
+            window.adminNotyf.error('เกิดข้อผิดพลาดในการเปลี่ยนสถานะ');
         }
+    });
+}
+
+       function bulkToggleStatus(status) {
+    const checkboxes = document.querySelectorAll('input[name="selectedCategories"]:checked');
+    
+    if (checkboxes.length === 0) {
+        if (window.adminNotyf) {
+            window.adminNotyf.error('กรุณาเลือกหมวดหมู่ที่ต้องการเปลี่ยนสถานะ');
+        }
+        return;
+    }
+
+    const statusText = status ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+    
+    // ใช้ modal สวย ๆ แทน confirm() ธรรมดา
+    if (categoryDeleteConfirm) {
+        showBulkStatusChangeModal(checkboxes.length, statusText, status);
+    } else {
+        // fallback
+        if (confirm(`ต้องการ${statusText}หมวดหมู่ ${checkboxes.length} รายการที่เลือกหรือไม่?`)) {
+            performBulkStatusChange(status);
+        }
+    }
+}
+
+function performBulkStatusChange(newStatus) {
+    const checkboxes = document.querySelectorAll('input[name="selectedCategories"]:checked');
+    
+    checkboxes.forEach(checkbox => {
+        const categoryId = parseInt(checkbox.value);
+        // แก้ไขตรงนี้: ส่งค่า currentStatus ที่ต้องการเปลี่ยนเป็น newStatus
+        const currentStatus = !newStatus; // ถ้าต้องการเปลี่ยนเป็น true ค่าปัจจุบันต้องเป็น false
+        toggleCategoryStatus(categoryId, currentStatus);
+    });
+
+    // Clear selection หลังจากเสร็จ
+    setTimeout(() => {
+        const selectAll = document.getElementById('selectAll');
+        const allCheckboxes = document.querySelectorAll('input[name="selectedCategories"]');
+        
+        allCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            const row = checkbox.closest('tr');
+            row.classList.remove('selected');
+        });
+        
+        if (selectAll) {
+            selectAll.checked = false;
+            selectAll.indeterminate = false;
+        }
+        
+        // ซ่อน bulk actions bar
+        const bulkBar = document.getElementById('bulkActionsBar');
+        if (bulkBar) bulkBar.classList.add('d-none');
+    }, 1000);
+}
+
+function showBulkStatusChangeModal(count, statusText, newStatus) {
+    const overlay = document.createElement('div');
+    overlay.id = 'bulkStatusConfirmationOverlay';
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center;
+        align-items: center; z-index: 9999; backdrop-filter: blur(4px);
+        animation: fadeIn 0.3s ease-out;
+    `;
+
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white; border-radius: 12px; padding: 2rem; max-width: 450px;
+        width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.3s ease-out; position: relative;
+    `;
+
+    const iconColor = newStatus ? '#059669' : '#6b7280';
+    const icon = newStatus ? 'fa-eye' : 'fa-eye-slash';
+
+    modal.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+            <div style="width: 80px; height: 80px; margin: 0 auto 1rem;
+                background: linear-gradient(135deg, ${iconColor}, ${iconColor}dd); border-radius: 50%;
+                display: flex; align-items: center; justify-content: center;
+                color: white; font-size: 2.5rem; animation: pulse 2s infinite;">
+                <i class="fas ${icon}"></i>
+            </div>
+            <h3 style="color: #1f2937; font-weight: 600; margin-bottom: 0.5rem; font-size: 1.25rem;">
+                ยืนยันการ${statusText}
+            </h3>
+            <p style="color: #6b7280; margin: 0 0 1rem; font-size: 0.95rem; line-height: 1.5;">
+                คุณแน่ใจหรือไม่ที่ต้องการ${statusText}หมวดหมู่ทั้งหมด <strong>${count}</strong> รายการ?
+            </p>
+        </div>
+        
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+            <button id="confirmBulkStatusBtn" style="background: linear-gradient(135deg, ${iconColor}, ${iconColor}dd);
+                color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px;
+                cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease;
+                min-width: 120px; box-shadow: 0 4px 12px rgba(${newStatus ? '5, 150, 105' : '107, 114, 128'}, 0.3);">
+                <i class="fas ${icon} me-2"></i>${statusText}
+            </button>
+            
+            <button id="cancelBulkStatusBtn" style="background: #f3f4f6; color: #374151;
+                border: 1px solid #d1d5db; padding: 0.75rem 1.5rem; border-radius: 8px;
+                cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease;
+                min-width: 120px;">
+                <i class="fas fa-times me-2"></i>ยกเลิก
+            </button>
+        </div>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Setup events
+    document.getElementById('confirmBulkStatusBtn').addEventListener('click', () => {
+        closeBulkStatusConfirmation(overlay, true, newStatus);
+    });
+
+    document.getElementById('cancelBulkStatusBtn').addEventListener('click', () => {
+        closeBulkStatusConfirmation(overlay, false, newStatus);
+    });
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeBulkStatusConfirmation(overlay, false, newStatus);
+    });
+
+    // Add CSS styles if not exists
+    if (!document.getElementById('bulkStatusModalStyles')) {
+        const style = document.createElement('style');
+        style.id = 'bulkStatusModalStyles';
+        style.textContent = `
+            @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @@keyframes slideIn { from { opacity: 0; transform: scale(0.8) translateY(-20px); } 
+                                to { opacity: 1; transform: scale(1) translateY(0); } }
+            @@keyframes pulse {
+                0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+                70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+function closeBulkStatusConfirmation(overlay, confirmed, newStatus) {
+    const modal = overlay.querySelector('div');
+    modal.style.animation = 'slideOut 0.2s ease-in';
+
+    setTimeout(() => {
+        document.body.removeChild(overlay);
+        
+        if (confirmed) {
+            performBulkStatusChange(newStatus);
+        }
+    }, 200);
+}
 
         // Select all functionality
         function toggleSelectAll() {

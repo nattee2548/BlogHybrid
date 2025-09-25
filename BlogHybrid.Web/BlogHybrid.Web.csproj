@@ -22,4 +22,8 @@
 		<ProjectReference Include="..\BlogHybrid.Infrastructure\BlogHybrid.Infrastructure.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="wwwroot\css\Admin\" />
+	</ItemGroup>
+
 </Project>
