@@ -61,6 +61,7 @@ builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
 // Register Image Service
 builder.Services.AddScoped<IImageService, CloudflareR2ImageService>();
 builder.Services.AddScoped<ISlugService, SlugService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // เพิ่ม HttpContextAccessor สำหรับ Image Service
 builder.Services.AddHttpContextAccessor();

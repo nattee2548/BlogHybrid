@@ -1,0 +1,260 @@
+﻿@model BlogHybrid.Web.Models.ViewModels.Admin.CreateUserViewModel
+@{
+    ViewData["Title"] = "เพิ่มผู้ใช้ใหม่";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-page-header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 admin-text-primary">
+                <i class="fas fa-user-plus me-2"></i>เพิ่มผู้ใช้ใหม่
+            </h1>
+            <p class="admin-text-secondary mb-0">สร้างบัญชีผู้ใช้ใหม่และกำหนดสิทธิ์การเข้าใช้งาน</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>กลับไปรายการ
+            </a>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Create" method="post" class="admin-form" data-warn-unsaved="true">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Basic Information -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>ข้อมูลพื้นฐาน
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label required">อีเมล</label>
+                                <input asp-for="Email" class="form-control" placeholder="example@domain.com">
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <div class="form-text">
+                                    อีเมลจะใช้เป็นชื่อผู้ใช้สำหรับเข้าสู่ระบบ
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PhoneNumber" class="form-label">เบอร์โทรศัพท์</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="08X-XXX-XXXX">
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="FirstName" class="form-label">ชื่อจริง</label>
+                                <input asp-for="FirstName" class="form-control" placeholder="ชื่อ">
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="LastName" class="form-label">นามสกุล</label>
+                                <input asp-for="LastName" class="form-control" placeholder="นามสกุล">
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Settings -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lock me-2"></i>รหัสผ่าน
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label required">รหัสผ่าน</label>
+                                <div class="input-group">
+                                    <input asp-for="Password" type="password" class="form-control" id="password">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('password')">
+                                        <i class="fas fa-eye" id="password-icon"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                                <div class="form-text">
+                                    รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label required">ยืนยันรหัสผ่าน</label>
+                                <div class="input-group">
+                                    <input asp-for="ConfirmPassword" type="password" class="form-control" id="confirmPassword">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('confirmPassword')">
+                                        <i class="fas fa-eye" id="confirmPassword-icon"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Account Settings -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>การตั้งค่าบัญชี
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="IsActive" type="checkbox" class="form-check-input" id="isActive">
+                            <label asp-for="IsActive" class="form-check-label">
+                                เปิดใช้งานบัญชี
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            หากปิดใช้งาน ผู้ใช้จะไม่สามารถเข้าสู่ระบบได้
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="EmailConfirmed" type="checkbox" class="form-check-input" id="emailConfirmed">
+                            <label asp-for="EmailConfirmed" class="form-check-label">
+                                ยืนยันอีเมลแล้ว
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            หากไม่เลือก ผู้ใช้จะต้องยืนยันอีเมลก่อนใช้งาน
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role Assignment -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-shield me-2"></i>บทบาทและสิทธิ์
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    @if (Model.AvailableRoles.Any())
+                    {
+                        <div class="role-selection">
+                            @foreach (var role in Model.AvailableRoles)
+                            {
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" name="SelectedRoles" value="@role.Value"
+                                           class="form-check-input" id="role-@role.Value"
+                                           @(Model.SelectedRoles?.Contains(role.Value) == true ? "checked" : "")>
+                                    <label class="form-check-label" for="role-@role.Value">
+                                        <span class="badge bg-@(role.Value == "Admin" ? "danger" : role.Value == "Moderator" ? "warning" : "secondary") me-2">
+                                            @role.Text
+                                        </span>
+                                        @if (role.Value == "Admin")
+                                        {
+                                            <small class="text-muted d-block">สิทธิ์เต็มในระบบ</small>
+                                        }
+                                        else if (role.Value == "Moderator")
+                                        {
+                                            <small class="text-muted d-block">ตรวจสอบเนื้อหา</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted d-block">ผู้ใช้ทั่วไป</small>
+                                        }
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                        <div class="form-text">
+                            เลือกบทบาทที่เหมาะสม หากไม่เลือกจะเป็น User ทั่วไป
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            ไม่พบบทบาทที่สามารถกำหนดได้
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="admin-card">
+                <div class="admin-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>สร้างผู้ใช้
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>ยกเลิก
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(inputId + '-icon');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Warn about unsaved changes
+        let formChanged = false;
+
+        $(document).ready(function() {
+            // Track form changes
+            $('form[data-warn-unsaved] input, form[data-warn-unsaved] textarea, form[data-warn-unsaved] select').on('change input', function() {
+                formChanged = true;
+            });
+
+            // Warn before leaving
+            $(window).on('beforeunload', function() {
+                if (formChanged) {
+                    return 'คุณมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก ต้องการออกจากหน้านี้หรือไม่?';
+                }
+            });
+
+            // Don't warn on form submit
+            $('form[data-warn-unsaved]').on('submit', function() {
+                formChanged = false;
+            });
+        });
+    </script>
+}

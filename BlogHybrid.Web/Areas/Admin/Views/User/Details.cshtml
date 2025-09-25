@@ -1,0 +1,460 @@
+﻿@model BlogHybrid.Web.Models.ViewModels.Admin.UserDetailsViewModel
+@{
+    ViewData["Title"] = $"รายละเอียดผู้ใช้: {Model.FullName}";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-page-header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 admin-text-primary">
+                <i class="fas fa-user me-2"></i>รายละเอียดผู้ใช้
+            </h1>
+            <p class="admin-text-secondary mb-0">ข้อมูลและประวัติการใช้งานของ @Model.FullName</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-primary">
+                <i class="fas fa-edit me-2"></i>แก้ไขข้อมูล
+            </a>
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>กลับไปรายการ
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <!-- User Profile Card -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-body text-center">
+                <div class="user-profile-avatar mb-3">
+                    @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                    {
+                        <img src="@Model.ProfileImageUrl" alt="@Model.FullName" class="rounded-circle" width="120" height="120">
+                    }
+                    else
+                    {
+                        <div class="user-avatar-lg">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    }
+                </div>
+
+                <h4 class="mb-2">@Model.FullName</h4>
+                <p class="text-muted mb-3">@Model.Email</p>
+
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    @foreach (var role in Model.Roles)
+                    {
+                        <span class="badge bg-@(role == "Admin" ? "danger" : role == "Moderator" ? "warning" : "secondary")">@role</span>
+                    }
+                    @if (!Model.Roles.Any())
+                    {
+                        <span class="badge bg-light text-dark">User</span>
+                    }
+                </div>
+
+                <span class="badge bg-@Model.StatusBadgeClass fs-6 mb-3">@Model.StatusText</span>
+
+                @if (Model.IsLockedOut)
+                {
+                    <div class="alert alert-danger">
+                        <i class="fas fa-lock me-2"></i>
+                        <strong>บัญชีถูกล็อก</strong>
+                        <br>จนถึง: @Model.LockoutEnd?.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tools me-2"></i>การจัดการ
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
+                        <i class="fas fa-key me-2"></i>รีเซ็ตรหัสผ่าน
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-outline-@(Model.IsActive ? "secondary" : "success")"
+                            onclick="toggleUserStatus('@Model.Id', @Model.IsActive.ToString().ToLower())">
+                        <i class="fas fa-@(Model.IsActive ? "ban" : "check") me-2"></i>
+                        @(Model.IsActive ? "ปิดใช้งาน" : "เปิดใช้งาน")
+                    </button>
+
+                    @if (Model.IsLockedOut)
+                    {
+                        <button type="button" class="btn btn-outline-warning" onclick="unlockUser('@Model.Id')">
+                            <i class="fas fa-unlock me-2"></i>ปลดล็อกบัญชี
+                        </button>
+                    }
+
+                    <button type="button"
+                            class="btn btn-outline-danger"
+                            onclick="confirmDeleteUser('@Model.Id', '@Html.Raw(Model.FullName)')">
+                        <i class="fas fa-trash me-2"></i>ลบผู้ใช้
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Basic Information -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>ข้อมูลพื้นฐาน
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td width="40%" class="text-muted">อีเมล:</td>
+                                <td>
+                                    @Model.Email
+                                    @if (Model.EmailConfirmed)
+                                    {
+                                        <i class="fas fa-check-circle text-success ms-2" title="ยืนยันแล้ว"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-exclamation-triangle text-warning ms-2" title="ยังไม่ยืนยัน"></i>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">ชื่อผู้ใช้:</td>
+                                <td>@Model.UserName</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">ชื่อจริง:</td>
+                                <td>@(Model.FirstName ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">นามสกุล:</td>
+                                <td>@(Model.LastName ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">เบอร์โทรศัพท์:</td>
+                                <td>
+                                    @(Model.PhoneNumber ?? "-")
+                                    @if (Model.PhoneNumberConfirmed && !string.IsNullOrEmpty(Model.PhoneNumber))
+                                    {
+                                        <i class="fas fa-check-circle text-success ms-2" title="ยืนยันแล้ว"></i>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td width="40%" class="text-muted">สร้างเมื่อ:</td>
+                                <td>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">เข้าใช้งานล่าสุด:</td>
+                                <td>
+                                    @if (Model.LastLoginAt.HasValue)
+                                    {
+                                        @Model.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">ยังไม่เคยเข้าใช้งาน</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Two-Factor:</td>
+                                <td>
+                                    @if (Model.TwoFactorEnabled)
+                                    {
+                                        <span class="badge bg-success">เปิดใช้งาน</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">ปิดใช้งาน</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">ความล้มเหลว:</td>
+                                <td>@Model.AccessFailedCount ครั้ง</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Bio))
+                {
+                    <hr>
+                    <div>
+                        <h6 class="text-muted">เกี่ยวกับ:</h6>
+                        <p>@Model.Bio</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Roles and Permissions -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-shield me-2"></i>บทบาทและสิทธิ์
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                @if (Model.Roles.Any())
+                {
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">บทบาท:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var role in Model.Roles)
+                            {
+                                <span class="badge bg-@(role == "Admin" ? "danger" : role == "Moderator" ? "warning" : "secondary") fs-6">
+                                    @role
+                                </span>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        ผู้ใช้นี้ไม่มีบทบาทเฉพาะ (User ทั่วไป)
+                    </div>
+                }
+
+                @if (Model.Claims.Any())
+                {
+                    <hr>
+                    <div>
+                        <h6 class="text-muted mb-2">Claims:</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var claim in Model.Claims)
+                                    {
+                                        <tr>
+                                            <td><code>@claim.Key</code></td>
+                                            <td>@claim.Value</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- External Logins -->
+        @if (Model.ExternalLogins.Any())
+        {
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">
+                        <i class="fab fa-google me-2"></i>การเข้าสู่ระบบภายนอก
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var login in Model.ExternalLogins)
+                        {
+                            <span class="badge bg-info fs-6">@login</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="resetPasswordForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="userId" value="@Model.Id">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">รีเซ็ตรหัสผ่าน</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        การรีเซ็ตรหัสผ่านจะเปลี่ยนรหัสผ่านปัจจุบันของผู้ใช้
+                    </div>
+
+                    <p>รีเซ็ตรหัสผ่านสำหรับ: <strong>@Model.FullName (@Model.Email)</strong></p>
+
+                    <div class="mb-3">
+                        <label class="form-label">รหัสผ่านใหม่:</label>
+                        <div class="input-group">
+                            <input type="password" name="newPassword" class="form-control" id="newPassword" required minlength="6">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('newPassword')">
+                                <i class="fas fa-eye" id="newPassword-icon"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-key me-2"></i>รีเซ็ตรหัสผ่าน
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ยืนยันการลบผู้ใช้</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>คำเตือน!</strong> การลบผู้ใช้จะไม่สามารถกู้คืนได้
+                </div>
+                <p>คุณต้องการลบผู้ใช้ <strong id="deleteUserName"></strong> ใช่หรือไม่?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-danger" onclick="deleteUser()">
+                    <i class="fas fa-trash me-2"></i>ลบผู้ใช้
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let deleteUserId = '';
+
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(inputId + '-icon');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Toggle user status
+        function toggleUserStatus(userId, isActive) {
+            $.post('@Url.Action("ToggleStatus")', {
+                id: userId,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(result) {
+                if (result.success) {
+                    showToast('success', result.message);
+                    location.reload(); // Reload to update the display
+                } else {
+                    showToast('error', result.message);
+                }
+            })
+            .fail(function() {
+                showToast('error', 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะผู้ใช้');
+            });
+        }
+
+        // Reset password form submission
+        $('#resetPasswordForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const formData = $(this).serialize();
+
+            $.post('@Url.Action("ResetPassword")', formData)
+            .done(function(result) {
+                $('#resetPasswordModal').modal('hide');
+                if (result.success) {
+                    showToast('success', result.message);
+                } else {
+                    showToast('error', result.message);
+                }
+            })
+            .fail(function() {
+                $('#resetPasswordModal').modal('hide');
+                showToast('error', 'เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน');
+            });
+        });
+
+        // Confirm delete user
+        function confirmDeleteUser(userId, userName) {
+            deleteUserId = userId;
+            $('#deleteUserName').text(userName);
+            $('#deleteUserModal').modal('show');
+        }
+
+        // Delete user
+        function deleteUser() {
+            $.post('@Url.Action("Delete")', {
+                id: deleteUserId,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(result) {
+                $('#deleteUserModal').modal('hide');
+                if (result.success) {
+                    showToast('success', result.message);
+                    // Redirect to index after successful deletion
+                    setTimeout(() => {
+                        window.location.href = '@Url.Action("Index")';
+                    }, 1500);
+                } else {
+                    showToast('error', result.message);
+                }
+            })
+            .fail(function() {
+                $('#deleteUserModal').modal('hide');
+                showToast('error', 'เกิดข้อผิดพลาดในการลบผู้ใช้');
+            });
+        }
+
+        // Unlock user
+        function unlockUser(userId) {
+            // Implementation for unlocking user would go here
+            showToast('info', 'ฟีเจอร์นี้จะเพิ่มในอนาคต');
+        }
+
+        // Toast notification function (placeholder)
+        function showToast(type, message) {
+            // Implementation depends on your toast library
+            console.log(type + ': ' + message);
+        }
+    </script>
+}

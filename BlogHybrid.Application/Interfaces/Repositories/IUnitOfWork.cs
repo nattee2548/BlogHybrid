@@ -9,6 +9,7 @@ namespace BlogHybrid.Application.Interfaces.Repositories
     public interface IUnitOfWork : IDisposable
     {
         ICategoryRepository Categories { get; }
+        IUserRepository Users { get; }
         // IPostRepository Posts { get; } // เพิ่มในอนาคต
         // ICommentRepository Comments { get; } // เพิ่มในอนาคต
 

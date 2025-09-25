@@ -1,0 +1,428 @@
+﻿@model BlogHybrid.Web.Models.ViewModels.Admin.UserIndexViewModel
+@{
+    ViewData["Title"] = "จัดการผู้ใช้";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-page-header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 admin-text-primary">
+                <i class="fas fa-users me-2"></i>จัดการผู้ใช้
+            </h1>
+            <p class="admin-text-secondary mb-0">จัดการบัญชีผู้ใช้ และสิทธิ์การเข้าใช้งาน</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Create")" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>เพิ่มผู้ใช้ใหม่
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="admin-stats-card">
+            <div class="stats-icon bg-primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stats-content">
+                <h3>@Model.TotalUsers</h3>
+                <p>ผู้ใช้ทั้งหมด</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="admin-stats-card">
+            <div class="stats-icon bg-success">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stats-content">
+                <h3>@Model.Users.Count(u => u.IsActive)</h3>
+                <p>ใช้งาน</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="admin-stats-card">
+            <div class="stats-icon bg-warning">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="stats-content">
+                <h3>@Model.Users.Count(u => u.Roles.Contains("Admin"))</h3>
+                <p>ผู้ดูแลระบบ</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="admin-stats-card">
+            <div class="stats-icon bg-info">
+                <i class="fas fa-user-cog"></i>
+            </div>
+            <div class="stats-content">
+                <h3>@Model.Users.Count(u => u.Roles.Contains("Moderator"))</h3>
+                <p>ผู้ควบคุม</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="admin-card mb-4">
+    <div class="admin-card-body">
+        <form method="get" class="admin-filter-form">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">ค้นหา</label>
+                    <input name="searchTerm" type="text" class="form-control" 
+                           placeholder="ค้นหาด้วยอีเมล, ชื่อผู้ใช้, หรือชื่อจริง" 
+                           value="@Model.SearchTerm">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">บทบาท</label>
+                    <select name="roleFilter" class="form-select">
+                        <option value="">ทุกบทบาท</option>
+                        @foreach (var role in Model.AvailableRoles)
+                        {
+                            <option value="@role" @(Model.RoleFilter == role ? "selected" : "")>@role</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">สถานะ</label>
+                    <select name="isActiveFilter" class="form-select">
+                        <option value="">ทุกสถานะ</option>
+                        <option value="true" @(Model.IsActiveFilter == true ? "selected" : "")>ใช้งาน</option>
+                        <option value="false" @(Model.IsActiveFilter == false ? "selected" : "")>ปิดใช้งาน</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="btn-group w-100">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="admin-card">
+    <div class="admin-card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>รายการผู้ใช้
+                @if (Model.TotalUsers > 0)
+                {
+                    <span class="badge bg-primary ms-2">@Model.TotalUsers</span>
+                }
+            </h5>
+            @if (Model.TotalUsers > 0)
+            {
+                <small class="admin-text-secondary">
+                    แสดง @Model.StartIndex - @Model.EndIndex จาก @Model.TotalUsers รายการ
+                </small>
+            }
+        </div>
+    </div>
+    <div class="admin-card-body p-0">
+        @if (Model.Users.Any())
+        {
+            <div class="table-responsive">
+                <table class="table admin-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>ผู้ใช้</th>
+                            <th>บทบาท</th>
+                            <th>สถานะ</th>
+                            <th>ยืนยันอีเมล</th>
+                            <th>เข้าใช้งานล่าสุด</th>
+                            <th>สร้างเมื่อ</th>
+                            <th width="120">การจัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr id="user-row-@user.Id">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar-sm me-3">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium">@user.FullName</div>
+                                            <small class="text-muted">@user.Email</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (user.Roles.Any())
+                                    {
+                                        @foreach (var role in user.Roles)
+                                        {
+                                            <span class="badge bg-@(role == "Admin" ? "danger" : role == "Moderator" ? "warning" : "secondary") me-1">@role</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark">User</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-@user.StatusBadgeClass" id="status-badge-@user.Id">
+                                        @user.StatusText
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (user.EmailConfirmed)
+                                    {
+                                        <i class="fas fa-check-circle text-success" title="ยืนยันแล้ว"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-exclamation-triangle text-warning" title="ยังไม่ยืนยัน"></i>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.LastLoginAt.HasValue)
+                                    {
+                                        <small title="@user.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm")">
+                                            @user.LastLoginAt.Value.ToString("dd/MM/yyyy")
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-muted">ยังไม่เคยเข้าใช้งาน</small>
+                                    }
+                                </td>
+                                <td>
+                                    <small>@user.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" 
+                                                class="btn btn-outline-@(user.IsActive ? "secondary" : "success")" 
+                                                onclick="toggleUserStatus('@user.Id', @user.IsActive.ToString().ToLower())"
+                                                title="@(user.IsActive ? "ปิดใช้งาน" : "เปิดใช้งาน")">
+                                            <i class="fas fa-@(user.IsActive ? "ban" : "check")"></i>
+                                        </button>
+                                        
+                                        <a href="@Url.Action("Details", new { id = user.Id })" 
+                                           class="btn btn-outline-info" 
+                                           title="ดูรายละเอียด">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        <a href="@Url.Action("Edit", new { id = user.Id })" 
+                                           class="btn btn-outline-primary" 
+                                           title="แก้ไข">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        
+                                        <button type="button" 
+                                                class="btn btn-outline-danger" 
+                                                onclick="confirmDeleteUser('@user.Id', '@Html.Raw(user.FullName)')"
+                                                title="ลบ">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="admin-text-muted">
+                    <i class="fas fa-users fa-3x mb-3 d-block text-muted"></i>
+                    <h5 class="mb-3">ไม่พบผู้ใช้</h5>
+                    @if (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.RoleFilter) || Model.IsActiveFilter.HasValue)
+                    {
+                        <p class="mb-3">
+                            ไม่พบผู้ใช้ที่ตรงกับเงื่อนไขที่กำหนด
+                        </p>
+                        <div>
+                            <a href="@Url.Action("Index")" class="btn btn-outline-primary btn-sm me-2">
+                                <i class="fas fa-list me-1"></i>ดูทั้งหมด
+                            </a>
+                            <a href="@Url.Action("Create")" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>เพิ่มผู้ใช้ใหม่
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="mb-3">
+                            ยังไม่มีผู้ใช้ในระบบ
+                        </p>
+                        <a href="@Url.Action("Create")" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>เพิ่มผู้ใช้ใหม่
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Pagination -->
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="User pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { 
+                    page = Model.CurrentPage - 1, 
+                    searchTerm = Model.SearchTerm, 
+                    roleFilter = Model.RoleFilter, 
+                    isActiveFilter = Model.IsActiveFilter 
+                })">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+
+            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = i, 
+                        searchTerm = Model.SearchTerm, 
+                        roleFilter = Model.RoleFilter, 
+                        isActiveFilter = Model.IsActiveFilter 
+                    })">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { 
+                    page = Model.CurrentPage + 1, 
+                    searchTerm = Model.SearchTerm, 
+                    roleFilter = Model.RoleFilter, 
+                    isActiveFilter = Model.IsActiveFilter 
+                })">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ยืนยันการลบผู้ใช้</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>คำเตือน!</strong> การลบผู้ใช้จะไม่สามารถกู้คืนได้
+                </div>
+                <p>คุณต้องการลบผู้ใช้ <strong id="deleteUserName"></strong> ใช่หรือไม่?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-danger" onclick="deleteUser()">
+                    <i class="fas fa-trash me-2"></i>ลบผู้ใช้
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let deleteUserId = '';
+
+        // Toggle user status
+        function toggleUserStatus(userId, isActive) {
+            $.post('@Url.Action("ToggleStatus")', {
+                id: userId,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(result) {
+                if (result.success) {
+                    // Update status badge
+                    const badge = $('#status-badge-' + userId);
+                    const button = $('button[onclick*="' + userId + '"]').first();
+                    
+                    if (result.isActive) {
+                        badge.removeClass('bg-secondary').addClass('bg-success').text('ใช้งาน');
+                        button.removeClass('btn-outline-success').addClass('btn-outline-secondary')
+                              .attr('title', 'ปิดใช้งาน')
+                              .html('<i class="fas fa-ban"></i>');
+                        button.attr('onclick', `toggleUserStatus('${userId}', true)`);
+                    } else {
+                        badge.removeClass('bg-success').addClass('bg-secondary').text('ปิดใช้งาน');
+                        button.removeClass('btn-outline-secondary').addClass('btn-outline-success')
+                              .attr('title', 'เปิดใช้งาน')
+                              .html('<i class="fas fa-check"></i>');
+                        button.attr('onclick', `toggleUserStatus('${userId}', false)`);
+                    }
+                    
+                    showToast('success', result.message);
+                } else {
+                    showToast('error', result.message);
+                }
+            })
+            .fail(function() {
+                showToast('error', 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะผู้ใช้');
+            });
+        }
+
+        // Confirm delete user
+        function confirmDeleteUser(userId, userName) {
+            deleteUserId = userId;
+            $('#deleteUserName').text(userName);
+            $('#deleteUserModal').modal('show');
+        }
+
+        // Delete user
+        function deleteUser() {
+            $.post('@Url.Action("Delete")', {
+                id: deleteUserId,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(result) {
+                $('#deleteUserModal').modal('hide');
+                if (result.success) {
+                    $('#user-row-' + deleteUserId).fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                    showToast('success', result.message);
+                } else {
+                    showToast('error', result.message);
+                }
+            })
+            .fail(function() {
+                $('#deleteUserModal').modal('hide');
+                showToast('error', 'เกิดข้อผิดพลาดในการลบผู้ใช้');
+            });
+        }
+
+        // Toast notification function
+        function showToast(type, message) {
+            // Implementation depends on your toast library
+            // This is a placeholder for the toast notification
+            if (type === 'success') {
+                console.log('Success: ' + message);
+            } else {
+                console.log('Error: ' + message);
+            }
+        }
+    </script>
+}
