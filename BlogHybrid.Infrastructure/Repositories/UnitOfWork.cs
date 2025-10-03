@@ -84,6 +84,8 @@ namespace BlogHybrid.Infrastructure.Repositories
         // Repository instances
         private ICategoryRepository? _categories;
         private IUserRepository? _users;
+        private ITagRepository? _tags;
+        private ICommunityRepository? _communities;
 
         public UnitOfWork(
             ApplicationDbContext context,
@@ -114,7 +116,22 @@ namespace BlogHybrid.Infrastructure.Repositories
                 return _users;
             }
         }
-
+        public ICommunityRepository Communities
+        {
+            get
+            {
+                _communities ??= new CommunityRepository(_context);
+                return _communities;
+            }
+        }
+        public ITagRepository Tags
+        {
+            get
+            {
+                _tags ??= new TagRepository(_context);
+                return _tags;
+            }
+        }
         // Transaction methods
         public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {

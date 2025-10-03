@@ -20,5 +20,6 @@ namespace BlogHybrid.Domain.Entities
 
         // Navigation properties
         public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+        public virtual ICollection<Community> Communities { get; set; } = new List<Community>();
     }
 }

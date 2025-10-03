@@ -24,5 +24,11 @@ namespace BlogHybrid.Domain.Entities
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
         public virtual ICollection<CommentLike> CommentLikes { get; set; } = new List<CommentLike>();
+
+        public virtual ICollection<Community> CreatedCommunities { get; set; } = new List<Community>();
+        public virtual ICollection<CommunityMember> CommunityMemberships { get; set; } = new List<CommunityMember>();
+        public virtual ICollection<CommunityInvite> SentInvites { get; set; } = new List<CommunityInvite>();
+        public virtual ICollection<CommunityInvite> ReceivedInvites { get; set; } = new List<CommunityInvite>();
+
     }
 }

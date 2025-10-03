@@ -1,11 +1,7 @@
-﻿using BlogHybrid.Domain.Entities;
+﻿// BlogHybrid.Infrastructure/Data/Configurations/TagConfiguration.cs
+using BlogHybrid.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BlogHybrid.Infrastructure.Data.Configurations
 {
@@ -23,9 +19,20 @@ namespace BlogHybrid.Infrastructure.Data.Configurations
                 .IsRequired()
                 .HasMaxLength(60);
 
+           
+            builder.Property(t => t.CreatedBy)
+                .HasMaxLength(450);
+
             // Indexes
             builder.HasIndex(t => t.Slug).IsUnique();
             builder.HasIndex(t => t.Name).IsUnique();
+            builder.HasIndex(t => t.CreatedBy);
+
+            
+            builder.HasOne(t => t.Creator)
+                .WithMany()
+                .HasForeignKey(t => t.CreatedBy)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

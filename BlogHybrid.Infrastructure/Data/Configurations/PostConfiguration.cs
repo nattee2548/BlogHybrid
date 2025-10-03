@@ -38,7 +38,7 @@ namespace BlogHybrid.Infrastructure.Data.Configurations
             builder.HasIndex(p => p.IsFeatured);
             builder.HasIndex(p => p.CreatedAt);
             builder.HasIndex(p => p.PublishedAt);
-
+            builder.HasIndex(p => p.CommunityId);
             // Relationships
             builder.HasOne(p => p.Author)
                 .WithMany(u => u.Posts)
@@ -49,6 +49,12 @@ namespace BlogHybrid.Infrastructure.Data.Configurations
                 .WithMany(c => c.Posts)
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(p => p.Community)
+               .WithMany(c => c.Posts)
+               .HasForeignKey(p => p.CommunityId)
+               .OnDelete(DeleteBehavior.SetNull);
+
         }
     }
 

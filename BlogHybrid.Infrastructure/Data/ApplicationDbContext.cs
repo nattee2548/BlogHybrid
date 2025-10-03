@@ -19,6 +19,11 @@ namespace BlogHybrid.Infrastructure.Data
         public DbSet<PostLike> PostLikes { get; set; }
         public DbSet<CommentLike> CommentLikes { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+
+        public DbSet<Community> Communities { get; set; }
+        public DbSet<CommunityMember> CommunityMembers { get; set; }
+        public DbSet<CommunityInvite> CommunityInvites { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

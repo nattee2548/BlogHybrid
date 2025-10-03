@@ -27,10 +27,12 @@ namespace BlogHybrid.Domain.Entities
         // Foreign Keys
         public string AuthorId { get; set; } = string.Empty;
         public int CategoryId { get; set; }
+        public int? CommunityId { get; set; } // ⭐ NEW - nullable (post อาจไม่อยู่ใน community)
 
         // Navigation properties
         public virtual ApplicationUser Author { get; set; } = null!;
         public virtual Category Category { get; set; } = null!;
+        public virtual Community? Community { get; set; } // ⭐ NEW
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public virtual ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();
         public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();

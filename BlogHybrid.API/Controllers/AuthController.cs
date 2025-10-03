@@ -1,8 +1,10 @@
-﻿using BlogHybrid.Application.Commands.Auth;
+﻿// Path: BlogHybrid.API/Controllers/AuthController.cs
+using BlogHybrid.Application.Commands.Auth;
 using BlogHybrid.Application.DTOs.Auth;
 using BlogHybrid.Application.Interfaces.Services;
 using BlogHybrid.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,9 +32,70 @@ namespace BlogHybrid.API.Controllers
         }
 
         /// <summary>
+        /// Register new user (Public)
+        /// </summary>
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromBody] RegisterUserCommand command)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "ข้อมูลไม่ถูกต้อง",
+                        errors = ModelState.Values
+                            .SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage)
+                            .ToList()
+                    });
+                }
+
+                var result = await _mediator.Send(command);
+
+                if (!result.Success)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "สมัครสมาชิกไม่สำเร็จ",
+                        errors = result.Errors
+                    });
+                }
+
+                _logger.LogInformation("User registered successfully: {Email}", command.Email);
+
+                return CreatedAtAction(
+                    nameof(Register),
+                    new { id = result.UserId },
+                    new
+                    {
+                        success = true,
+                        userId = result.UserId,
+                        message = result.Message,
+                        errors = new List<string>()
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during user registration");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง",
+                    errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
+        /// <summary>
         /// Login user and get JWT tokens
         /// </summary>
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginUserCommand command)
         {
             try
@@ -101,6 +164,7 @@ namespace BlogHybrid.API.Controllers
         /// Refresh JWT token using refresh token
         /// </summary>
         [HttpPost("refresh-token")]
+        [AllowAnonymous]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             try
@@ -140,6 +204,57 @@ namespace BlogHybrid.API.Controllers
                 {
                     success = false,
                     message = "เกิดข้อผิดพลาดในการรีเฟรชโทเค็น"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Logout user and revoke refresh token
+        /// </summary>
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.RefreshToken))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Refresh token is required"
+                    });
+                }
+
+                var ipAddress = GetIpAddress();
+                var result = await _tokenService.RevokeTokenAsync(
+                    request.RefreshToken,
+                    ipAddress,
+                    "User logout"
+                );
+
+                if (!result)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Failed to revoke token"
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "ออกจากระบบสำเร็จ"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during logout");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "เกิดข้อผิดพลาดในการออกจากระบบ"
                 });
             }
         }

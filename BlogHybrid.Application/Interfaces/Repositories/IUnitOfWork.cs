@@ -10,8 +10,8 @@ namespace BlogHybrid.Application.Interfaces.Repositories
     {
         ICategoryRepository Categories { get; }
         IUserRepository Users { get; }
-        // IPostRepository Posts { get; } // เพิ่มในอนาคต
-        // ICommentRepository Comments { get; } // เพิ่มในอนาคต
+        ITagRepository Tags { get; }
+        ICommunityRepository Communities { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync(CancellationToken cancellationToken = default);
