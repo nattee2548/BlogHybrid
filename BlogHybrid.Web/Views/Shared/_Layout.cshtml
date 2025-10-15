@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - 404alk</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a asp-controller="Home" asp-action="Index" class="logo">404alk</a>
+                </div>
+                
+                <div class="navbar-menu">
+                    <ul class="navbar-nav">
+                        <li><a asp-controller="Home" asp-action="Index">หน้าแรก</a></li>
+                        <li><a asp-controller="Post" asp-action="Index">บทความ</a></li>
+                        <li><a asp-controller="Category" asp-action="Index">หมวดหมู่</a></li>
+                        <li><a asp-controller="Community" asp-action="Index">ชุมชน</a></li>
+                    </ul>
+                </div>
+
+                <partial name="_LoginPartial" />
+            </div>
+        </nav>
+    </header>
+
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>404alk</h3>
+                    <p>แพลตฟอร์มแบ่งปันความรู้และประสบการณ์</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>เมนู</h4>
+                    <ul>
+                        <li><a asp-controller="Home" asp-action="Index">หน้าแรก</a></li>
+                        <li><a asp-controller="Post" asp-action="Index">บทความ</a></li>
+                        <li><a asp-controller="Category" asp-action="Index">หมวดหมู่</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>ติดต่อ</h4>
+                    <p>Email: contact@404alk.com</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; @DateTime.Now.Year - 404alk. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

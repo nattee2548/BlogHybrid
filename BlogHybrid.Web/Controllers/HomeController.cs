@@ -1,8 +1,8 @@
+using BlogHybrid.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using Web.Models;
 
-namespace Web.Controllers
+namespace BlogHybrid.Web.Controllers
 {
     public class HomeController : Controller
     {

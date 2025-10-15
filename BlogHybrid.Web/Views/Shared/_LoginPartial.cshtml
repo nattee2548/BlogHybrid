@@ -1,0 +1,32 @@
+@using Microsoft.AspNetCore.Identity
+@using BlogHybrid.Domain.Entities
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<div class="navbar-user">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var user = await UserManager.GetUserAsync(User);
+        <div class="user-menu">
+            <span class="user-name">@user?.DisplayName</span>
+            <div class="user-dropdown">
+                <a asp-controller="Profile" asp-action="Index">โปรไฟล์</a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">แอดมิน</a>
+                }
+                <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
+                    <button type="submit" class="btn-link">ออกจากระบบ</button>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="auth-links">
+            <a asp-controller="Account" asp-action="Login" class="btn btn-outline">เข้าสู่ระบบ</a>
+            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">สมัครสมาชิก</a>
+        </div>
+    }
+</div>

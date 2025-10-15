@@ -1,0 +1,190 @@
+@{
+    ViewData["Title"] = "หน้าแรก";
+}
+
+<div class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1>ยินดีต้อนรับสู่ 404alk</h1>
+            <p class="hero-subtitle">แพลตฟอร์มแบ่งปันความรู้และประสบการณ์</p>
+            <div class="hero-actions">
+                <a asp-controller="Post" asp-action="Index" class="btn btn-primary btn-lg">เริ่มอ่านบทความ</a>
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline btn-lg">สมัครสมาชิก</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Featured Posts Section -->
+    <section class="section">
+        <div class="section-header">
+            <h2>บทความแนะนำ</h2>
+            <a asp-controller="Post" asp-action="Index" class="view-all">ดูทั้งหมด →</a>
+        </div>
+        
+        <div class="posts-grid">
+            <!-- ตัวอย่าง Post Card - จะมาจาก database ภายหลัง -->
+            <div class="post-card">
+                <div class="post-image">
+                    <img src="https://via.placeholder.com/400x250" alt="Post thumbnail" />
+                </div>
+                <div class="post-content">
+                    <div class="post-meta">
+                        <span class="post-category">เทคโนโลยี</span>
+                        <span class="post-date">5 นาทีที่แล้ว</span>
+                    </div>
+                    <h3 class="post-title">
+                        <a href="#">ตัวอย่างบทความ - ASP.NET Core 9 MVC</a>
+                    </h3>
+                    <p class="post-excerpt">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                        Sed do eiusmod tempor incididunt ut labore...
+                    </p>
+                    <div class="post-footer">
+                        <div class="post-author">
+                            <img src="https://via.placeholder.com/32" alt="Author" class="author-avatar" />
+                            <span class="author-name">ชื่อผู้เขียน</span>
+                        </div>
+                        <div class="post-stats">
+                            <span>❤️ 24</span>
+                            <span>💬 5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copy post-card ข้างบนอีก 2-3 ชุดสำหรับดูตัวอย่าง -->
+            <div class="post-card">
+                <div class="post-image">
+                    <img src="https://via.placeholder.com/400x250" alt="Post thumbnail" />
+                </div>
+                <div class="post-content">
+                    <div class="post-meta">
+                        <span class="post-category">การเขียนโปรแกรม</span>
+                        <span class="post-date">1 ชั่วโมงที่แล้ว</span>
+                    </div>
+                    <h3 class="post-title">
+                        <a href="#">บทความตัวอย่างที่สอง</a>
+                    </h3>
+                    <p class="post-excerpt">
+                        เรียนรู้การใช้ CQRS Pattern และ Repository Pattern...
+                    </p>
+                    <div class="post-footer">
+                        <div class="post-author">
+                            <img src="https://via.placeholder.com/32" alt="Author" class="author-avatar" />
+                            <span class="author-name">ชื่อผู้เขียน</span>
+                        </div>
+                        <div class="post-stats">
+                            <span>❤️ 42</span>
+                            <span>💬 12</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post-card">
+                <div class="post-image">
+                    <img src="https://via.placeholder.com/400x250" alt="Post thumbnail" />
+                </div>
+                <div class="post-content">
+                    <div class="post-meta">
+                        <span class="post-category">ชุมชน</span>
+                        <span class="post-date">3 ชั่วโมงที่แล้ว</span>
+                    </div>
+                    <h3 class="post-title">
+                        <a href="#">การสร้างชุมชน Developer ในไทย</a>
+                    </h3>
+                    <p class="post-excerpt">
+                        แบ่งปันประสบการณ์และเทคนิคการพัฒนาซอฟต์แวร์...
+                    </p>
+                    <div class="post-footer">
+                        <div class="post-author">
+                            <img src="https://via.placeholder.com/32" alt="Author" class="author-avatar" />
+                            <span class="author-name">ชื่อผู้เขียน</span>
+                        </div>
+                        <div class="post-stats">
+                            <span>❤️ 18</span>
+                            <span>💬 8</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="section">
+        <div class="section-header">
+            <h2>หมวดหมู่</h2>
+            <a asp-controller="Category" asp-action="Index" class="view-all">ดูทั้งหมด →</a>
+        </div>
+        
+        <div class="categories-grid">
+            <a href="#" class="category-card">
+                <div class="category-icon">💻</div>
+                <h3>เทคโนโลยี</h3>
+                <p>150 บทความ</p>
+            </a>
+            
+            <a href="#" class="category-card">
+                <div class="category-icon">🎨</div>
+                <h3>ออกแบบ</h3>
+                <p>85 บทความ</p>
+            </a>
+            
+            <a href="#" class="category-card">
+                <div class="category-icon">📱</div>
+                <h3>มือถือ</h3>
+                <p>120 บทความ</p>
+            </a>
+            
+            <a href="#" class="category-card">
+                <div class="category-icon">🌐</div>
+                <h3>เว็บเทคโนโลยี</h3>
+                <p>200 บทความ</p>
+            </a>
+        </div>
+    </section>
+
+    <!-- Communities Section -->
+    <section class="section">
+        <div class="section-header">
+            <h2>ชุมชนยอดนิยม</h2>
+            <a asp-controller="Community" asp-action="Index" class="view-all">ดูทั้งหมด →</a>
+        </div>
+        
+        <div class="communities-grid">
+            <div class="community-card">
+                <div class="community-header">
+                    <img src="https://via.placeholder.com/60" alt="Community" class="community-avatar" />
+                    <div class="community-info">
+                        <h3>ASP.NET Core Developer</h3>
+                        <p class="community-members">1,234 สมาชิก</p>
+                    </div>
+                </div>
+                <p class="community-description">
+                    ชุมชนสำหรับนักพัฒนา ASP.NET Core แบ่งปันความรู้และประสบการณ์
+                </p>
+                <a href="#" class="btn btn-outline btn-sm">เข้าร่วม</a>
+            </div>
+
+            <div class="community-card">
+                <div class="community-header">
+                    <img src="https://via.placeholder.com/60" alt="Community" class="community-avatar" />
+                    <div class="community-info">
+                        <h3>Frontend Developer TH</h3>
+                        <p class="community-members">856 สมาชิก</p>
+                    </div>
+                </div>
+                <p class="community-description">
+                    พูดคุยเรื่อง React, Vue, Angular และ Frontend Technologies
+                </p>
+                <a href="#" class="btn btn-outline btn-sm">เข้าร่วม</a>
+            </div>
+        </div>
+    </section>
+</div>
