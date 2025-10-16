@@ -1,0 +1,41 @@
+/* ================================================
+   Navbar Fix - แก้ไขเมนูหายไป
+   ================================================ */
+
+/* Force show navigation links on medium screens and up */
+.main-nav-links {
+    display: flex !important;
+    gap: 8px;
+    list-style: none;
+}
+
+.main-nav-links a {
+    text-decoration: none;
+}
+
+/* Responsive: ซ่อนเฉพาะบนจอเล็กมาก (< 640px) */
+@media (max-width: 640px) {
+    .main-nav-links {
+        display: none !important;
+    }
+}
+
+/* เพิ่ม: ปรับ search bar ให้เล็กลงเมื่อหน้าจอแคบ */
+@media (max-width: 900px) {
+    .main-search {
+        max-width: 300px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-search {
+        max-width: 200px !important;
+    }
+}
+
+/* เพิ่ม: ปรับ gap และ padding ให้พอดีกับหน้าจอ */
+@media (max-width: 1024px) {
+    .main-navbar {
+        padding: 0 12px !important;
+    }
+}
