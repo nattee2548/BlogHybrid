@@ -2,189 +2,261 @@
     ViewData["Title"] = "หน้าแรก";
 }
 
-<div class="hero-section">
-    <div class="container">
-        <div class="hero-content">
-            <h1>ยินดีต้อนรับสู่ 404alk</h1>
-            <p class="hero-subtitle">แพลตฟอร์มแบ่งปันความรู้และประสบการณ์</p>
-            <div class="hero-actions">
-                <a asp-controller="Post" asp-action="Index" class="btn btn-primary btn-lg">เริ่มอ่านบทความ</a>
-                @if (!User.Identity.IsAuthenticated)
-                {
-                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline btn-lg">สมัครสมาชิก</a>
-                }
+<!-- Sort Bar -->
+<div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 4px; padding: 12px; margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
+    <button class="main-btn main-btn-secondary" style="padding: 6px 12px;">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
+        </svg>
+        ยอดนิยม
+    </button>
+    <button class="main-btn main-btn-outline" style="padding: 6px 12px;">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+        </svg>
+        ล่าสุด
+    </button>
+    <button class="main-btn main-btn-outline" style="padding: 6px 12px;">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+        </svg>
+        กำลังมาแรง
+    </button>
+</div>
+
+<!-- Sample Reddit-Style Posts -->
+<!-- Post 1 -->
+<article class="main-post">
+    <div class="main-post-container">
+        <!-- Vote Section -->
+        <div class="main-vote">
+            <button class="main-vote-btn" aria-label="Upvote">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <span class="main-vote-count">156</span>
+            <button class="main-vote-btn" aria-label="Downvote">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Content Section -->
+        <div class="main-post-content">
+            <!-- Header -->
+            <div class="main-post-header">
+                <a href="#" class="main-post-community">r/dotnet</a>
+                <span>•</span>
+                <span>โพสต์โดย</span>
+                <a href="#" class="main-post-author">u/developer_th</a>
+                <span>•</span>
+                <span class="main-post-time">2 ชั่วโมงที่แล้ว</span>
+            </div>
+            
+            <!-- Title -->
+            <h2 class="main-post-title">
+                <a href="#">ASP.NET Core 9 พร้อมใช้งานแล้ว! มาดูฟีเจอร์ใหม่ที่น่าสนใจกัน</a>
+            </h2>
+            
+            <!-- Text Content -->
+            <div class="main-post-text">
+                <p>Microsoft เพิ่งปล่อย ASP.NET Core 9 ออกมาพร้อมกับฟีเจอร์ใหม่ๆ มากมาย อาทิเช่น การปรับปรุง Performance, Native AOT support ที่ดีขึ้น และ Blazor ที่มีความสามารถมากขึ้น...</p>
+            </div>
+            
+            <!-- Footer Actions -->
+            <div class="main-post-footer">
+                <button class="main-post-action">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" />
+                    </svg>
+                    45 ความคิดเห็น
+                </button>
+                <button class="main-post-action">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                    </svg>
+                    แชร์
+                </button>
+                <button class="main-post-action">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                    </svg>
+                    บันทึก
+                </button>
             </div>
         </div>
     </div>
+</article>
+
+<!-- Post 2 with Image -->
+<article class="main-post">
+    <div class="main-post-container">
+        <div class="main-vote">
+            <button class="main-vote-btn upvoted">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <span class="main-vote-count upvoted">2.8K</span>
+            <button class="main-vote-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+        
+        <div class="main-post-content">
+            <div class="main-post-header">
+                <a href="#" class="main-post-community">r/webdev</a>
+                <span>•</span>
+                <span>โพสต์โดย</span>
+                <a href="#" class="main-post-author">u/frontend_dev</a>
+                <span>•</span>
+                <span class="main-post-time">5 ชั่วโมงที่แล้ว</span>
+                <span class="main-badge main-badge-primary" style="margin-left: 8px;">HOT</span>
+            </div>
+            
+            <h2 class="main-post-title">
+                <a href="#">สร้าง Dark Mode ด้วย CSS Variables แบบมืออาชีพ</a>
+            </h2>
+            
+            <div class="main-post-text">
+                <p>Tutorial ฉบับสมบูรณ์ เทคนิคการทำ Dark/Light Mode ให้ Smooth และรองรับ System Preference พร้อมโค้ดตัวอย่าง...</p>
+            </div>
+            
+            <!-- Image -->
+            <div class="main-post-image">
+                <img src="https://via.placeholder.com/800x400/1a1a1b/d7dadc?text=Dark+Mode+Example" alt="Dark Mode Example" loading="lazy" />
+            </div>
+            
+            <div class="main-post-footer">
+                <button class="main-post-action">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" />
+                    </svg>
+                    128 ความคิดเห็น
+                </button>
+                <button class="main-post-action">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                    </svg>
+                    แชร์
+                </button>
+                <button class="main-post-action">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                    </svg>
+                    บันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- Post 3 -->
+<article class="main-post">
+    <div class="main-post-container">
+        <div class="main-vote">
+            <button class="main-vote-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <span class="main-vote-count">892</span>
+            <button class="main-vote-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+        
+        <div class="main-post-content">
+            <div class="main-post-header">
+                <a href="#" class="main-post-community">r/programming</a>
+                <span>•</span>
+                <span>โพสต์โดย</span>
+                <a href="#" class="main-post-author">u/code_master</a>
+                <span>•</span>
+                <span class="main-post-time">1 วันที่แล้ว</span>
+            </div>
+            
+            <h2 class="main-post-title">
+                <a href="#">Clean Architecture ใน ASP.NET Core - Best Practices 2025</a>
+            </h2>
+            
+            <div class="main-post-text">
+                <p>แชร์ประสบการณ์การใช้ Clean Architecture ในโปรเจคจริง พร้อมทั้ง Pros & Cons และเคสที่เหมาะสมกับการนำไปใช้...</p>
+            </div>
+            
+            <div class="main-post-footer">
+                <button class="main-post-action">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" />
+                    </svg>
+                    67 ความคิดเห็น
+                </button>
+                <button class="main-post-action">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                    </svg>
+                    แชร์
+                </button>
+                <button class="main-post-action">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                    </svg>
+                    บันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- Load More Button -->
+<div style="text-align: center; margin-top: 24px;">
+    <button class="main-btn main-btn-secondary" style="padding: 12px 24px;">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+        </svg>
+        โหลดเพิ่มเติม
+    </button>
 </div>
 
-<div class="container">
-    <!-- Featured Posts Section -->
-    <section class="section">
-        <div class="section-header">
-            <h2>บทความแนะนำ</h2>
-            <a asp-controller="Post" asp-action="Index" class="view-all">ดูทั้งหมด →</a>
-        </div>
-        
-        <div class="posts-grid">
-            <!-- ตัวอย่าง Post Card - จะมาจาก database ภายหลัง -->
-            <div class="post-card">
-                <div class="post-image">
-                    <img src="https://via.placeholder.com/400x250" alt="Post thumbnail" />
-                </div>
-                <div class="post-content">
-                    <div class="post-meta">
-                        <span class="post-category">เทคโนโลยี</span>
-                        <span class="post-date">5 นาทีที่แล้ว</span>
-                    </div>
-                    <h3 class="post-title">
-                        <a href="#">ตัวอย่างบทความ - ASP.NET Core 9 MVC</a>
-                    </h3>
-                    <p class="post-excerpt">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-                        Sed do eiusmod tempor incididunt ut labore...
-                    </p>
-                    <div class="post-footer">
-                        <div class="post-author">
-                            <img src="https://via.placeholder.com/32" alt="Author" class="author-avatar" />
-                            <span class="author-name">ชื่อผู้เขียน</span>
-                        </div>
-                        <div class="post-stats">
-                            <span>❤️ 24</span>
-                            <span>💬 5</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Copy post-card ข้างบนอีก 2-3 ชุดสำหรับดูตัวอย่าง -->
-            <div class="post-card">
-                <div class="post-image">
-                    <img src="https://via.placeholder.com/400x250" alt="Post thumbnail" />
-                </div>
-                <div class="post-content">
-                    <div class="post-meta">
-                        <span class="post-category">การเขียนโปรแกรม</span>
-                        <span class="post-date">1 ชั่วโมงที่แล้ว</span>
-                    </div>
-                    <h3 class="post-title">
-                        <a href="#">บทความตัวอย่างที่สอง</a>
-                    </h3>
-                    <p class="post-excerpt">
-                        เรียนรู้การใช้ CQRS Pattern และ Repository Pattern...
-                    </p>
-                    <div class="post-footer">
-                        <div class="post-author">
-                            <img src="https://via.placeholder.com/32" alt="Author" class="author-avatar" />
-                            <span class="author-name">ชื่อผู้เขียน</span>
-                        </div>
-                        <div class="post-stats">
-                            <span>❤️ 42</span>
-                            <span>💬 12</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="post-card">
-                <div class="post-image">
-                    <img src="https://via.placeholder.com/400x250" alt="Post thumbnail" />
-                </div>
-                <div class="post-content">
-                    <div class="post-meta">
-                        <span class="post-category">ชุมชน</span>
-                        <span class="post-date">3 ชั่วโมงที่แล้ว</span>
-                    </div>
-                    <h3 class="post-title">
-                        <a href="#">การสร้างชุมชน Developer ในไทย</a>
-                    </h3>
-                    <p class="post-excerpt">
-                        แบ่งปันประสบการณ์และเทคนิคการพัฒนาซอฟต์แวร์...
-                    </p>
-                    <div class="post-footer">
-                        <div class="post-author">
-                            <img src="https://via.placeholder.com/32" alt="Author" class="author-avatar" />
-                            <span class="author-name">ชื่อผู้เขียน</span>
-                        </div>
-                        <div class="post-stats">
-                            <span>❤️ 18</span>
-                            <span>💬 8</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Categories Section -->
-    <section class="section">
-        <div class="section-header">
-            <h2>หมวดหมู่</h2>
-            <a asp-controller="Category" asp-action="Index" class="view-all">ดูทั้งหมด →</a>
-        </div>
-        
-        <div class="categories-grid">
-            <a href="#" class="category-card">
-                <div class="category-icon">💻</div>
-                <h3>เทคโนโลยี</h3>
-                <p>150 บทความ</p>
-            </a>
-            
-            <a href="#" class="category-card">
-                <div class="category-icon">🎨</div>
-                <h3>ออกแบบ</h3>
-                <p>85 บทความ</p>
-            </a>
-            
-            <a href="#" class="category-card">
-                <div class="category-icon">📱</div>
-                <h3>มือถือ</h3>
-                <p>120 บทความ</p>
-            </a>
-            
-            <a href="#" class="category-card">
-                <div class="category-icon">🌐</div>
-                <h3>เว็บเทคโนโลยี</h3>
-                <p>200 บทความ</p>
-            </a>
-        </div>
-    </section>
-
-    <!-- Communities Section -->
-    <section class="section">
-        <div class="section-header">
-            <h2>ชุมชนยอดนิยม</h2>
-            <a asp-controller="Community" asp-action="Index" class="view-all">ดูทั้งหมด →</a>
-        </div>
-        
-        <div class="communities-grid">
-            <div class="community-card">
-                <div class="community-header">
-                    <img src="https://via.placeholder.com/60" alt="Community" class="community-avatar" />
-                    <div class="community-info">
-                        <h3>ASP.NET Core Developer</h3>
-                        <p class="community-members">1,234 สมาชิก</p>
-                    </div>
-                </div>
-                <p class="community-description">
-                    ชุมชนสำหรับนักพัฒนา ASP.NET Core แบ่งปันความรู้และประสบการณ์
-                </p>
-                <a href="#" class="btn btn-outline btn-sm">เข้าร่วม</a>
-            </div>
-
-            <div class="community-card">
-                <div class="community-header">
-                    <img src="https://via.placeholder.com/60" alt="Community" class="community-avatar" />
-                    <div class="community-info">
-                        <h3>Frontend Developer TH</h3>
-                        <p class="community-members">856 สมาชิก</p>
-                    </div>
-                </div>
-                <p class="community-description">
-                    พูดคุยเรื่อง React, Vue, Angular และ Frontend Technologies
-                </p>
-                <a href="#" class="btn btn-outline btn-sm">เข้าร่วม</a>
-            </div>
-        </div>
-    </section>
-</div>
+@section Scripts {
+    <script>
+        // Sample voting functionality
+        document.querySelectorAll('.main-vote-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const isUpvote = this.querySelector('svg path').getAttribute('d').includes('12.707');
+                const countElem = this.parentElement.querySelector('.main-vote-count');
+                const currentCount = parseInt(countElem.textContent);
+                
+                // Toggle vote state
+                if (this.classList.contains('upvoted') || this.classList.contains('downvoted')) {
+                    this.classList.remove('upvoted', 'downvoted');
+                    countElem.classList.remove('upvoted', 'downvoted');
+                    countElem.textContent = currentCount + (isUpvote ? -1 : 1);
+                } else {
+                    // Remove other vote state if exists
+                    this.parentElement.querySelectorAll('.main-vote-btn').forEach(b => {
+                        b.classList.remove('upvoted', 'downvoted');
+                    });
+                    countElem.classList.remove('upvoted', 'downvoted');
+                    
+                    // Add new vote state
+                    if (isUpvote) {
+                        this.classList.add('upvoted');
+                        countElem.classList.add('upvoted');
+                        countElem.textContent = currentCount + 1;
+                    } else {
+                        this.classList.add('downvoted');
+                        countElem.classList.add('downvoted');
+                        countElem.textContent = currentCount - 1;
+                    }
+                }
+            });
+        });
+    </script>
+}

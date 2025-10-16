@@ -1,0 +1,250 @@
+/* ================================================
+   Theme Switcher UI - Toggle Button
+   ================================================ */
+
+.theme-switcher-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Toggle Switch */
+.theme-toggle {
+    position: relative;
+    width: 48px;
+    height: 24px;
+    background: var(--bg-active);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+}
+
+.theme-toggle:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-focus);
+}
+
+/* Toggle Ball */
+.theme-toggle-ball {
+    width: 18px;
+    height: 18px;
+    background: var(--text-primary);
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Icons inside ball */
+.theme-toggle-icon {
+    width: 12px;
+    height: 12px;
+    color: var(--bg-primary);
+}
+
+/* Dark mode state */
+[data-theme="dark"] .theme-toggle-ball {
+    transform: translateX(24px);
+}
+
+/* Optional: Text labels */
+.theme-switcher-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Fancy version with icons on track */
+.theme-toggle-fancy {
+    background: linear-gradient(to right, #ffd93d 0%, #2c3e50 100%);
+    border: none;
+    justify-content: space-between;
+    padding: 3px;
+}
+
+.theme-toggle-fancy .theme-toggle-ball {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-track-icon {
+    width: 14px;
+    height: 14px;
+    color: white;
+    opacity: 0.8;
+}
+
+/* Sun icon (left) */
+.theme-toggle-sun {
+    margin-left: 4px;
+}
+
+/* Moon icon (right) */
+.theme-toggle-moon {
+    margin-right: 4px;
+}
+
+[data-theme="dark"] .theme-toggle-fancy .theme-toggle-ball {
+    transform: translateX(24px);
+    background: #2c3e50;
+}
+
+/* Dropdown version (for mobile or settings page) */
+.theme-dropdown {
+    position: relative;
+}
+
+.theme-dropdown-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.theme-dropdown-button:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-focus);
+}
+
+.theme-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    box-shadow: var(--shadow-lg);
+    min-width: 180px;
+    z-index: 1000;
+    display: none;
+}
+
+.theme-dropdown-menu.active {
+    display: block;
+    animation: dropdown-fade-in 0.2s ease;
+}
+
+@keyframes dropdown-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.theme-option:hover {
+    background: var(--bg-hover);
+}
+
+.theme-option.active {
+    background: var(--bg-active);
+    color: var(--primary);
+}
+
+.theme-option-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.theme-option-text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.theme-option-check {
+    width: 16px;
+    height: 16px;
+    color: var(--primary);
+    display: none;
+}
+
+.theme-option.active .theme-option-check {
+    display: block;
+}
+
+/* Button style alternative */
+.theme-button-group {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-secondary);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.theme-button {
+    padding: 6px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.theme-button:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.theme-button.active {
+    background: var(--card-bg);
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.theme-button-icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* Accessibility */
+.theme-switcher-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Animation for theme transition */
+html.theme-transitioning * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}

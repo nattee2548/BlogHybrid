@@ -1,72 +1,228 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-theme="light">
 <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    
+    <!-- SEO Meta Tags -->
     <partial name="_SeoMetaTags" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚀%3C/text%3E%3C/svg%3E">
+    
+    <!-- Theme CSS Files (MUST BE FIRST for proper CSS variable loading) -->
+    <link rel="stylesheet" href="~/css/themes/light-mode.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/themes/dark-mode.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/themes/main-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/themes/theme-switcher.css" asp-append-version="true" />
+    
+    <!-- Legacy CSS Files (for backward compatibility) -->
     <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/responsive/breakpoints.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/responsive/utilities.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/responsive/responsive.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/responsive/touch.css" asp-append-version="true" />
+    
+    <!-- Load theme ASAP to prevent flash -->
+    <script>
+        (function() {
+            const theme = localStorage.getItem('main-theme-preference') || 'auto';
+            let actualTheme = theme;
+            if (theme === 'auto') {
+                actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', actualTheme);
+        })();
+    </script>
 </head>
-<body>
-    <header>
-        <nav class="navbar">
-            <div class="container">
-                <div class="navbar-brand">
-                    <a asp-controller="Home" asp-action="Index" class="logo">404alk</a>
+<body class="main-layout">
+    <!-- Header / Navbar -->
+    <header class="main-header">
+        <nav class="main-navbar">
+            <!-- Left Side -->
+            <div class="main-navbar-left">
+                <!-- Logo -->
+                <a asp-controller="Home" asp-action="Index" class="main-logo">
+                    <span class="main-logo-icon">4</span>
+                    <span>404alk</span>
+                </a>
+                
+                <!-- Navigation Links (Desktop) -->
+                <ul class="main-nav-links">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" class="main-nav-link">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                            </svg>
+                            หน้าแรก
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Post" asp-action="Index" class="main-nav-link">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                            </svg>
+                            บทความ
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Category" asp-action="Index" class="main-nav-link">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                            </svg>
+                            หมวดหมู่
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Community" asp-action="Index" class="main-nav-link">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                            </svg>
+                            ชุมชน
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Right Side -->
+            <div class="main-navbar-right">
+                <!-- Search Bar -->
+                <div class="main-search">
+                    <svg class="main-search-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                    <input type="text" class="main-search-input" placeholder="ค้นหา 404alk" />
                 </div>
                 
-                <div class="navbar-menu">
-                    <ul class="navbar-nav">
-                        <li><a asp-controller="Home" asp-action="Index">หน้าแรก</a></li>
-                        <li><a asp-controller="Post" asp-action="Index">บทความ</a></li>
-                        <li><a asp-controller="Category" asp-action="Index">หมวดหมู่</a></li>
-                        <li><a asp-controller="Community" asp-action="Index">ชุมชน</a></li>
-                    </ul>
+                <!-- Theme Switcher -->
+                <div class="theme-switcher-container">
+                    <button class="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+                        <span class="theme-toggle-ball">
+                            <svg class="theme-toggle-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <!-- Sun icon (will be shown in light mode) -->
+                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+                            </svg>
+                        </span>
+                    </button>
                 </div>
-
+                
+                <!-- User Menu / Login -->
                 <partial name="_LoginPartial" />
+                
+                <!-- Create Post Button (if logged in) -->
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Post" asp-action="Create" class="main-btn main-btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        สร้าง
+                    </a>
+                }
             </div>
         </nav>
     </header>
-
-    <main role="main" class="main-content">
-        @RenderBody()
-    </main>
-
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>404alk</h3>
-                    <p>แพลตฟอร์มแบ่งปันความรู้และประสบการณ์</p>
+    
+    <!-- Main Content Area -->
+    <div class="main-main">
+        <!-- Main Content -->
+        <main class="main-content" role="main">
+            @RenderBody()
+        </main>
+        
+        <!-- Sidebar (Desktop only) -->
+        <aside class="main-sidebar">
+            <!-- Community Info Card -->
+            <div class="main-sidebar-card">
+                <div class="main-sidebar-header">
+                    <h3 class="main-sidebar-title">เกี่ยวกับ 404alk</h3>
                 </div>
-                
-                <div class="footer-section">
-                    <h4>เมนู</h4>
-                    <ul>
-                        <li><a asp-controller="Home" asp-action="Index">หน้าแรก</a></li>
-                        <li><a asp-controller="Post" asp-action="Index">บทความ</a></li>
-                        <li><a asp-controller="Category" asp-action="Index">หมวดหมู่</a></li>
-                    </ul>
+                <div class="main-sidebar-content">
+                    <p style="color: var(--text-secondary); margin-bottom: 12px; line-height: 1.6;">
+                        แพลตฟอร์มสำหรับนักพัฒนาและผู้ที่สนใจเทคโนโลยี เพื่อแบ่งปันความรู้ ประสบการณ์ และเรียนรู้ร่วมกัน
+                    </p>
+                    <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 16px; color: var(--text-primary);">12.5K</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">สมาชิก</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 16px; color: var(--primary);">●</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">342 ออนไลน์</div>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="footer-section">
-                    <h4>ติดต่อ</h4>
-                    <p>Email: contact@404alk.com</p>
+                <div class="main-sidebar-footer">
+                    @if (!User.Identity.IsAuthenticated)
+                    {
+                        <a asp-controller="Account" asp-action="Register" class="main-btn main-btn-primary" style="width: 100%; justify-content: center;">
+                            เข้าร่วมชุมชน
+                        </a>
+                    }
                 </div>
             </div>
             
-            <div class="footer-bottom">
-                <p>&copy; @DateTime.Now.Year - 404alk. All rights reserved.</p>
+            <!-- Popular Communities Card -->
+            <div class="main-sidebar-card">
+                <div class="main-sidebar-header">
+                    <h3 class="main-sidebar-title">ชุมชนยอดนิยม</h3>
+                </div>
+                <div class="main-sidebar-content" style="padding: 0;">
+                    <a href="#" class="main-community-info" style="text-decoration: none;">
+                        <div class="main-community-icon">T</div>
+                        <div class="main-community-details">
+                            <h3>r/Technology</h3>
+                            <p>8.2K สมาชิก</p>
+                        </div>
+                    </a>
+                    <div class="main-divider" style="margin: 0 12px;"></div>
+                    <a href="#" class="main-community-info" style="text-decoration: none;">
+                        <div class="main-community-icon" style="background: #5199ff;">P</div>
+                        <div class="main-community-details">
+                            <h3>r/Programming</h3>
+                            <p>5.4K สมาชิก</p>
+                        </div>
+                    </a>
+                    <div class="main-divider" style="margin: 0 12px;"></div>
+                    <a href="#" class="main-community-info" style="text-decoration: none;">
+                        <div class="main-community-icon" style="background: #46d160;">W</div>
+                        <div class="main-community-details">
+                            <h3>r/WebDev</h3>
+                            <p>3.8K สมาชิก</p>
+                        </div>
+                    </a>
+                </div>
             </div>
-        </div>
-    </footer>
+            
+            <!-- Footer Links in Sidebar -->
+            <div class="main-sidebar-card" style="font-size: 12px;">
+                <div class="main-sidebar-content">
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                        <a href="#" style="color: var(--text-secondary);">เกี่ยวกับ</a>
+                        <span style="color: var(--text-tertiary);">•</span>
+                        <a href="#" style="color: var(--text-secondary);">ช่วยเหลือ</a>
+                        <span style="color: var(--text-tertiary);">•</span>
+                        <a href="#" style="color: var(--text-secondary);">API</a>
+                        <span style="color: var(--text-tertiary);">•</span>
+                        <a asp-controller="Home" asp-action="Privacy" style="color: var(--text-secondary);">นโยบาย</a>
+                    </div>
+                    <div style="color: var(--text-tertiary);">
+                        © @DateTime.Now.Year 404alk
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/mobile-menu.js" asp-append-version="true"></script>
+    
+    <!-- Theme Switcher Script (MUST BE LOADED) -->
+    <script src="~/js/theme-switcher.js" asp-append-version="true"></script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

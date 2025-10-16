@@ -1,0 +1,103 @@
+/* ================================================
+   Dark Mode Variables - Reddit Style (OLED Friendly)
+   ================================================ */
+
+[data-theme="dark"] {
+    /* Primary Colors */
+    --primary: #ff4500;              /* Reddit Orange */
+    --primary-hover: #ff5414;
+    --primary-rgb: 255, 69, 0;
+    
+    /* Background Colors - OLED Friendly */
+    --bg-primary: #030303;           /* Pure black for OLED */
+    --bg-secondary: #0e0e0e;         /* Very dark gray */
+    --bg-tertiary: #1a1a1b;          /* Dark gray */
+    --bg-hover: #1c1c1d;             /* Hover state */
+    --bg-active: #272729;            /* Active/selected state */
+    
+    /* Card & Container */
+    --card-bg: #1a1a1b;
+    --card-border: #343536;
+    --card-hover: #1c1c1d;
+    
+    /* Text Colors */
+    --text-primary: #d7dadc;         /* Main text - softer white */
+    --text-secondary: #818384;       /* Secondary text */
+    --text-tertiary: #6c6d6f;        /* Tertiary text */
+    --text-link: #5199ff;            /* Brighter blue for dark mode */
+    --text-link-hover: #6ba9ff;
+    
+    /* Border Colors */
+    --border-primary: #343536;
+    --border-secondary: #272729;
+    --border-focus: #5199ff;
+    
+    /* Vote System Colors */
+    --upvote: #ff4500;
+    --upvote-hover: #ff5414;
+    --downvote: #7193ff;
+    --downvote-hover: #8ba7ff;
+    
+    /* Status Colors - Adjusted for dark background */
+    --success: #46d160;
+    --success-bg: #1a3724;
+    --warning: #ffd635;
+    --warning-bg: #3d3420;
+    --danger: #ff4444;
+    --danger-bg: #3d1f1f;
+    --info: #5199ff;
+    --info-bg: #1a2836;
+    
+    /* Navbar */
+    --navbar-bg: #1a1a1b;
+    --navbar-border: #343536;
+    --navbar-text: #d7dadc;
+    
+    /* Sidebar */
+    --sidebar-bg: #1a1a1b;
+    --sidebar-border: #343536;
+    
+    /* Input & Form */
+    --input-bg: #272729;
+    --input-border: #343536;
+    --input-focus: #5199ff;
+    --input-text: #d7dadc;
+    --input-placeholder: #818384;
+    
+    /* Button */
+    --btn-primary-bg: #5199ff;
+    --btn-primary-hover: #6ba9ff;
+    --btn-primary-text: #030303;
+    --btn-secondary-bg: #272729;
+    --btn-secondary-hover: #343536;
+    --btn-secondary-text: #d7dadc;
+    
+    /* Modal & Overlay */
+    --modal-bg: #1a1a1b;
+    --modal-overlay: rgba(0, 0, 0, 0.85);
+    
+    /* Shadow - Lighter for dark mode */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.6);
+    
+    /* Scrollbar */
+    --scrollbar-track: #1a1a1b;
+    --scrollbar-thumb: #4a4a4b;
+    --scrollbar-thumb-hover: #5a5a5b;
+}
+
+/* Dark mode specific adjustments */
+[data-theme="dark"] {
+    color-scheme: dark;
+}
+
+/* Dark mode image adjustments */
+[data-theme="dark"] img {
+    opacity: 0.9;
+}
+
+[data-theme="dark"] img:hover {
+    opacity: 1;
+}

@@ -1,0 +1,150 @@
+/* ================================================
+   Light Mode Variables - Reddit Style
+   ================================================ */
+
+[data-theme="light"] {
+    /* Primary Colors */
+    --primary: #ff4500;              /* Reddit Orange */
+    --primary-hover: #ff5414;
+    --primary-rgb: 255, 69, 0;
+    
+    /* Background Colors */
+    --bg-primary: #ffffff;           /* Main background */
+    --bg-secondary: #f8f9fa;         /* Secondary background */
+    --bg-tertiary: #edeff1;          /* Tertiary background */
+    --bg-hover: #f6f7f8;             /* Hover state */
+    --bg-active: #e9ebed;            /* Active/selected state */
+    
+    /* Card & Container */
+    --card-bg: #ffffff;
+    --card-border: #ccc;
+    --card-hover: #f8f9fa;
+    
+    /* Text Colors */
+    --text-primary: #1c1c1c;         /* Main text */
+    --text-secondary: #7c7c7c;       /* Secondary text */
+    --text-tertiary: #9c9c9c;        /* Tertiary text */
+    --text-link: #0079d3;            /* Links */
+    --text-link-hover: #005ea6;
+    
+    /* Border Colors */
+    --border-primary: #ccc;
+    --border-secondary: #e5e5e5;
+    --border-focus: #0079d3;
+    
+    /* Vote System Colors */
+    --upvote: #ff4500;
+    --upvote-hover: #ff5414;
+    --downvote: #7193ff;
+    --downvote-hover: #5a7cff;
+    
+    /* Status Colors */
+    --success: #46d160;
+    --success-bg: #e8f5e9;
+    --warning: #ffd635;
+    --warning-bg: #fff9e6;
+    --danger: #ea0027;
+    --danger-bg: #ffebee;
+    --info: #0079d3;
+    --info-bg: #e3f2fd;
+    
+    /* Navbar */
+    --navbar-bg: #ffffff;
+    --navbar-border: #edeff1;
+    --navbar-text: #1c1c1c;
+    
+    /* Sidebar */
+    --sidebar-bg: #ffffff;
+    --sidebar-border: #ccc;
+    
+    /* Input & Form */
+    --input-bg: #ffffff;
+    --input-border: #edeff1;
+    --input-focus: #0079d3;
+    --input-text: #1c1c1c;
+    --input-placeholder: #878a8c;
+    
+    /* Button */
+    --btn-primary-bg: #0079d3;
+    --btn-primary-hover: #005ea6;
+    --btn-primary-text: #ffffff;
+    --btn-secondary-bg: #f6f7f8;
+    --btn-secondary-hover: #e9ebed;
+    --btn-secondary-text: #1c1c1c;
+    
+    /* Modal & Overlay */
+    --modal-bg: #ffffff;
+    --modal-overlay: rgba(0, 0, 0, 0.6);
+    
+    /* Shadow */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+    
+    /* Scrollbar */
+    --scrollbar-track: #f1f1f1;
+    --scrollbar-thumb: #c1c1c1;
+    --scrollbar-thumb-hover: #a8a8a8;
+}
+
+/* Default theme (fallback) */
+:root {
+    /* Copy all light mode variables as default */
+    --primary: #ff4500;
+    --primary-hover: #ff5414;
+    --primary-rgb: 255, 69, 0;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #edeff1;
+    --bg-hover: #f6f7f8;
+    --bg-active: #e9ebed;
+    --card-bg: #ffffff;
+    --card-border: #ccc;
+    --card-hover: #f8f9fa;
+    --text-primary: #1c1c1c;
+    --text-secondary: #7c7c7c;
+    --text-tertiary: #9c9c9c;
+    --text-link: #0079d3;
+    --text-link-hover: #005ea6;
+    --border-primary: #ccc;
+    --border-secondary: #e5e5e5;
+    --border-focus: #0079d3;
+    --upvote: #ff4500;
+    --upvote-hover: #ff5414;
+    --downvote: #7193ff;
+    --downvote-hover: #5a7cff;
+    --success: #46d160;
+    --success-bg: #e8f5e9;
+    --warning: #ffd635;
+    --warning-bg: #fff9e6;
+    --danger: #ea0027;
+    --danger-bg: #ffebee;
+    --info: #0079d3;
+    --info-bg: #e3f2fd;
+    --navbar-bg: #ffffff;
+    --navbar-border: #edeff1;
+    --navbar-text: #1c1c1c;
+    --sidebar-bg: #ffffff;
+    --sidebar-border: #ccc;
+    --input-bg: #ffffff;
+    --input-border: #edeff1;
+    --input-focus: #0079d3;
+    --input-text: #1c1c1c;
+    --input-placeholder: #878a8c;
+    --btn-primary-bg: #0079d3;
+    --btn-primary-hover: #005ea6;
+    --btn-primary-text: #ffffff;
+    --btn-secondary-bg: #f6f7f8;
+    --btn-secondary-hover: #e9ebed;
+    --btn-secondary-text: #1c1c1c;
+    --modal-bg: #ffffff;
+    --modal-overlay: rgba(0, 0, 0, 0.6);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+    --scrollbar-track: #f1f1f1;
+    --scrollbar-thumb: #c1c1c1;
+    --scrollbar-thumb-hover: #a8a8a8;
+}
