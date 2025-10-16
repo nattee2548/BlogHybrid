@@ -2,6 +2,7 @@ using BlogHybrid.Application.Interfaces.Repositories;
 using BlogHybrid.Domain.Entities;
 using BlogHybrid.Infrastructure.Data;
 using BlogHybrid.Infrastructure.Repositories;
+using BlogHybrid.Web.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -90,6 +91,7 @@ builder.Services.AddSession(options =>
 
 // Caching
 builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ISitemapService, SitemapService>();
 
 var app = builder.Build();
 

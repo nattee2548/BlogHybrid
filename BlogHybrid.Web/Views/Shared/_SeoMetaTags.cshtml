@@ -1,0 +1,118 @@
+@using BlogHybrid.Web.Extensions
+@using BlogHybrid.Web.Helpers
+@{
+    var seo = ViewData.GetSeoMetadata();
+    if (seo == null)
+    {
+        // Default SEO ถ้าไม่ได้กำหนด
+        seo = SeoHelper.CreateBasicSeo(
+            "404alk - แพลตฟอร์มแบ่งปันความรู้",
+            "ร่วมแบ่งปันความรู้และประสบการณ์กับชุมชน Developer ไทย",
+            "blog, programming, developer community, thai developer",
+            "/images/default-og-image.jpg"
+        );
+    }
+
+    // สร้าง Current URL
+    var currentUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}{Context.Request.QueryString}";
+    var canonicalUrl = seo.CanonicalUrl ?? currentUrl;
+    
+    // สร้าง Full URL สำหรับ OG Image
+    var ogImageUrl = seo.OgImage;
+    if (!string.IsNullOrEmpty(ogImageUrl) && !ogImageUrl.StartsWith("http"))
+    {
+        ogImageUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{ogImageUrl}";
+    }
+}
+
+<!-- Basic Meta Tags -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+<meta name="description" content="@seo.Description" />
+@if (!string.IsNullOrEmpty(seo.Keywords))
+{
+    <meta name="keywords" content="@seo.Keywords" />
+}
+@if (!string.IsNullOrEmpty(seo.Author))
+{
+    <meta name="author" content="@seo.Author" />
+}
+<meta name="robots" content="@seo.Robots" />
+
+<!-- Canonical URL -->
+<link rel="canonical" href="@canonicalUrl" />
+
+<!-- Open Graph Meta Tags (Facebook, LinkedIn) -->
+<meta property="og:type" content="@seo.OgType" />
+<meta property="og:title" content="@seo.Title" />
+<meta property="og:description" content="@seo.Description" />
+@if (!string.IsNullOrEmpty(ogImageUrl))
+{
+    <meta property="og:image" content="@ogImageUrl" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+}
+<meta property="og:url" content="@currentUrl" />
+<meta property="og:site_name" content="@seo.SiteName" />
+<meta property="og:locale" content="@seo.Locale" />
+
+@* Article-specific Open Graph tags *@
+@if (seo.OgType == "article")
+{
+    @if (seo.PublishedTime.HasValue)
+    {
+        <meta property="article:published_time" content="@seo.PublishedTime.Value.ToString("yyyy-MM-ddTHH:mm:ssZ")" />
+    }
+    @if (seo.ModifiedTime.HasValue)
+    {
+        <meta property="article:modified_time" content="@seo.ModifiedTime.Value.ToString("yyyy-MM-ddTHH:mm:ssZ")" />
+    }
+    @if (!string.IsNullOrEmpty(seo.Author))
+    {
+        <meta property="article:author" content="@seo.Author" />
+    }
+    @if (!string.IsNullOrEmpty(seo.ArticleSection))
+    {
+        <meta property="article:section" content="@seo.ArticleSection" />
+    }
+    @if (seo.ArticleTags != null && seo.ArticleTags.Any())
+    {
+        @foreach (var tag in seo.ArticleTags)
+        {
+            <meta property="article:tag" content="@tag" />
+        }
+    }
+}
+
+<!-- Twitter Card Meta Tags -->
+<meta name="twitter:card" content="@seo.TwitterCard" />
+<meta name="twitter:title" content="@seo.Title" />
+<meta name="twitter:description" content="@seo.Description" />
+@if (!string.IsNullOrEmpty(ogImageUrl))
+{
+    <meta name="twitter:image" content="@ogImageUrl" />
+}
+@if (!string.IsNullOrEmpty(seo.TwitterSite))
+{
+    <meta name="twitter:site" content="@seo.TwitterSite" />
+}
+
+<!-- Alternative Languages -->
+@if (seo.AlternateLanguages != null && seo.AlternateLanguages.Any())
+{
+    @foreach (var alt in seo.AlternateLanguages)
+    {
+        <link rel="alternate" hreflang="@alt.Key" href="@alt.Value" />
+    }
+}
+
+<!-- Structured Data (JSON-LD) -->
+@if (!string.IsNullOrEmpty(seo.StructuredData))
+{
+    <script type="application/ld+json">
+        @Html.Raw(seo.StructuredData)
+    </script>
+}
+
+<!-- Title -->
+<title>@seo.Title</title>

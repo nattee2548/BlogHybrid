@@ -1,0 +1,104 @@
+/* ================================================
+   RESPONSIVE BREAKPOINTS & VARIABLES
+   ================================================ */
+
+/*
+  Mobile-First Approach
+  - เขียน CSS สำหรับ Mobile ก่อน (Base Styles)
+  - จากนั้นใช้ min-width เพื่อปรับแต่งสำหรับหน้าจอใหญ่ขึ้น
+  
+  Breakpoints:
+  - xs: 0-374px     (Extra Small Mobile - iPhone SE, old phones)
+  - sm: 375-767px   (Small Mobile - iPhone, Android phones)
+  - md: 768-1023px  (Tablet - iPad, Android tablets)
+  - lg: 1024-1279px (Desktop Small - Laptops, small monitors)
+  - xl: 1280-1535px (Desktop Large - Desktop monitors)
+  - 2xl: 1536px+    (Extra Large - Large monitors, 4K)
+*/
+
+:root {
+    /* ========== Breakpoint Values ========== */
+    --breakpoint-xs: 375px;
+    --breakpoint-sm: 768px;
+    --breakpoint-md: 1024px;
+    --breakpoint-lg: 1280px;
+    --breakpoint-xl: 1536px;
+
+    /* ========== Container Max Widths ========== */
+    --container-sm: 640px;
+    --container-md: 768px;
+    --container-lg: 1024px;
+    --container-xl: 1280px;
+    --container-2xl: 1536px;
+
+    /* ========== Spacing Scale (Mobile First) ========== */
+    --spacing-xs: 0.25rem;   /* 4px */
+    --spacing-sm: 0.5rem;    /* 8px */
+    --spacing-md: 1rem;      /* 16px */
+    --spacing-lg: 1.5rem;    /* 24px */
+    --spacing-xl: 2rem;      /* 32px */
+    --spacing-2xl: 3rem;     /* 48px */
+    --spacing-3xl: 4rem;     /* 64px */
+
+    /* ========== Font Sizes (Responsive) ========== */
+    --text-xs: 0.75rem;      /* 12px */
+    --text-sm: 0.875rem;     /* 14px */
+    --text-base: 1rem;       /* 16px */
+    --text-lg: 1.125rem;     /* 18px */
+    --text-xl: 1.25rem;      /* 20px */
+    --text-2xl: 1.5rem;      /* 24px */
+    --text-3xl: 1.875rem;    /* 30px */
+    --text-4xl: 2.25rem;     /* 36px */
+    --text-5xl: 3rem;        /* 48px */
+
+    /* ========== Grid Columns ========== */
+    --grid-cols-1: repeat(1, minmax(0, 1fr));
+    --grid-cols-2: repeat(2, minmax(0, 1fr));
+    --grid-cols-3: repeat(3, minmax(0, 1fr));
+    --grid-cols-4: repeat(4, minmax(0, 1fr));
+    --grid-cols-6: repeat(6, minmax(0, 1fr));
+    --grid-cols-12: repeat(12, minmax(0, 1fr));
+
+    /* ========== Padding/Margin Responsive ========== */
+    --section-padding-mobile: 2rem 0;
+    --section-padding-tablet: 3rem 0;
+    --section-padding-desktop: 4rem 0;
+
+    /* ========== Touch Target Size (for mobile) ========== */
+    --touch-target-min: 44px;  /* Apple's recommendation */
+    
+    /* ========== Z-Index Scale ========== */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+}
+
+/* ========== Responsive Font Size Adjustments ========== */
+@media (min-width: 768px) {
+    :root {
+        --text-3xl: 2rem;        /* 32px */
+        --text-4xl: 2.5rem;      /* 40px */
+        --text-5xl: 3.5rem;      /* 56px */
+    }
+}
+
+@media (min-width: 1024px) {
+    :root {
+        --text-3xl: 2.25rem;     /* 36px */
+        --text-4xl: 3rem;        /* 48px */
+        --text-5xl: 4rem;        /* 64px */
+    }
+}
+
+/* ========== Print Styles ========== */
+@media print {
+    :root {
+        --text-base: 12pt;
+        --text-lg: 14pt;
+        --text-xl: 16pt;
+    }
+}

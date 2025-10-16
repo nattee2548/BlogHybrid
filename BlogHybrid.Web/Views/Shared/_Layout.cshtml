@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - 404alk</title>
+    <partial name="_SeoMetaTags" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive/breakpoints.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive/utilities.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive/responsive.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive/touch.css" asp-append-version="true" />
 </head>
 <body>
     <header>
@@ -64,6 +66,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/mobile-menu.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

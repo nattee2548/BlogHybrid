@@ -1,0 +1,588 @@
+/* ================================================
+   MAIN RESPONSIVE FRAMEWORK
+   Mobile-First Approach
+   ================================================ */
+
+/* ========== Base Mobile Styles (0-767px) ========== */
+/* Default styles are for mobile - no media query needed */
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-size: var(--text-base);
+    line-height: 1.6;
+    overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+}
+
+/* Container - Mobile First */
+.container {
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ========== Typography - Responsive ========== */
+h1 { 
+    font-size: var(--text-3xl); 
+    line-height: 1.2;
+    margin-bottom: 1rem;
+}
+
+h2 { 
+    font-size: var(--text-2xl); 
+    line-height: 1.3;
+    margin-bottom: 0.875rem;
+}
+
+h3 { 
+    font-size: var(--text-xl); 
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+}
+
+h4 { 
+    font-size: var(--text-lg); 
+    line-height: 1.4;
+    margin-bottom: 0.625rem;
+}
+
+h5, h6 { 
+    font-size: var(--text-base); 
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+}
+
+p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+}
+
+/* ========== Buttons - Touch Friendly ========== */
+.btn {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    padding: 0.75rem 1.5rem;
+    font-size: var(--text-base);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-sm {
+    min-height: 40px;
+    padding: 0.5rem 1rem;
+    font-size: var(--text-sm);
+}
+
+.btn-lg {
+    min-height: 52px;
+    padding: 1rem 2rem;
+    font-size: var(--text-lg);
+}
+
+/* ========== Forms - Touch Friendly ========== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="number"],
+textarea,
+select {
+    min-height: var(--touch-target-min);
+    padding: 0.75rem 1rem;
+    font-size: 16px; /* Prevent zoom on iOS */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+/* ========== Images - Responsive ========== */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Lazy loading optimization */
+img[loading="lazy"] {
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+img[loading="lazy"].loaded {
+    opacity: 1;
+}
+
+/* ========== Navigation - Mobile First ========== */
+.navbar {
+    padding: 1rem 0;
+}
+
+.navbar .container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.navbar-menu ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+    width: 100%;
+}
+
+.navbar-menu a {
+    display: block;
+    padding: 0.75rem 1rem;
+    min-height: var(--touch-target-min);
+}
+
+/* Mobile menu toggle button */
+.mobile-menu-toggle {
+    display: block;
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    padding: 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* ========== Grid System - Mobile First ========== */
+.grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.posts-grid,
+.categories-grid,
+.communities-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+/* ========== Cards - Mobile Optimized ========== */
+.post-card,
+.category-card,
+.community-card {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.post-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* ========== Hero Section - Mobile ========== */
+.hero-section {
+    padding: 2rem 0;
+    text-align: center;
+}
+
+.hero-content h1 {
+    font-size: var(--text-3xl);
+    margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+    font-size: var(--text-base);
+    margin-bottom: 1.5rem;
+}
+
+.hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ========== Sections - Mobile ========== */
+.section {
+    padding: var(--section-padding-mobile);
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+    font-size: var(--text-2xl);
+}
+
+/* ========== Footer - Mobile ========== */
+.footer {
+    padding: 2rem 0 1rem;
+    margin-top: 3rem;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+/* ========== Tables - Responsive ========== */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+table {
+    width: 100%;
+    min-width: 600px; /* Prevent table from being too narrow */
+}
+
+/* ========== Modals - Mobile ========== */
+.modal {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+}
+
+/* ================================================
+   TABLET - 768px and up
+   ================================================ */
+@media (min-width: 768px) {
+    /* Container */
+    .container {
+        max-width: var(--container-md);
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    /* Typography */
+    h1 { font-size: var(--text-4xl); }
+    h2 { font-size: var(--text-3xl); }
+    h3 { font-size: var(--text-2xl); }
+
+    /* Navigation */
+    .navbar .container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .navbar-menu ul {
+        flex-direction: row;
+        gap: 2rem;
+        text-align: left;
+    }
+
+    .mobile-menu-toggle {
+        display: none;
+    }
+
+    /* Grid - 2 columns */
+    .posts-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
+
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .communities-grid {
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1.5rem;
+    }
+
+    /* Hero */
+    .hero-section {
+        padding: 3rem 0;
+    }
+
+    .hero-content h1 {
+        font-size: var(--text-4xl);
+    }
+
+    .hero-subtitle {
+        font-size: var(--text-lg);
+    }
+
+    .hero-actions {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    /* Sections */
+    .section {
+        padding: var(--section-padding-tablet);
+    }
+
+    .section-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Footer */
+    .footer {
+        padding: 3rem 0 1.5rem;
+    }
+
+    .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
+
+    /* Cards */
+    .post-image img {
+        height: 220px;
+    }
+
+    /* Modals */
+    .modal {
+        max-width: 600px;
+        margin: 2rem auto;
+        border-radius: 8px;
+    }
+}
+
+/* ================================================
+   DESKTOP SMALL - 1024px and up
+   ================================================ */
+@media (min-width: 1024px) {
+    /* Container */
+    .container {
+        max-width: var(--container-lg);
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    /* Typography */
+    h1 { font-size: var(--text-5xl); }
+    h2 { font-size: var(--text-4xl); }
+    h3 { font-size: var(--text-3xl); }
+
+    /* Grid - 3 columns */
+    .posts-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+
+    .categories-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+
+    .communities-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
+
+    /* Hero */
+    .hero-section {
+        padding: 4rem 0;
+    }
+
+    .hero-content h1 {
+        font-size: var(--text-5xl);
+    }
+
+    .hero-subtitle {
+        font-size: var(--text-xl);
+        margin-bottom: 2rem;
+    }
+
+    /* Sections */
+    .section {
+        padding: var(--section-padding-desktop);
+        margin-bottom: 4rem;
+    }
+
+    /* Footer */
+    .footer-content {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    /* Cards */
+    .post-image img {
+        height: 240px;
+    }
+
+    /* Buttons hover effects (desktop only) */
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .post-card:hover {
+        transform: translateY(-4px);
+    }
+}
+
+/* ================================================
+   DESKTOP LARGE - 1280px and up
+   ================================================ */
+@media (min-width: 1280px) {
+    /* Container */
+    .container {
+        max-width: var(--container-xl);
+    }
+
+    /* Grid - 4 columns for posts */
+    .posts-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+    }
+
+    .categories-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    /* Communities can stay at 2 columns or go to 3 */
+    .communities-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ================================================
+   EXTRA LARGE - 1536px and up
+   ================================================ */
+@media (min-width: 1536px) {
+    .container {
+        max-width: var(--container-2xl);
+    }
+
+    /* Optionally increase to 5 or 6 columns on very large screens */
+    .posts-grid {
+        grid-template-columns: repeat(4, 1fr); /* Keep at 4 for readability */
+    }
+}
+
+/* ================================================
+   LANDSCAPE ORIENTATION
+   ================================================ */
+@media (max-width: 767px) and (orientation: landscape) {
+    /* Reduce vertical padding on mobile landscape */
+    .hero-section {
+        padding: 1.5rem 0;
+    }
+
+    .hero-content h1 {
+        font-size: var(--text-2xl);
+    }
+
+    .section {
+        padding: 1.5rem 0;
+    }
+
+    /* Make navbar more compact */
+    .navbar {
+        padding: 0.5rem 0;
+    }
+}
+
+/* ================================================
+   EXTRA SMALL MOBILE - < 375px
+   ================================================ */
+@media (max-width: 374px) {
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    h1 { font-size: var(--text-2xl); }
+    h2 { font-size: var(--text-xl); }
+
+    .btn {
+        padding: 0.625rem 1.25rem;
+        font-size: var(--text-sm);
+    }
+
+    .hero-content h1 {
+        font-size: var(--text-2xl);
+    }
+
+    .section-header h2 {
+        font-size: var(--text-xl);
+    }
+}
+
+/* ================================================
+   HIGH RESOLUTION DISPLAYS
+   ================================================ */
+@media (-webkit-min-device-pixel-ratio: 2),
+       (min-resolution: 192dpi) {
+    /* Adjust for retina displays if needed */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* ================================================
+   REDUCED MOTION
+   ================================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ================================================
+   DARK MODE SUPPORT
+   ================================================ */
+@media (prefers-color-scheme: dark) {
+    /* Add dark mode styles here if needed */
+    /* This will be implemented in Phase 4 */
+}
+
+/* ================================================
+   PRINT STYLES
+   ================================================ */
+@media print {
+    .navbar,
+    .footer,
+    .hero-actions,
+    .btn {
+        display: none !important;
+    }
+
+    body {
+        font-size: 12pt;
+        line-height: 1.5;
+    }
+
+    a {
+        text-decoration: underline;
+    }
+
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+}

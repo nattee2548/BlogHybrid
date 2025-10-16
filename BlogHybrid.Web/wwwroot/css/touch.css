@@ -1,0 +1,454 @@
+/* ================================================
+   TOUCH-FRIENDLY UI ENHANCEMENTS
+   For Mobile and Tablet Devices
+   ================================================ */
+
+/* ========== Touch Target Sizes ========== */
+/* Minimum touch target: 44x44px (Apple) or 48x48px (Android) */
+
+a,
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn,
+.clickable {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Links in text should be easier to tap */
+p a,
+li a,
+.content a {
+    padding: 0.25rem 0.125rem;
+    margin: -0.25rem -0.125rem;
+}
+
+/* ========== Remove Tap Highlight ========== */
+/* Disable default mobile browser tap highlight */
+a,
+button,
+input,
+textarea,
+select {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+/* ========== Touch Action ========== */
+/* Optimize touch scrolling */
+body {
+    touch-action: pan-y pinch-zoom;
+}
+
+/* Prevent accidental zoom on double-tap */
+button,
+input,
+select,
+textarea {
+    touch-action: manipulation;
+}
+
+/* Allow horizontal scrolling for tables */
+.table-responsive {
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ========== Scrolling Improvements ========== */
+/* Smooth scrolling on touch devices */
+.scroll-container {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+}
+
+/* Horizontal scroll indicators */
+.horizontal-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+/* ========== Active States for Touch ========== */
+/* Visual feedback on touch */
+.btn:active,
+button:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+}
+
+.post-card:active,
+.category-card:active,
+.community-card:active {
+    transform: scale(0.99);
+    opacity: 0.95;
+}
+
+a:active {
+    opacity: 0.7;
+}
+
+/* ========== Prevent Text Selection on UI Elements ========== */
+.navbar,
+.footer,
+.btn,
+button,
+.card-header,
+.tabs {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* But allow selection in content areas */
+.content,
+.post-content,
+.comment-content,
+p,
+article {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* ========== Spacing for Finger-Friendly UI ========== */
+/* More spacing between interactive elements */
+.navbar-menu li {
+    margin: 0.5rem 0;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* Larger checkboxes and radio buttons */
+input[type="checkbox"],
+input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* ========== Swipe Gestures Preparation ========== */
+.swipeable {
+    touch-action: pan-y;
+    -webkit-user-drag: none;
+}
+
+/* ========== Pull to Refresh Prevention ========== */
+/* Prevent pull-to-refresh on custom scroll areas */
+.custom-scroll {
+    overscroll-behavior: contain;
+}
+
+/* ========== Mobile Menu Enhancements ========== */
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 80%;
+    max-width: 320px;
+    height: 100vh;
+    background: var(--background);
+    transition: left 0.3s ease;
+    z-index: var(--z-modal);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.mobile-menu.open {
+    left: 0;
+}
+
+.mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: calc(var(--z-modal) - 1);
+    touch-action: none;
+}
+
+.mobile-menu-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ========== Form Enhancements for Touch ========== */
+/* Larger form controls on mobile */
+@media (max-width: 767px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="search"],
+    input[type="number"],
+    textarea,
+    select {
+        font-size: 16px; /* Prevents iOS zoom */
+        padding: 0.875rem 1rem;
+        border-radius: 8px;
+    }
+
+    .btn {
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+    }
+}
+
+/* ========== Dropdown Menus - Touch Optimized ========== */
+.dropdown-menu {
+    min-width: 200px;
+}
+
+.dropdown-item {
+    padding: 0.875rem 1.25rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+/* ========== Toast Notifications - Mobile Position ========== */
+@media (max-width: 767px) {
+    .toast-container {
+        bottom: 80px; /* Above bottom navigation if any */
+        left: 1rem;
+        right: 1rem;
+        width: auto;
+    }
+
+    .toast {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* ========== Modal - Touch Optimized ========== */
+@media (max-width: 767px) {
+    .modal {
+        width: 100%;
+        max-width: 100%;
+        min-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .modal-header,
+    .modal-footer {
+        padding: 1rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem 1rem;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* ========== Cards - Touch Feedback ========== */
+.card.clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card.clickable:active {
+    transform: scale(0.98);
+}
+
+/* ========== Tabs - Touch Optimized ========== */
+.tabs {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.tab {
+    padding: 0.875rem 1.5rem;
+    min-width: 100px;
+    white-space: nowrap;
+    min-height: 44px;
+}
+
+/* ========== Image Gallery - Touch Support ========== */
+.gallery {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+}
+
+.gallery-item {
+    scroll-snap-align: center;
+    touch-action: pan-x;
+}
+
+/* ========== Accordion - Touch Optimized ========== */
+.accordion-header {
+    padding: 1rem;
+    min-height: 56px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* ========== Pagination - Touch Friendly ========== */
+.pagination {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.page-link {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========== Search Bar - Mobile Optimized ========== */
+@media (max-width: 767px) {
+    .search-bar {
+        position: relative;
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+        padding-right: 3rem;
+    }
+
+    .search-button {
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
+/* ========== Floating Action Button (FAB) ========== */
+.fab {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: var(--z-fixed);
+    touch-action: manipulation;
+}
+
+.fab:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 767px) {
+    .fab {
+        bottom: 1rem;
+        right: 1rem;
+    }
+}
+
+/* ========== Bottom Navigation (Mobile) ========== */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--background);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: var(--z-fixed);
+    padding-bottom: env(safe-area-inset-bottom); /* iOS safe area */
+}
+
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    text-decoration: none;
+    color: var(--text-light);
+    font-size: 0.75rem;
+    touch-action: manipulation;
+}
+
+.bottom-nav-item:active {
+    background: var(--background-alt);
+}
+
+/* Hide bottom nav on desktop */
+@media (min-width: 768px) {
+    .bottom-nav {
+        display: none;
+    }
+}
+
+/* ========== Safe Area Support (iOS) ========== */
+/* For iPhone X and newer with notch */
+@supports (padding: env(safe-area-inset-top)) {
+    .navbar {
+        padding-top: calc(1rem + env(safe-area-inset-top));
+    }
+
+    .bottom-nav {
+        padding-bottom: env(safe-area-inset-bottom);
+        height: calc(60px + env(safe-area-inset-bottom));
+    }
+}
+
+/* ========== Orientation Change Handling ========== */
+@media (orientation: landscape) and (max-height: 500px) {
+    /* Reduce header/footer height in landscape mode */
+    .navbar {
+        padding: 0.5rem 0;
+    }
+
+    .hero-section {
+        padding: 1.5rem 0;
+    }
+}
