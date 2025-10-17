@@ -53,15 +53,15 @@ namespace BlogHybrid.Application.Handlers.Auth
                     };
                 }
 
-                // 2. ตรวจสอบว่ายอมรับข้อกำหนดหรือไม่
-                if (!request.AcceptTerms)
-                {
-                    return new RegisterUserResult
-                    {
-                        Success = false,
-                        Errors = new List<string> { "กรุณายอมรับข้อกำหนดและเงื่อนไข" }
-                    };
-                }
+                //// 2. ตรวจสอบว่ายอมรับข้อกำหนดหรือไม่
+                //if (!request.AcceptTerms)
+                //{
+                //    return new RegisterUserResult
+                //    {
+                //        Success = false,
+                //        Errors = new List<string> { "กรุณายอมรับข้อกำหนดและเงื่อนไข" }
+                //    };
+                //}
 
                 // 3. สร้าง User
                 var user = new ApplicationUser

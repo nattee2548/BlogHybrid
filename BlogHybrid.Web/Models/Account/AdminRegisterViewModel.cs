@@ -45,7 +45,7 @@ namespace BlogHybrid.Web.Models.Account
         [Compare("Password", ErrorMessage = "รหัสผ่านไม่ตรงกัน")]
         public string ConfirmPassword { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "กรุณายอมรับข้อกำหนดและเงื่อนไข")]
+        //[Required(ErrorMessage = "กรุณายอมรับข้อกำหนดและเงื่อนไข")]
         [Display(Name = "ยอมรับข้อกำหนดและเงื่อนไข")]
         public bool AcceptTerms { get; set; }
     }

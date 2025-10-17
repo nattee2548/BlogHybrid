@@ -152,11 +152,17 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AdminRegister(AdminRegisterViewModel model)
     {
+        if (!model.AcceptTerms)
+        {
+           // ModelState.AddModelError(nameof(model.AcceptTerms), "กรุณายอมรับข้อกำหนดและเงื่อนไข");
+            TempData["ErrorMessage"] = "กรุณายอมรับข้อกำหนดและเงื่อนไข";
+            return View(model);
+        }
         if (!ModelState.IsValid)
         {
             return View(model);
         }
-
+       
         try
         {
             // 1. สมัครสมาชิกด้วย RegisterUserCommand
@@ -169,14 +175,15 @@ public class AccountController : Controller
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 PhoneNumber = model.PhoneNumber,
-                Role = "Admin",  // ✅ ส่ง Role Parameter
-                IsActive = false  // ✅ รอการอนุมัติ
+                Role = "Admin",  //
+                IsActive = false  //
             };
 
             var result = await _mediator.Send(command);
 
             if (!result.Success)
             {
+                ModelState.Remove(nameof(model.AcceptTerms));
                 TempData["ErrorMessage"] = result.Errors?.FirstOrDefault() ?? "ไม่สามารถสมัครสมาชิกได้";
                 _logger.LogWarning($"Failed registration for: {model.Email}");
                 return View(model);

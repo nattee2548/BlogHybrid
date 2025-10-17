@@ -165,37 +165,12 @@
 
             <!-- Page Content -->
             <div class="admin-content">
-                @if (TempData["SuccessMessage"] != null)
-                {
-                    <div class="alert alert-success alert-dismissible fade show">
-                        <i class="bi bi-check-circle"></i>
-                        @TempData["SuccessMessage"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                }
-
-                @if (TempData["ErrorMessage"] != null)
-                {
-                    <div class="alert alert-danger alert-dismissible fade show">
-                        <i class="bi bi-exclamation-circle"></i>
-                        @TempData["ErrorMessage"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                }
-
-                @if (TempData["WarningMessage"] != null)
-                {
-                    <div class="alert alert-warning alert-dismissible fade show">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        @TempData["WarningMessage"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                }
-
                 @RenderBody()
             </div>
         </main>
     </div>
+
+    <partial name="_ToastNotification" />
 
     <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
