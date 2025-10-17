@@ -18,5 +18,6 @@ namespace BlogHybrid.Application.DTOs.Category
         public int SortOrder { get; set; }
         public DateTime CreatedAt { get; set; }
         public int PostCount { get; set; } // จำนวนโพสต์ในหมวดหมู่
+        public int CommunityCount { get; set; }
     }
 }

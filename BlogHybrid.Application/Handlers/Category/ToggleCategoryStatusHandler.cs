@@ -1,12 +1,8 @@
-﻿using BlogHybrid.Application.Commands.Category;
+﻿// BlogHybrid.Application/Handlers/Category/ToggleCategoryStatusHandler.cs
+using BlogHybrid.Application.Commands.Category;
 using BlogHybrid.Application.Interfaces.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BlogHybrid.Application.Handlers.Category
 {
@@ -27,36 +23,36 @@ namespace BlogHybrid.Application.Handlers.Category
         {
             try
             {
-                var category = await _unitOfWork.Categories.GetByIdAsync(request.Id, cancellationToken);
+                var category = await _unitOfWork.Categories.GetByIdAsync(request.CategoryId, cancellationToken);
 
                 if (category == null)
                 {
                     return new ToggleCategoryStatusResult
                     {
                         Success = false,
-                        Errors = new List<string> { "ไม่พบหมวดหมู่ที่ต้องการเปลี่ยนสถานะ" }
+                        Errors = new List<string> { "ไม่พบหมวดหมู่ที่ต้องการ" }
                     };
                 }
 
-                // Toggle the status
-                category.IsActive = request.IsActive;
+                // Toggle status
+                category.IsActive = !category.IsActive;
 
                 await _unitOfWork.Categories.UpdateAsync(category, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation("Category status toggled: {CategoryId} - {Status}",
-                    category.Id, request.IsActive ? "Active" : "Inactive");
+                var statusText = category.IsActive ? "เปิดใช้งาน" : "ปิดใช้งาน";
+                _logger.LogInformation("Category {CategoryId} status toggled to: {Status}", request.CategoryId, statusText);
 
                 return new ToggleCategoryStatusResult
                 {
                     Success = true,
                     NewStatus = category.IsActive,
-                    Message = $"เปลี่ยนสถานะเป็น{(category.IsActive ? "เปิดใช้งาน" : "ปิดใช้งาน")}แล้ว"
+                    Message = $"{statusText}หมวดหมู่ '{category.Name}' เรียบร้อยแล้ว"
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error toggling category status: {CategoryId}", request.Id);
+                _logger.LogError(ex, "Error toggling category status for ID: {CategoryId}", request.CategoryId);
                 return new ToggleCategoryStatusResult
                 {
                     Success = false,

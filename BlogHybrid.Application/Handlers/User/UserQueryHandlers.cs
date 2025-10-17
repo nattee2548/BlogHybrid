@@ -152,6 +152,7 @@ namespace BlogHybrid.Application.Handlers.User
                     Id = user.Id,
                     Email = user.Email!,
                     UserName = user.UserName!,
+                    DisplayName = user.DisplayName,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     PhoneNumber = user.PhoneNumber,

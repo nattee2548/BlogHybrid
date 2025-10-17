@@ -163,25 +163,29 @@ namespace BlogHybrid.Application.Handlers.User
                         Errors = updateResult.Errors.Select(e => e.Description).ToList()
                     };
                 }
-
-                // Update roles
-                var currentRoles = await _unitOfWork.Users.GetRolesAsync(user, cancellationToken);
-                var selectedRoles = request.SelectedRoles ?? new List<string>();
-
-                // Remove roles that are no longer selected
-                var rolesToRemove = currentRoles.Except(selectedRoles);
-                if (rolesToRemove.Any())
+                if (request.SelectedRoles  != null)
                 {
-                    await _unitOfWork.Users.RemoveFromRolesAsync(user, rolesToRemove, cancellationToken);
-                }
+                    if (request.SelectedRoles.Count > 0)
+                    {
+                        // Update roles
+                        var currentRoles = await _unitOfWork.Users.GetRolesAsync(user, cancellationToken);
+                        var selectedRoles = request.SelectedRoles ?? new List<string>();
 
-                // Add new roles
-                var rolesToAdd = selectedRoles.Except(currentRoles);
-                if (rolesToAdd.Any())
-                {
-                    await _unitOfWork.Users.AddToRolesAsync(user, rolesToAdd, cancellationToken);
-                }
+                        // Remove roles that are no longer selected
+                        var rolesToRemove = currentRoles.Except(selectedRoles);
+                        if (rolesToRemove.Any())
+                        {
+                            await _unitOfWork.Users.RemoveFromRolesAsync(user, rolesToRemove, cancellationToken);
+                        }
 
+                        // Add new roles
+                        var rolesToAdd = selectedRoles.Except(currentRoles);
+                        if (rolesToAdd.Any())
+                        {
+                            await _unitOfWork.Users.AddToRolesAsync(user, rolesToAdd, cancellationToken);
+                        }
+                    }
+                }
                 _logger.LogInformation("User updated successfully: {Email}", user.Email);
 
                 return new UpdateUserResult

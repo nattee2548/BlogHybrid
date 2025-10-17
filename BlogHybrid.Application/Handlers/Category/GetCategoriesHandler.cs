@@ -1,14 +1,10 @@
-﻿using AutoMapper;
+﻿// BlogHybrid.Application/Handlers/Category/GetCategoriesHandler.cs
+using AutoMapper;
 using BlogHybrid.Application.DTOs.Category;
 using BlogHybrid.Application.Interfaces.Repositories;
 using BlogHybrid.Application.Queries.Category;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BlogHybrid.Application.Handlers.Category
 {
@@ -49,6 +45,9 @@ namespace BlogHybrid.Application.Handlers.Category
 
                     // Get post count for each category
                     dto.PostCount = await _unitOfWork.Categories.GetPostCountAsync(category.Id, cancellationToken);
+
+                    // ✅ เพิ่ม: Get community count for each category
+                    dto.CommunityCount = await _unitOfWork.Categories.GetCommunityCountAsync(category.Id, cancellationToken);
 
                     categoryDtos.Add(dto);
                 }

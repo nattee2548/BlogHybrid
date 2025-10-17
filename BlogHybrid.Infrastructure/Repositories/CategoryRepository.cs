@@ -134,7 +134,12 @@ namespace BlogHybrid.Infrastructure.Repositories
                 .Where(p => p.CategoryId == categoryId)
                 .CountAsync(cancellationToken);
         }
-
+        public async Task<int> GetCommunityCountAsync(int categoryId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Communities
+                .Where(c => c.CategoryId == categoryId && !c.IsDeleted)
+                .CountAsync(cancellationToken);
+        }
         public async Task<int> GetMaxSortOrderAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Categories

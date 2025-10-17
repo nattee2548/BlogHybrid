@@ -1,9 +1,5 @@
-﻿using BlogHybrid.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// BlogHybrid.Application/Interfaces/Repositories/ICategoryRepository.cs
+using BlogHybrid.Domain.Entities;
 
 namespace BlogHybrid.Application.Interfaces.Repositories
 {
@@ -31,6 +27,8 @@ namespace BlogHybrid.Application.Interfaces.Repositories
         // Utility methods
         Task<bool> SlugExistsAsync(string slug, int? excludeId = null, CancellationToken cancellationToken = default);
         Task<int> GetPostCountAsync(int categoryId, CancellationToken cancellationToken = default);
+      
+        Task<int> GetCommunityCountAsync(int categoryId, CancellationToken cancellationToken = default); // ✅ เพิ่ม
         Task<int> GetMaxSortOrderAsync(CancellationToken cancellationToken = default);
 
         // Unit of Work

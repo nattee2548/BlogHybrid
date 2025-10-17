@@ -1,14 +1,10 @@
-﻿using AutoMapper;
+﻿// BlogHybrid.Application/Handlers/Category/GetCategoryByIdHandler.cs
+using AutoMapper;
 using BlogHybrid.Application.DTOs.Category;
 using BlogHybrid.Application.Interfaces.Repositories;
 using BlogHybrid.Application.Queries.Category;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BlogHybrid.Application.Handlers.Category
 {
@@ -35,16 +31,23 @@ namespace BlogHybrid.Application.Handlers.Category
                 var category = await _unitOfWork.Categories.GetByIdAsync(request.Id, cancellationToken);
 
                 if (category == null)
+                {
                     return null;
+                }
 
                 var dto = _mapper.Map<CategoryDto>(category);
+
+                // Get post count
                 dto.PostCount = await _unitOfWork.Categories.GetPostCountAsync(category.Id, cancellationToken);
+
+                // ✅ เพิ่ม: Get community count
+                dto.CommunityCount = await _unitOfWork.Categories.GetCommunityCountAsync(category.Id, cancellationToken);
 
                 return dto;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting category by id: {CategoryId}", request.Id);
+                _logger.LogError(ex, "Error getting category by ID: {CategoryId}", request.Id);
                 return null;
             }
         }

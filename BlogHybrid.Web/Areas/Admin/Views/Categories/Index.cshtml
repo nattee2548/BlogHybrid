@@ -1,0 +1,293 @@
+﻿@model BlogHybrid.Web.Areas.Admin.Models.CategoriesListViewModel
+@{
+    ViewData["Title"] = "จัดการหมวดหมู่";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h1><i class="bi bi-folder"></i> จัดการหมวดหมู่</h1>
+        <p class="text-muted">จัดการหมวดหมู่สำหรับ Posts และ Communities</p>
+    </div>
+    <div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> สร้างหมวดหมู่ใหม่
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="admin-card mb-4">
+    <div class="admin-card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text"
+                           class="form-control"
+                           name="search"
+                           value="@Model.SearchTerm"
+                           placeholder="ค้นหาหมวดหมู่...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> ค้นหา
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-primary">
+                <i class="bi bi-folder"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">หมวดหมู่ทั้งหมด</div>
+                <div class="stat-value">@Model.TotalCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-success">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">เปิดใช้งาน</div>
+                <div class="stat-value">@Model.Categories.Count(c => c.IsActive)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-info">
+                <i class="bi bi-file-text"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">โพสต์ทั้งหมด</div>
+                <div class="stat-value">@Model.Categories.Sum(c => c.PostCount)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-warning">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">ชุมชนทั้งหมด</div>
+                <div class="stat-value">@Model.Categories.Sum(c => c.CommunityCount)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Table -->
+<div class="admin-card">
+    <div class="admin-card-body">
+        @if (Model.Categories.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px">#</th>
+                            <th>หมวดหมู่</th>
+                            <th>คำอธิบาย</th>
+                            <th style="width: 100px">สี</th>
+                            <th style="width: 120px">โพสต์</th>
+                            <th style="width: 120px">ชุมชน</th>
+                            <th style="width: 120px">สถานะ</th>
+                            <th style="width: 150px">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in Model.Categories)
+                        {
+                            <tr>
+                                <td>@category.SortOrder</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="category-icon" style="background-color: @category.Color">
+                                            <i class="bi bi-folder"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">@category.Name</div>
+                                            <div class="text-muted small">@category.Slug</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 300px;" title="@category.Description">
+                                        @category.Description
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="color-preview" style="background-color: @category.Color"></div>
+                                        <small class="text-muted">@category.Color</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-file-text"></i> @category.PostCount
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">
+                                        <i class="bi bi-people"></i> @category.CommunityCount
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (category.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> เปิดใช้งาน
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-x-circle"></i> ปิดใช้งาน
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@category.Id"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="ดูรายละเอียด">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@category.Id"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="แก้ไข">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-pageNumber="@(Model.PageNumber - 1)"
+                               asp-route-search="@Model.SearchTerm">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="@i"
+                                   asp-route-search="@Model.SearchTerm">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-pageNumber="@(Model.PageNumber + 1)"
+                               asp-route-search="@Model.SearchTerm">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-folder-x" style="font-size: 4rem; color: #ccc;"></i>
+                <h5 class="mt-3 text-muted">ไม่พบหมวดหมู่</h5>
+                <p class="text-muted">เริ่มต้นสร้างหมวดหมู่แรกของคุณ</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> สร้างหมวดหมู่ใหม่
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .color-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 2px solid #dee2e6;
+        }
+
+        .admin-stat-card {
+            background: var(--admin-card-bg);
+            border: 1px solid var(--admin-card-border);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--admin-text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--admin-text-primary);
+        }
+
+        .table > :not(caption) > * > * {
+            padding: 12px;
+            vertical-align: middle;
+        }
+    </style>
+}

@@ -1,23 +1,18 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// BlogHybrid.Application/Commands/Category/ToggleCategoryStatusCommand.cs
+using MediatR;
 
 namespace BlogHybrid.Application.Commands.Category
 {
     public class ToggleCategoryStatusCommand : IRequest<ToggleCategoryStatusResult>
     {
-        public int Id { get; set; }
-        public bool IsActive { get; set; }
+        public int CategoryId { get; set; }
     }
 
     public class ToggleCategoryStatusResult
     {
         public bool Success { get; set; }
-        public bool NewStatus { get; set; }
+        public bool NewStatus { get; set; } // สถานะใหม่หลังจาก toggle
+        public string Message { get; set; } = string.Empty;
         public List<string> Errors { get; set; } = new();
-        public string? Message { get; set; }
     }
 }

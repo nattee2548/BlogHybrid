@@ -17,9 +17,10 @@
 
 <div class="row">
     <div class="col-md-8 mx-auto">
-        <form asp-action="Edit" method="post" class="admin-card">
+        <form asp-action="Edit" method="post" class="admin-card" id="editForm">
             <div class="admin-card-body">
                 <input type="hidden" asp-for="Id" />
+                @Html.AntiForgeryToken()
 
                 <!-- ข้อมูลการเข้าสู่ระบบ -->
                 <div class="form-section">
@@ -79,33 +80,29 @@
 
                 <hr>
 
-                <!-- สถานะบัญชี -->
+                <!-- การตั้งค่าบัญชี -->
                 <div class="form-section">
                     <h5 class="section-title">
-                        <i class="bi bi-shield-check"></i> สถานะและความปลอดภัย
+                        <i class="bi bi-gear"></i> การตั้งค่าบัญชี
                     </h5>
 
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                            <label asp-for="IsActive" class="form-check-label">
-                                เปิดใช้งานบัญชี
-                            </label>
-                        </div>
-                        <small class="text-muted">
-                            หากปิดการใช้งาน ผู้ใช้จะไม่สามารถเข้าสู่ระบบได้
+                    <div class="form-check mb-3">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsActive" class="form-check-label">
+                            เปิดใช้งานบัญชี
+                        </label>
+                        <small class="d-block text-muted mt-1">
+                            ปิดการใช้งานจะทำให้ไม่สามารถเข้าสู่ระบบได้
                         </small>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input asp-for="EmailConfirmed" class="form-check-input" type="checkbox" />
-                            <label asp-for="EmailConfirmed" class="form-check-label">
-                                ยืนยันอีเมลแล้ว
-                            </label>
-                        </div>
-                        <small class="text-muted">
-                            การยืนยันอีเมลจะช่วยเพิ่มความปลอดภัยให้บัญชี
+                    <div class="form-check mb-3">
+                        <input asp-for="EmailConfirmed" class="form-check-input" type="checkbox" />
+                        <label asp-for="EmailConfirmed" class="form-check-label">
+                            ยืนยันอีเมลแล้ว
+                        </label>
+                        <small class="d-block text-muted mt-1">
+                            การยืนยันอีเมลจะเปิดใช้งานฟีเจอร์ต่างๆ ได้ครบถ้วน
                         </small>
                     </div>
                 </div>
@@ -117,7 +114,7 @@
                     <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
                         <i class="bi bi-x-lg"></i> ยกเลิก
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary" onclick="confirmSave()">
                         <i class="bi bi-check-lg"></i> บันทึกการเปลี่ยนแปลง
                     </button>
                 </div>
@@ -135,41 +132,34 @@
     </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-
-    <script>
-        // Highlight changes
-        const originalValues = {
-            firstName: '@Html.Raw(Model.FirstName)',
-            lastName: '@Html.Raw(Model.LastName)',
-            phoneNumber: '@Html.Raw(Model.PhoneNumber)',
-            isActive: @Json.Serialize(Model.IsActive),
-            emailConfirmed: @Json.Serialize(Model.EmailConfirmed)
-        };
-
-        // Track form changes
-        let hasChanges = false;
-
-        $('input').on('change', function() {
-            hasChanges = true;
-        });
-
-        // Warn before leaving if there are unsaved changes
-        $(window).on('beforeunload', function(e) {
-            if (hasChanges) {
-                const message = 'คุณมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก คุณต้องการออกจากหน้านี้หรือไม่?';
-                e.returnValue = message;
-                return message;
-            }
-        });
-
-        // Don't warn when submitting form
-        $('form').on('submit', function() {
-            hasChanges = false;
-        });
-    </script>
-}
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <i class="bi bi-question-circle text-primary"></i>
+                    ยืนยันการบันทึกข้อมูล
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">คุณต้องการบันทึกการเปลี่ยนแปลงข้อมูล Admin นี้หรือไม่?</p>
+                <div id="changesSummary" class="mt-3 p-3 bg-light rounded">
+                    <small class="text-muted">กำลังตรวจสอบการเปลี่ยนแปลง...</small>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> ยกเลิก
+                </button>
+                <button type="button" class="btn btn-primary" id="confirmSaveButton">
+                    <i class="bi bi-check-lg"></i> ยืนยันการบันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Styles {
     <style>
@@ -245,5 +235,211 @@
             border-color: var(--admin-card-border);
             margin: 24px 0;
         }
+
+        /* Modal Customization */
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            font-size: 15px;
+            color: var(--admin-text-secondary);
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+        }
+
+        .modal-title i {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
+        #changesSummary {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .change-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+            .change-item:last-child {
+                border-bottom: none;
+            }
+
+        .change-label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 13px;
+        }
+
+        .change-value {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .change-old {
+            text-decoration: line-through;
+            color: #ef4444;
+        }
+
+        .change-new {
+            color: #10b981;
+            font-weight: 500;
+        }
     </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        let confirmModal;
+        let hasChanges = false;
+
+        // Store original values
+        const originalValues = {
+            firstName: '@Html.Raw(Model.FirstName)',
+            lastName: '@Html.Raw(Model.LastName)',
+            phoneNumber: '@Html.Raw(Model.PhoneNumber ?? "")',
+            isActive: @Json.Serialize(Model.IsActive),
+            emailConfirmed: @Json.Serialize(Model.EmailConfirmed)
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+
+            // Track form changes
+            document.querySelectorAll('#editForm input').forEach(input => {
+                input.addEventListener('change', function() {
+                    hasChanges = true;
+                });
+            });
+
+            // Confirm button action
+            document.getElementById('confirmSaveButton').addEventListener('click', function() {
+                hasChanges = false; // Reset to prevent beforeunload warning
+                document.getElementById('editForm').submit();
+            });
+        });
+
+        function confirmSave() {
+            // Validate form first
+            if (!document.getElementById('editForm').checkValidity()) {
+                document.getElementById('editForm').reportValidity();
+                return;
+            }
+
+            // Get current values
+            const currentValues = {
+                firstName: document.querySelector('[name="FirstName"]').value,
+                lastName: document.querySelector('[name="LastName"]').value,
+                phoneNumber: document.querySelector('[name="PhoneNumber"]').value,
+                isActive: document.querySelector('[name="IsActive"]').checked,
+                emailConfirmed: document.querySelector('[name="EmailConfirmed"]').checked
+            };
+
+            // Build changes summary
+            let changesSummary = '';
+            let changesCount = 0;
+
+            if (originalValues.firstName !== currentValues.firstName) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">ชื่อจริง:</div>
+                        <div class="change-value">
+                            <span class="change-old">${originalValues.firstName || '-'}</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="change-new">${currentValues.firstName || '-'}</span>
+                        </div>
+                    </div>`;
+            }
+
+            if (originalValues.lastName !== currentValues.lastName) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">นามสกุล:</div>
+                        <div class="change-value">
+                            <span class="change-old">${originalValues.lastName || '-'}</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="change-new">${currentValues.lastName || '-'}</span>
+                        </div>
+                    </div>`;
+            }
+
+            if (originalValues.phoneNumber !== currentValues.phoneNumber) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">เบอร์โทรศัพท์:</div>
+                        <div class="change-value">
+                            <span class="change-old">${originalValues.phoneNumber || 'ไม่มี'}</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="change-new">${currentValues.phoneNumber || 'ไม่มี'}</span>
+                        </div>
+                    </div>`;
+            }
+
+            if (originalValues.isActive !== currentValues.isActive) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">สถานะการใช้งาน:</div>
+                        <div class="change-value">
+                            <span class="change-old">${originalValues.isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="change-new">${currentValues.isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}</span>
+                        </div>
+                    </div>`;
+            }
+
+            if (originalValues.emailConfirmed !== currentValues.emailConfirmed) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">สถานะอีเมล:</div>
+                        <div class="change-value">
+                            <span class="change-old">${originalValues.emailConfirmed ? 'ยืนยันแล้ว' : 'ยังไม่ยืนยัน'}</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="change-new">${currentValues.emailConfirmed ? 'ยืนยันแล้ว' : 'ยังไม่ยืนยัน'}</span>
+                        </div>
+                    </div>`;
+            }
+
+            // Show changes summary
+            const summaryDiv = document.getElementById('changesSummary');
+            if (changesCount === 0) {
+                summaryDiv.innerHTML = '<small class="text-muted">ไม่มีการเปลี่ยนแปลงข้อมูล</small>';
+            } else {
+                summaryDiv.innerHTML = `
+                    <div class="mb-2">
+                        <strong class="text-primary">พบการเปลี่ยนแปลง ${changesCount} รายการ:</strong>
+                    </div>
+                    ${changesSummary}`;
+            }
+
+            confirmModal.show();
+        }
+
+        // Warn before leaving if there are unsaved changes
+        window.addEventListener('beforeunload', function(e) {
+            if (hasChanges) {
+                const message = 'คุณมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก คุณต้องการออกจากหน้านี้หรือไม่?';
+                e.preventDefault();
+                e.returnValue = message;
+                return message;
+            }
+        });
+    </script>
 }

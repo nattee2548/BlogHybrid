@@ -1,7 +1,7 @@
 ﻿using BlogHybrid.Application.Commands.User;
 using BlogHybrid.Application.Queries.User;
 using BlogHybrid.Domain.Entities;
-using BlogHybrid.Web.Areas.Admin.Models;  // ✅ เปลี่ยน namespace
+using BlogHybrid.Web.Areas.Admin.Models; 
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -105,6 +105,7 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                     Id = result.Id,
                     Email = result.Email,
                     UserName = result.UserName,
+                    DisplayName = result.DisplayName,
                     FirstName = result.FirstName,
                     LastName = result.LastName,
                     FullName = $"{result.FirstName} {result.LastName}".Trim(),
