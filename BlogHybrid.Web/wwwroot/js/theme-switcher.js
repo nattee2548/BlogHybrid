@@ -1,48 +1,60 @@
-// ================================================
-// Theme Switcher - Simplified Icon Button Version
-// ================================================
+/* ================================================
+   Theme Switcher Logic
+   - Auto-detect system preference
+   - Save user preference to localStorage
+   - Smooth theme transitions
+   ================================================ */
 
 (function() {
     'use strict';
 
-    // Theme constants
+    const STORAGE_KEY = 'theme'; // ✅ เปลี่ยนเป็น 'theme' เพื่อรักษา backward compatibility
+    const THEME_ATTR = 'data-theme';
     const THEMES = {
         LIGHT: 'light',
         DARK: 'dark',
         AUTO: 'auto'
     };
 
-    const STORAGE_KEY = 'main-theme-preference';
-    const THEME_ATTR = 'data-theme';
-
     class ThemeSwitcher {
         constructor() {
-            this.currentTheme = this.getStoredTheme() || THEMES.LIGHT;
+            this.currentTheme = THEMES.LIGHT;
             this.systemPreference = this.getSystemPreference();
+            this.init();
+        }
+
+        /**
+         * Initialize theme switcher
+         */
+        init() {
+            // Load saved preference or use auto
+            const savedPreference = this.getSavedPreference();
+            const themeToApply = savedPreference || THEMES.AUTO;
             
-            // Initialize theme on page load (without animation)
-            this.applyTheme(this.currentTheme, false);
-            
-            // Listen for system preference changes
-            this.listenToSystemPreference();
+            // Apply theme immediately (before page render to prevent flash)
+            this.applyTheme(themeToApply, false);
             
             // Setup event listeners
             this.setupEventListeners();
+            
+            // Listen for system preference changes
+            this.watchSystemPreference();
         }
 
         /**
          * Get system color scheme preference
          */
         getSystemPreference() {
-            return window.matchMedia('(prefers-color-scheme: dark)').matches 
-                ? THEMES.DARK 
-                : THEMES.LIGHT;
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return THEMES.DARK;
+            }
+            return THEMES.LIGHT;
         }
 
         /**
-         * Get stored theme preference
+         * Get saved theme preference from localStorage
          */
-        getStoredTheme() {
+        getSavedPreference() {
             try {
                 return localStorage.getItem(STORAGE_KEY);
             } catch (e) {
@@ -52,66 +64,20 @@
         }
 
         /**
-         * Save theme preference
+         * Save theme preference to localStorage
          */
         savePreference(theme) {
             try {
                 localStorage.setItem(STORAGE_KEY, theme);
             } catch (e) {
-                console.warn('Could not save theme preference:', e);
+                console.warn('Failed to save theme preference:', e);
             }
-        }
-
-        /**
-         * Listen to system preference changes
-         */
-        listenToSystemPreference() {
-            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-            
-            const handleChange = (e) => {
-                this.systemPreference = e.matches ? THEMES.DARK : THEMES.LIGHT;
-                
-                // If user has auto preference, update theme
-                if (this.getStoredTheme() === THEMES.AUTO) {
-                    this.applyTheme(THEMES.AUTO);
-                }
-            };
-
-            // Modern browsers
-            if (mediaQuery.addEventListener) {
-                mediaQuery.addEventListener('change', handleChange);
-            } else if (mediaQuery.addListener) {
-                // Fallback for older browsers
-                mediaQuery.addListener(handleChange);
-            }
-        }
-
-        /**
-         * Setup event listeners for theme toggle buttons
-         */
-        setupEventListeners() {
-            // Icon button toggle
-            const toggleButton = document.getElementById('themeToggle');
-            if (toggleButton) {
-                toggleButton.addEventListener('click', () => this.toggleTheme());
-            }
-
-            // Any other toggle buttons
-            document.querySelectorAll('[data-theme-toggle]').forEach(button => {
-                button.addEventListener('click', () => this.toggleTheme());
-            });
-
-            // Theme selection buttons (if any)
-            document.querySelectorAll('[data-theme]').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const theme = e.currentTarget.getAttribute('data-theme');
-                    this.setTheme(theme);
-                });
-            });
         }
 
         /**
          * Apply theme to document
+         * @param {string} theme - Theme to apply (light, dark, or auto)
+         * @param {boolean} animate - Whether to animate the transition
          */
         applyTheme(theme, animate = true) {
             // Add transition class for smooth animation
@@ -133,7 +99,7 @@
             this.savePreference(theme);
 
             // Update UI
-            this.updateUI(actualTheme);
+            this.updateUI(theme);
 
             // Remove transition class after animation
             if (animate) {
@@ -142,8 +108,8 @@
                 }, 300);
             }
 
-            // Update button icon
-            this.updateIcon(actualTheme);
+            // Dispatch custom event
+            this.dispatchThemeChangeEvent(actualTheme, theme);
         }
 
         /**
@@ -167,50 +133,162 @@
         /**
          * Update UI elements to reflect current theme
          */
-        updateUI(actualTheme) {
+        updateUI(preferenceTheme) {
             // Update toggle buttons
-            const toggleButtons = document.querySelectorAll('[data-theme-toggle], #themeToggle');
+            const toggleButtons = document.querySelectorAll('.theme-toggle');
             toggleButtons.forEach(button => {
-                const isDark = actualTheme === THEMES.DARK;
+                const isDark = this.currentTheme === THEMES.DARK;
                 button.setAttribute('aria-checked', isDark);
-                
-                // Update aria-label
-                button.setAttribute('aria-label', 
-                    isDark ? 'สลับเป็นโหมดสว่าง' : 'สลับเป็นโหมดมืด'
-                );
+            });
+
+            // Update theme buttons (if using button group)
+            document.querySelectorAll('.theme-button').forEach(button => {
+                const buttonTheme = button.getAttribute('data-theme');
+                if (buttonTheme === preferenceTheme) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+
+            // Update theme options (if using dropdown)
+            document.querySelectorAll('.theme-option').forEach(option => {
+                const optionTheme = option.getAttribute('data-theme');
+                if (optionTheme === preferenceTheme) {
+                    option.classList.add('active');
+                } else {
+                    option.classList.remove('active');
+                }
             });
         }
 
         /**
-         * Update icon in theme toggle button
+         * Setup event listeners for theme controls
          */
-        updateIcon(actualTheme) {
-            const toggleButton = document.getElementById('themeToggle');
-            if (!toggleButton) return;
+        setupEventListeners() {
+            // Toggle switches
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.theme-toggle')) {
+                    this.toggleTheme();
+                }
+            });
 
-            const isDark = actualTheme === THEMES.DARK;
-            
-            // Sun icon (Light mode)
-            const sunIcon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
-            </svg>`;
-            
-            // Moon icon (Dark mode)
-            const moonIcon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
-            </svg>`;
-            
-            toggleButton.innerHTML = isDark ? sunIcon : moonIcon;
+            // Theme buttons
+            document.addEventListener('click', (e) => {
+                const themeButton = e.target.closest('.theme-button');
+                if (themeButton) {
+                    const theme = themeButton.getAttribute('data-theme');
+                    this.setTheme(theme);
+                }
+            });
+
+            // Theme dropdown
+            document.addEventListener('click', (e) => {
+                const themeOption = e.target.closest('.theme-option');
+                if (themeOption) {
+                    const theme = themeOption.getAttribute('data-theme');
+                    this.setTheme(theme);
+                    // Close dropdown
+                    const dropdown = themeOption.closest('.theme-dropdown-menu');
+                    if (dropdown) {
+                        dropdown.classList.remove('active');
+                    }
+                }
+
+                // Toggle dropdown
+                const dropdownButton = e.target.closest('.theme-dropdown-button');
+                if (dropdownButton) {
+                    const dropdown = dropdownButton.nextElementSibling;
+                    if (dropdown) {
+                        dropdown.classList.toggle('active');
+                    }
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.theme-dropdown')) {
+                    document.querySelectorAll('.theme-dropdown-menu.active')
+                        .forEach(dropdown => dropdown.classList.remove('active'));
+                }
+            });
+        }
+
+        /**
+         * Watch for system preference changes
+         */
+        watchSystemPreference() {
+            if (window.matchMedia) {
+                const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                
+                // Modern browsers
+                if (darkModeQuery.addEventListener) {
+                    darkModeQuery.addEventListener('change', (e) => {
+                        this.systemPreference = e.matches ? THEMES.DARK : THEMES.LIGHT;
+                        
+                        // Only apply if user is using auto theme
+                        const savedPreference = this.getSavedPreference();
+                        if (savedPreference === THEMES.AUTO || !savedPreference) {
+                            this.applyTheme(THEMES.AUTO);
+                        }
+                    });
+                }
+                // Legacy browsers
+                else if (darkModeQuery.addListener) {
+                    darkModeQuery.addListener((e) => {
+                        this.systemPreference = e.matches ? THEMES.DARK : THEMES.LIGHT;
+                        const savedPreference = this.getSavedPreference();
+                        if (savedPreference === THEMES.AUTO || !savedPreference) {
+                            this.applyTheme(THEMES.AUTO);
+                        }
+                    });
+                }
+            }
+        }
+
+        /**
+         * Dispatch custom event when theme changes
+         */
+        dispatchThemeChangeEvent(actualTheme, preferenceTheme) {
+            const event = new CustomEvent('themechange', {
+                detail: {
+                    theme: actualTheme,
+                    preference: preferenceTheme,
+                    timestamp: Date.now()
+                }
+            });
+            document.dispatchEvent(event);
+        }
+
+        /**
+         * Get current theme
+         */
+        getCurrentTheme() {
+            return this.currentTheme;
+        }
+
+        /**
+         * Get current preference (including 'auto')
+         */
+        getCurrentPreference() {
+            return this.getSavedPreference() || THEMES.AUTO;
         }
     }
 
-    // Initialize theme switcher when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            window.themeSwitcher = new ThemeSwitcher();
-        });
-    } else {
-        window.themeSwitcher = new ThemeSwitcher();
-    }
+    // Initialize theme switcher
+    const themeSwitcher = new ThemeSwitcher();
+
+    // Expose to global scope for manual control
+    window.ThemeSwitcher = themeSwitcher;
+
+    // Add helper functions to window
+    window.setTheme = (theme) => themeSwitcher.setTheme(theme);
+    window.toggleTheme = () => themeSwitcher.toggleTheme();
+    window.getCurrentTheme = () => themeSwitcher.getCurrentTheme();
+
+    // Log initialization (can be removed in production)
+    console.log('🎨 Theme Switcher initialized');
+    console.log('Current theme:', themeSwitcher.getCurrentTheme());
+    console.log('Preference:', themeSwitcher.getCurrentPreference());
 
 })();

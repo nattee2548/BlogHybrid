@@ -1,4 +1,4 @@
-﻿// Path: BlogHybrid.Application/Commands/Auth/RegisterUserCommand.cs
+// Path: BlogHybrid.Application/Commands/Auth/RegisterUserCommand.cs
 using MediatR;
 
 namespace BlogHybrid.Application.Commands.Auth
@@ -13,6 +13,12 @@ namespace BlogHybrid.Application.Commands.Auth
         public string? LastName { get; set; }
         public string? PhoneNumber { get; set; }
         public bool AcceptTerms { get; set; } = false;
+        
+        // ✨ เพิ่ม Role parameter สำหรับความยืดหยุ่นในอนาคต
+        public string Role { get; set; } = "User"; // Default role
+        
+        // ✨ เพิ่ม IsActive parameter (Admin ต้องรออนุมัติ, User ใช้งานได้ทันที)
+        public bool IsActive { get; set; } = true; // Default active
     }
 
     public class RegisterUserResult

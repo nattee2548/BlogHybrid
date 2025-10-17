@@ -1,0 +1,283 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-header">
+    <h1>Dashboard</h1>
+    <p class="text-muted">ภาพรวมระบบและสถิติการใช้งาน</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@ViewData["TotalPosts"]</div>
+                <div class="stat-label">โพสต์ทั้งหมด</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@ViewData["TotalUsers"]</div>
+                <div class="stat-label">ผู้ใช้งาน</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="bi bi-chat-dots"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@ViewData["TotalComments"]</div>
+                <div class="stat-label">ความคิดเห็น</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@ViewData["TotalCommunities"]</div>
+                <div class="stat-label">ชุมชน</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-8">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h5 class="admin-card-title">
+                    <i class="bi bi-graph-up"></i>
+                    สถิติการเข้าชมรายเดือน
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                <canvas id="visitsChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h5 class="admin-card-title">
+                    <i class="bi bi-pie-chart"></i>
+                    ประเภทโพสต์
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                <canvas id="postTypesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="row g-3">
+    <div class="col-md-8">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h5 class="admin-card-title">
+                    <i class="bi bi-clock-history"></i>
+                    โพสต์ล่าสุด
+                </h5>
+                <a asp-area="Admin" asp-controller="Posts" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                    ดูทั้งหมด
+                </a>
+            </div>
+            <div class="admin-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ชื่อโพสต์</th>
+                                <th>ผู้เขียน</th>
+                                <th>หมวดหมู่</th>
+                                <th>วันที่</th>
+                                <th>สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <a href="#" class="text-decoration-none">
+                                        Clean Architecture in ASP.NET Core
+                                    </a>
+                                </td>
+                                <td>John Doe</td>
+                                <td><span class="badge bg-primary">Programming</span></td>
+                                <td>10 นาทีที่แล้ว</td>
+                                <td><span class="badge bg-success">Published</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="#" class="text-decoration-none">
+                                        Getting Started with Docker
+                                    </a>
+                                </td>
+                                <td>Jane Smith</td>
+                                <td><span class="badge bg-info">DevOps</span></td>
+                                <td>1 ชั่วโมงที่แล้ว</td>
+                                <td><span class="badge bg-success">Published</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="#" class="text-decoration-none">
+                                        React Best Practices 2025
+                                    </a>
+                                </td>
+                                <td>Mike Johnson</td>
+                                <td><span class="badge bg-warning">Frontend</span></td>
+                                <td>3 ชั่วโมงที่แล้ว</td>
+                                <td><span class="badge bg-warning">Draft</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h5 class="admin-card-title">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    รอดำเนินการ
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="pending-item">
+                    <div class="pending-icon pending-user">
+                        <i class="bi bi-person-plus"></i>
+                    </div>
+                    <div class="pending-content">
+                        <div class="pending-title">Admin รอการอนุมัติ</div>
+                        <div class="pending-count">3 รายการ</div>
+                    </div>
+                    <a asp-area="Admin" asp-controller="Users" asp-action="Admins" class="btn btn-sm btn-outline-primary">
+                        ดู
+                    </a>
+                </div>
+
+                <div class="pending-item">
+                    <div class="pending-icon pending-comment">
+                        <i class="bi bi-chat-dots"></i>
+                    </div>
+                    <div class="pending-content">
+                        <div class="pending-title">ความคิดเห็นรอตรวจสอบ</div>
+                        <div class="pending-count">12 รายการ</div>
+                    </div>
+                    <a asp-area="Admin" asp-controller="Comments" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                        ดู
+                    </a>
+                </div>
+
+                <div class="pending-item">
+                    <div class="pending-icon pending-community">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div class="pending-content">
+                        <div class="pending-title">ชุมชนรอการอนุมัติ</div>
+                        <div class="pending-count">5 รายการ</div>
+                    </div>
+                    <a asp-area="Admin" asp-controller="Communities" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                        ดู
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-card mt-3">
+            <div class="admin-card-header">
+                <h5 class="admin-card-title">
+                    <i class="bi bi-lightning"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="d-grid gap-2">
+                    <a asp-area="Admin" asp-controller="Posts" asp-action="Create" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> สร้างโพสต์ใหม่
+                    </a>
+                    <a asp-area="Admin" asp-controller="Categories" asp-action="Create" class="btn btn-outline-primary">
+                        <i class="bi bi-folder-plus"></i> เพิ่มหมวดหมู่
+                    </a>
+                    <a asp-area="Admin" asp-controller="Communities" asp-action="Create" class="btn btn-outline-primary">
+                        <i class="bi bi-people"></i> สร้างชุมชน
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Visits Chart
+    const visitsCtx = document.getElementById('visitsChart').getContext('2d');
+    const visitsChart = new Chart(visitsCtx, {
+        type: 'line',
+        data: {
+            labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.'],
+            datasets: [{
+                label: 'จำนวนการเข้าชม',
+                data: [1200, 1900, 3000, 5000, 4200, 5800],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Post Types Chart
+    const postTypesCtx = document.getElementById('postTypesChart').getContext('2d');
+    const postTypesChart = new Chart(postTypesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Programming', 'DevOps', 'Frontend', 'อื่นๆ'],
+            datasets: [{
+                data: [45, 25, 20, 10],
+                backgroundColor: [
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 99, 132)',
+                    'rgb(255, 205, 86)',
+                    'rgb(201, 203, 207)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true
+        }
+    });
+</script>
+}

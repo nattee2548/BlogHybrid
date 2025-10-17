@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace BlogHybrid.Web.Models.Account
 {
@@ -14,17 +14,24 @@ namespace BlogHybrid.Web.Models.Account
         [Display(Name = "ชื่อที่แสดง")]
         public string DisplayName { get; set; } = string.Empty;
 
+        // ✨ เปลี่ยนจาก Optional เป็น Required
+        [Required(ErrorMessage = "กรุณากรอกชื่อจริง")]
+        [StringLength(50, ErrorMessage = "ชื่อจริงต้องมีความยาวไม่เกิน 50 ตัวอักษร")]
         [Display(Name = "ชื่อจริง")]
-        [StringLength(50)]
-        public string? FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
+        // ✨ เปลี่ยนจาก Optional เป็น Required
+        [Required(ErrorMessage = "กรุณากรอกนามสกุล")]
+        [StringLength(50, ErrorMessage = "นามสกุลต้องมีความยาวไม่เกิน 50 ตัวอักษร")]
         [Display(Name = "นามสกุล")]
-        [StringLength(50)]
-        public string? LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
-        [Display(Name = "เบอร์โทรศัพท์")]
+        // ✨ เปลี่ยนจาก Optional เป็น Required และเพิ่ม Validation
+        [Required(ErrorMessage = "กรุณากรอกเบอร์โทรศัพท์")]
         [Phone(ErrorMessage = "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง")]
-        public string? PhoneNumber { get; set; }
+        [RegularExpression(@"^[0-9]{10}$", ErrorMessage = "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลัก")]
+        [Display(Name = "เบอร์โทรศัพท์")]
+        public string PhoneNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "กรุณากรอกรหัสผ่าน")]
         [StringLength(100, ErrorMessage = "รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร", MinimumLength = 6)]
@@ -43,7 +50,3 @@ namespace BlogHybrid.Web.Models.Account
         public bool AcceptTerms { get; set; }
     }
 }
-
-
-
-

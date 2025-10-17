@@ -28,8 +28,25 @@ public class AccountController : Controller
 
     // GET: /Account/AdminLogin
     [HttpGet]
-    public IActionResult AdminLogin()
+    public async Task<IActionResult> AdminLogin()
     {
+        // ✅ ถ้า Login อยู่แล้ว → Redirect ไป Dashboard ตาม Role
+        if (_signInManager.IsSignedIn(User))
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+                if (isAdmin)
+                {
+                    return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                }
+
+                // ถ้าไม่ใช่ Admin → ไป Home
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
         return View();
     }
 
@@ -92,11 +109,11 @@ public class AccountController : Controller
                 return View(model);
             }
 
-            // 6. Login สำเร็จและเป็น Admin ที่ Active
+            // 6. ✅ Login สำเร็จและเป็น Admin ที่ Active → Redirect ไป Admin Dashboard
             TempData["SuccessMessage"] = "เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ";
             _logger.LogInformation($"Admin logged in successfully: {model.Email}");
 
-            return RedirectToAction("Index", "Admin");
+            return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
         }
         catch (Exception ex)
         {
@@ -108,8 +125,25 @@ public class AccountController : Controller
 
     // GET: /Account/AdminRegister
     [HttpGet]
-    public IActionResult AdminRegister()
+    public async Task<IActionResult> AdminRegister()
     {
+        // ✅ ถ้า Login อยู่แล้ว → Redirect ไป Dashboard ตาม Role
+        if (_signInManager.IsSignedIn(User))
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+                if (isAdmin)
+                {
+                    return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                }
+
+                // ถ้าไม่ใช่ Admin → ไป Home
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
         return View();
     }
 
@@ -131,7 +165,12 @@ public class AccountController : Controller
                 Email = model.Email,
                 Password = model.Password,
                 ConfirmPassword = model.ConfirmPassword,
-                DisplayName = model.DisplayName
+                DisplayName = model.DisplayName,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                PhoneNumber = model.PhoneNumber,
+                Role = "Admin",  // ✅ ส่ง Role Parameter
+                IsActive = false  // ✅ รอการอนุมัติ
             };
 
             var result = await _mediator.Send(command);
@@ -143,27 +182,10 @@ public class AccountController : Controller
                 return View(model);
             }
 
-            // 2. เพิ่ม Role "Admin" ให้กับ User ที่สร้างใหม่
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user != null)
-            {
-                var roleResult = await _userManager.AddToRoleAsync(user, "Admin");
-                if (roleResult.Succeeded)
-                {
-                    // 3. ตั้งค่าให้ IsActive = false (รอการอนุมัติ)
-                    user.IsActive = false;
-                    await _userManager.UpdateAsync(user);
-
-                    _logger.LogInformation($"New admin registered: {model.Email} (Pending approval)");
-                }
-                else
-                {
-                    _logger.LogError($"Failed to add Admin role to: {model.Email}");
-                }
-            }
-
-            // 4. แสดงข้อความสำเร็จ
+            // 2. แสดงข้อความสำเร็จ
             TempData["SuccessMessage"] = "สมัครสมาชิกสำเร็จ! กรุณารอการอนุมัติจากผู้ดูแลระบบ";
+            _logger.LogInformation($"New admin registered: {model.Email} (Pending approval)");
+
             return RedirectToAction("AdminLogin");
         }
         catch (Exception ex)
@@ -184,7 +206,4 @@ public class AccountController : Controller
         _logger.LogInformation("User logged out");
         return RedirectToAction("AdminLogin");
     }
-  
 }
-
-

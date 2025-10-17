@@ -1,7 +1,7 @@
 @model BlogHybrid.Web.Models.Account.AdminRegisterViewModel
 @{
     ViewData["Title"] = "Admin Registration";
-    Layout = null; // ยังคงไม่ใช้ Layout เพื่อให้หน้า Register เรียบง่าย
+    Layout = null;
 }
 
 <!DOCTYPE html>
@@ -17,6 +17,113 @@
     
     @* Custom CSS *@
     <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    
+    <style>
+        /* Custom Toast Styles */
+        .custom-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            max-width: 500px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            animation: slideInRight 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .custom-toast.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .custom-toast.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .custom-toast.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        
+        .custom-toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .custom-toast-message {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .custom-toast-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .custom-toast-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        @@keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @@keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+        
+        /* Form Grid Layout */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        @@media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .custom-toast {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="auth-container">
@@ -30,23 +137,58 @@
             <p class="auth-subtitle">สร้างบัญชีผู้ดูแลระบบใหม่</p>
         </div>
 
-        <form method="post" asp-action="AdminRegister" class="auth-form" autocomplete="on">
+        <form method="post" asp-action="AdminRegister" class="auth-form" autocomplete="on" id="registerForm">
             <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
             
+            @* ข้อมูลส่วนตัว *@
             <div class="form-group">
-                <label asp-for="DisplayName" class="form-label">ชื่อที่แสดง</label>
+                <label asp-for="DisplayName" class="form-label">
+                    ชื่อที่แสดง <span style="color: red;">*</span>
+                </label>
                 <input asp-for="DisplayName" 
                        type="text" 
                        class="form-control" 
-                       placeholder="ชื่อของคุณ"
-                       autocomplete="name"
+                       placeholder="ชื่อที่จะแสดงในระบบ (Username)"
+                       autocomplete="username"
                        autofocus
                        required />
                 <span asp-validation-for="DisplayName" class="text-danger"></span>
             </div>
 
+            @* ชื่อจริง - นามสกุล (2 คอลัมน์) *@
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="FirstName" class="form-label">
+                        ชื่อจริง <span style="color: red;">*</span>
+                    </label>
+                    <input asp-for="FirstName" 
+                           type="text" 
+                           class="form-control" 
+                           placeholder="ชื่อจริง"
+                           autocomplete="given-name"
+                           required />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="LastName" class="form-label">
+                        นามสกุล <span style="color: red;">*</span>
+                    </label>
+                    <input asp-for="LastName" 
+                           type="text" 
+                           class="form-control" 
+                           placeholder="นามสกุล"
+                           autocomplete="family-name"
+                           required />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+            </div>
+
+            @* อีเมล *@
             <div class="form-group">
-                <label asp-for="Email" class="form-label">อีเมล</label>
+                <label asp-for="Email" class="form-label">
+                    อีเมล <span style="color: red;">*</span>
+                </label>
                 <input asp-for="Email" 
                        type="email" 
                        class="form-control" 
@@ -56,34 +198,80 @@
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
+            @* เบอร์โทร *@
             <div class="form-group">
-                <label asp-for="Password" class="form-label">รหัสผ่าน</label>
-                <input asp-for="Password" 
-                       type="password" 
+                <label asp-for="PhoneNumber" class="form-label">
+                    เบอร์โทรศัพท์ <span style="color: red;">*</span>
+                </label>
+                <input asp-for="PhoneNumber" 
+                       type="tel" 
                        class="form-control" 
-                       placeholder="••••••••"
-                       autocomplete="new-password"
+                       placeholder="0812345678"
+                       autocomplete="tel"
+                       pattern="[0-9]{10}"
+                       maxlength="10"
                        required />
-                <span asp-validation-for="Password" class="text-danger"></span>
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 4px;">
+                    <i class="bi bi-info-circle"></i> กรอกเบอร์โทร 10 หลัก (ตัวอย่าง: 0812345678)
+                </small>
             </div>
 
-            <div class="form-group">
-                <label asp-for="ConfirmPassword" class="form-label">ยืนยันรหัสผ่าน</label>
-                <input asp-for="ConfirmPassword" 
-                       type="password" 
-                       class="form-control" 
-                       placeholder="••••••••"
-                       autocomplete="new-password"
+            @* รหัสผ่าน - ยืนยันรหัสผ่าน (2 คอลัมน์) *@
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="Password" class="form-label">
+                        รหัสผ่าน <span style="color: red;">*</span>
+                    </label>
+                    <input asp-for="Password" 
+                           type="password" 
+                           class="form-control" 
+                           placeholder="••••••••"
+                           autocomplete="new-password"
+                           required />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ConfirmPassword" class="form-label">
+                        ยืนยันรหัสผ่าน <span style="color: red;">*</span>
+                    </label>
+                    <input asp-for="ConfirmPassword" 
+                           type="password" 
+                           class="form-control" 
+                           placeholder="••••••••"
+                           autocomplete="new-password"
+                           required />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+            </div>
+
+            @* Checkbox ยอมรับเงื่อนไข *@
+            <div class="form-check" style="margin: 20px 0;">
+                <input asp-for="AcceptTerms" 
+                       type="checkbox" 
+                       class="form-check-input" 
+                       id="acceptTerms"
                        required />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                <label for="acceptTerms" class="form-check-label">
+                    ฉันยอมรับ
+                    <a href="#" 
+                       data-bs-toggle="modal" 
+                       data-bs-target="#termsModal" 
+                       style="color: #0066cc; text-decoration: none;">
+                        ข้อกำหนดและเงื่อนไข
+                    </a>
+                    <span style="color: red;">*</span>
+                </label>
+                <span asp-validation-for="AcceptTerms" class="text-danger" style="display: block;"></span>
             </div>
 
             <button type="submit" class="btn btn-primary">
-                สมัครสมาชิก
+                <i class="bi bi-person-plus"></i> สมัครสมาชิก
             </button>
 
             <a asp-action="AdminLogin" class="btn btn-secondary">
-                มีบัญชีแล้ว? เข้าสู่ระบบ
+                <i class="bi bi-box-arrow-in-right"></i> มีบัญชีแล้ว? เข้าสู่ระบบ
             </a>
         </form>
 
@@ -92,17 +280,203 @@
                 <a asp-controller="Home" asp-action="Index">← กลับหน้าแรก</a>
             </p>
             <p style="margin-top: 12px; font-size: 12px; color: #999;">
-                หมายเหตุ: บัญชีใหม่จะต้องรอการอนุมัติจากผู้ดูแลระบบก่อนใช้งาน
+                <i class="bi bi-info-circle"></i> หมายเหตุ: บัญชีใหม่จะต้องรอการอนุมัติจากผู้ดูแลระบบก่อนใช้งาน
             </p>
         </div>
     </div>
 
-    @* Toast Notifications *@
+    @* Modal ข้อกำหนดและเงื่อนไข *@
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termsModalLabel">
+                        <i class="bi bi-file-text"></i> ข้อกำหนดและเงื่อนไขการใช้งาน
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div style="padding: 20px; line-height: 1.8;">
+                        <h6 style="color: #333; font-weight: 600; margin-bottom: 15px;">1. การยอมรับข้อกำหนด</h6>
+                        <p style="color: #666; margin-bottom: 20px;">
+                            การสมัครและใช้งานระบบ BlogHybrid ถือว่าท่านได้อ่าน เข้าใจ และยอมรับข้อกำหนดและเงื่อนไขทั้งหมดที่ระบุไว้ในเอกสารนี้
+                        </p>
+
+                        <h6 style="color: #333; font-weight: 600; margin-bottom: 15px;">2. การใช้งานบัญชี</h6>
+                        <ul style="color: #666; margin-bottom: 20px;">
+                            <li>ท่านต้องรักษาความปลอดภัยของรหัสผ่านและไม่เปิดเผยให้ผู้อื่นทราบ</li>
+                            <li>ห้ามใช้บัญชีผู้อื่นโดยไม่ได้รับอนุญาต</li>
+                            <li>ท่านต้องรับผิดชอบต่อกิจกรรมทั้งหมดที่เกิดขึ้นภายใต้บัญชีของท่าน</li>
+                        </ul>
+
+                        <h6 style="color: #333; font-weight: 600; margin-bottom: 15px;">3. เนื้อหาและการโพสต์</h6>
+                        <ul style="color: #666; margin-bottom: 20px;">
+                            <li>ห้ามโพสต์เนื้อหาที่ผิดกฎหมาย ลามกอนาจาร หรือส่อไปในทางเหยียดหยาม</li>
+                            <li>ห้ามละเมิดลิขสิทธิ์หรือทรัพย์สินทางปัญญาของผู้อื่น</li>
+                            <li>ห้ามเผยแพร่ข้อมูลส่วนตัวของผู้อื่นโดยไม่ได้รับอนุญาต</li>
+                        </ul>
+
+                        <h6 style="color: #333; font-weight: 600; margin-bottom: 15px;">4. สิทธิ์ผู้ดูแลระบบ (Admin)</h6>
+                        <ul style="color: #666; margin-bottom: 20px;">
+                            <li>ผู้ดูแลระบบมีสิทธิ์ในการจัดการเนื้อหา ผู้ใช้ และการตั้งค่าต่างๆ</li>
+                            <li>ต้องใช้สิทธิ์อย่างรับผิดชอบและเป็นธรรม</li>
+                            <li>ห้ามใช้สิทธิ์เพื่อประโยชน์ส่วนตัวหรือก่อความเสียหายแก่ระบบ</li>
+                        </ul>
+
+                        <h6 style="color: #333; font-weight: 600; margin-bottom: 15px;">5. ข้อมูลส่วนบุคคล</h6>
+                        <p style="color: #666; margin-bottom: 20px;">
+                            ข้อมูลส่วนบุคคล (ชื่อจริง, นามสกุล, อีเมล, เบอร์โทร) จะถูกเก็บรักษาอย่างปลอดภัย 
+                            และใช้เพื่อวัตถุประสงค์ในการบริหารจัดการระบบเท่านั้น 
+                            จะไม่เปิดเผยให้บุคคลที่สามโดยไม่ได้รับความยินยอมจากท่าน
+                        </p>
+
+                        <h6 style="color: #333; font-weight: 600; margin-bottom: 15px;">6. การยกเลิกบัญชี</h6>
+                        <p style="color: #666; margin-bottom: 20px;">
+                            เราขอสงวนสิทธิ์ในการระงับหรือยกเลิกบัญชีที่ละเมิดข้อกำหนดนี้โดยไม่ต้องแจ้งให้ทราบล่วงหน้า
+                        </p>
+
+                        <h6 style="color: #333; font-weight: 600; margin-bottom: 15px;">7. การเปลี่ยนแปลงข้อกำหนด</h6>
+                        <p style="color: #666; margin-bottom: 20px;">
+                            เราอาจปรับปรุงข้อกำหนดนี้เป็นครั้งคราว การใช้งานต่อไปถือว่าท่านยอมรับข้อกำหนดที่มีการเปลี่ยนแปลง
+                        </p>
+
+                        <h6 style="color: #333; font-weight: 600; margin-bottom: 15px;">8. การติดต่อ</h6>
+                        <p style="color: #666; margin-bottom: 0;">
+                            หากมีข้อสงสัยเกี่ยวกับข้อกำหนดนี้ กรุณาติดต่อเราที่ 
+                            <a href="mailto:support@bloghybrid.com" style="color: #0066cc;">support@bloghybrid.com</a>
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                    <button type="button" class="btn btn-primary" id="acceptTermsBtn">ยอมรับ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Toast Notifications (Bootstrap) *@
     <partial name="_ToastNotification" />
 
     @* Scripts *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // ========== Custom Toast Function ==========
+        function showCustomToast(message, type = 'success', duration = 4000) {
+            const existingToast = document.querySelector('.custom-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `custom-toast ${type}`;
+            
+            let icon = '';
+            if (type === 'success') {
+                icon = '<i class="bi bi-check-circle-fill custom-toast-icon"></i>';
+            } else if (type === 'error') {
+                icon = '<i class="bi bi-exclamation-triangle-fill custom-toast-icon"></i>';
+            } else if (type === 'warning') {
+                icon = '<i class="bi bi-exclamation-circle-fill custom-toast-icon"></i>';
+            }
+            
+            toast.innerHTML = `
+                ${icon}
+                <div class="custom-toast-message">${message}</div>
+                <button class="custom-toast-close" onclick="this.parentElement.remove()">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // ========== Handle Enter Key to Next Input ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('registerForm');
+            const inputs = Array.from(form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="password"]'));
+            const acceptTermsCheckbox = document.getElementById('acceptTerms');
+            const acceptTermsBtn = document.getElementById('acceptTermsBtn');
+            const termsModal = document.getElementById('termsModal');
+
+            // ========== Enter Key Handler ==========
+            inputs.forEach((input, index) => {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // ป้องกันการ submit form
+                        
+                        // หา input ถัดไป
+                        const nextIndex = index + 1;
+                        if (nextIndex < inputs.length) {
+                            inputs[nextIndex].focus();
+                        } else {
+                            // ถ้าเป็น input สุดท้าย ให้ focus ที่ checkbox
+                            acceptTermsCheckbox.focus();
+                        }
+                    }
+                });
+            });
+
+            // ========== Checkbox Enter Handler ==========
+            acceptTermsCheckbox.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.checked = !this.checked; // Toggle checkbox
+                }
+            });
+
+            // ========== Accept Terms Button ==========
+            acceptTermsBtn.addEventListener('click', function() {
+                acceptTermsCheckbox.checked = true;
+                const modal = bootstrap.Modal.getInstance(termsModal);
+                modal.hide();
+            });
+
+            // ========== แสดง Toast เฉพาะจาก Server Response ==========
+            
+            // Success Toast + Redirect
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                showCustomToast('@TempData["SuccessMessage"]', 'success', 3000);
+                setTimeout(function() {
+                    window.location.href = '@Url.Action("AdminLogin", "Account")';
+                }, 3000);
+                </text>
+            }
+
+            // Error Toast
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                showCustomToast('@TempData["ErrorMessage"]', 'error', 5000);
+                </text>
+            }
+
+            // Warning Toast
+            @if (TempData["WarningMessage"] != null)
+            {
+                <text>
+                showCustomToast('@TempData["WarningMessage"]', 'warning', 5000);
+                </text>
+            }
+
+            // Info Toast
+            @if (TempData["InfoMessage"] != null)
+            {
+                <text>
+                showCustomToast('@TempData["InfoMessage"]', 'warning', 4000);
+                </text>
+            }
+        });
+    </script>
 </body>
 </html>

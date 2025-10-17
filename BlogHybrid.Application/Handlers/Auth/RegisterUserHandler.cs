@@ -1,4 +1,4 @@
-﻿// Path: BlogHybrid.Application/Handlers/Auth/RegisterUserHandler.cs
+// Path: BlogHybrid.Application/Handlers/Auth/RegisterUserHandler.cs
 using BlogHybrid.Application.Commands.Auth;
 using BlogHybrid.Application.Queries.Auth;
 using BlogHybrid.Domain.Entities;
@@ -73,7 +73,7 @@ namespace BlogHybrid.Application.Handlers.Auth
                     LastName = request.LastName ?? string.Empty,
                     PhoneNumber = request.PhoneNumber,
                     EmailConfirmed = false, // ต้อง verify email
-                    IsActive = true,
+                    IsActive = request.IsActive, // ✨ ใช้ค่าจาก Command (Admin = false, User = true)
                     CreatedAt = DateTime.UtcNow,
                     LastLoginAt = DateTime.UtcNow
                 };
@@ -90,26 +90,29 @@ namespace BlogHybrid.Application.Handlers.Auth
                     };
                 }
 
-                // 5. เพิ่ม Role "User" (default role)
-                var roleResult = await _userManager.AddToRoleAsync(user, "User");
+                // 5. ✨ เพิ่ม Role ตามที่ระบุใน Command (แทนที่จะ hardcode "User")
+                var roleResult = await _userManager.AddToRoleAsync(user, request.Role);
 
                 if (!roleResult.Succeeded)
                 {
-                    _logger.LogWarning("Failed to add User role to {Email}: {Errors}",
-                        user.Email, string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                    _logger.LogWarning("Failed to add {Role} role to {Email}: {Errors}",
+                        request.Role, user.Email, string.Join(", ", roleResult.Errors.Select(e => e.Description)));
                 }
 
                 // 6. TODO: ส่ง Email Verification (optional)
                 // var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 // await _emailService.SendVerificationEmailAsync(user.Email, token);
 
-                _logger.LogInformation("User registered successfully: {Email}", user.Email);
+                _logger.LogInformation("User registered successfully: {Email} with role {Role} (IsActive: {IsActive})", 
+                    user.Email, request.Role, user.IsActive);
 
                 return new RegisterUserResult
                 {
                     Success = true,
                     UserId = user.Id,
-                    Message = "สมัครสมาชิกเรียบร้อยแล้ว กรุณาเข้าสู่ระบบ"
+                    Message = user.IsActive 
+                        ? "สมัครสมาชิกเรียบร้อยแล้ว กรุณาเข้าสู่ระบบ" 
+                        : "สมัครสมาชิกเรียบร้อยแล้ว กรุณารอการอนุมัติจากผู้ดูแลระบบ"
                 };
             }
             catch (Exception ex)
