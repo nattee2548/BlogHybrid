@@ -1,0 +1,343 @@
+﻿@model BlogHybrid.Web.Areas.Admin.Models.AdminUsersListViewModel
+@{
+    ViewData["Title"] = "จัดการ Admin";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h1><i class="bi bi-shield-lock"></i> จัดการ Admin</h1>
+        <p class="text-muted">จัดการบัญชี Admin ทั้งหมดในระบบ</p>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="admin-card mb-4">
+    <div class="admin-card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text"
+                           class="form-control"
+                           name="search"
+                           value="@Model.SearchTerm"
+                           placeholder="ค้นหาด้วยชื่อ, อีเมล, หรือชื่อผู้ใช้...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> ค้นหา
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-primary">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Admin ทั้งหมด</div>
+                <div class="stat-value">@Model.TotalCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-success">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Active</div>
+                <div class="stat-value">@Model.Users.Count(u => u.IsActive)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-warning">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">รออนุมัติ</div>
+                <div class="stat-value">@Model.Users.Count(u => !u.IsActive)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Users Table -->
+<div class="admin-card">
+    <div class="admin-card-body">
+        @if (!Model.Users.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-3">ไม่พบข้อมูล Admin</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table admin-table">
+                    <thead>
+                        <tr>
+                            <th>ชื่อผู้ใช้</th>
+                            <th>อีเมล</th>
+                            <th>สถานะ</th>
+                            <th>ยืนยันอีเมล</th>
+                            <th>สมัครเมื่อ</th>
+                            <th>เข้าใช้ล่าสุด</th>
+                            <th class="text-end">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar">
+                                            @if (!string.IsNullOrEmpty(user.FullName))
+                                            {
+                                                <span>@user.FullName.Substring(0, 1).ToUpper()</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@user.UserName.Substring(0, 1).ToUpper()</span>
+                                            }
+                                        </div>
+                                        <div class="ms-2">
+                                            <div class="fw-semibold">@user.FullName</div>
+                                            <div class="text-muted small">@@@user.UserName</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@user.Email</td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-clock-history"></i> รออนุมัติ
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.EmailConfirmed)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> ยืนยันแล้ว
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-x-circle"></i> ยังไม่ยืนยัน
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="text-muted">@user.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                </td>
+                                <td>
+                                    @if (user.LastLoginAt.HasValue)
+                                    {
+                                        <span class="text-muted">@user.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a asp-action="Details"
+                                           asp-route-id="@user.Id"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="ดูรายละเอียด">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit"
+                                           asp-route-id="@user.Id"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="แก้ไข">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@(Model.PageNumber - 1)"
+                               asp-route-search="@Model.SearchTerm">
+                                <i class="bi bi-chevron-left"></i> ก่อนหน้า
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@i"
+                                   asp-route-search="@Model.SearchTerm">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@(Model.PageNumber + 1)"
+                               asp-route-search="@Model.SearchTerm">
+                                ถัดไป <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="text-center text-muted mt-2">
+                    แสดง @((Model.PageNumber - 1) * Model.PageSize + 1)
+                    - @(Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount))
+                    จากทั้งหมด @Model.TotalCount รายการ
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .admin-stat-card {
+            background: var(--admin-card-bg);
+            border: 1px solid var(--admin-card-border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+            .stat-icon.bg-primary {
+                background: #3b82f6;
+            }
+
+            .stat-icon.bg-success {
+                background: #10b981;
+            }
+
+            .stat-icon.bg-warning {
+                background: #f59e0b;
+            }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-label {
+            color: var(--admin-text-muted);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--admin-text-primary);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .admin-table {
+            margin-bottom: 0;
+        }
+
+            .admin-table thead th {
+                background: var(--admin-bg);
+                border-bottom: 2px solid var(--admin-card-border);
+                font-weight: 600;
+                color: var(--admin-text-primary);
+                white-space: nowrap;
+            }
+
+            .admin-table tbody td {
+                vertical-align: middle;
+                padding: 12px;
+            }
+
+        .badge {
+            padding: 6px 12px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .pagination {
+            margin-bottom: 0;
+        }
+
+        .page-link {
+            color: var(--admin-text-primary);
+            background: var(--admin-card-bg);
+            border-color: var(--admin-card-border);
+        }
+
+            .page-link:hover {
+                color: #3b82f6;
+                background: var(--admin-menu-hover);
+                border-color: var(--admin-card-border);
+            }
+
+        .page-item.active .page-link {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .page-item.disabled .page-link {
+            opacity: 0.5;
+        }
+    </style>
+}

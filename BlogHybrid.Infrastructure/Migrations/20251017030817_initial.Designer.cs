@@ -12,15 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BlogHybrid.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250928140058_refresh-token")]
-    partial class refreshtoken
+    [Migration("20251017030817_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -246,6 +246,207 @@ namespace BlogHybrid.Infrastructure.Migrations
                     b.ToTable("CommentLikes", (string)null);
                 });
 
+            modelBuilder.Entity("BlogHybrid.Domain.Entities.Community", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPrivate")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MemberCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("PostCount")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("RequireApproval")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Rules")
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("IsPrivate");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.HasIndex("CategoryId", "IsActive", "IsDeleted");
+
+                    b.ToTable("Communities");
+                });
+
+            modelBuilder.Entity("BlogHybrid.Domain.Entities.CommunityInvite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommunityId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("InviteeEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("InviteeId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("InviterId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommunityId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("InviteeEmail");
+
+                    b.HasIndex("InviteeId");
+
+                    b.HasIndex("InviterId");
+
+                    b.HasIndex("IsUsed");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("CommunityId", "InviteeEmail");
+
+                    b.HasIndex("Token", "IsUsed");
+
+                    b.ToTable("CommunityInvites", (string)null);
+                });
+
+            modelBuilder.Entity("BlogHybrid.Domain.Entities.CommunityMember", b =>
+                {
+                    b.Property<int>("CommunityId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsBanned")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CommunityId", "UserId");
+
+                    b.HasIndex("CommunityId");
+
+                    b.HasIndex("IsApproved");
+
+                    b.HasIndex("IsBanned");
+
+                    b.HasIndex("JoinedAt");
+
+                    b.HasIndex("Role");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("CommunityId", "IsApproved");
+
+                    b.HasIndex("CommunityId", "Role");
+
+                    b.ToTable("CommunityMembers", (string)null);
+                });
+
             modelBuilder.Entity("BlogHybrid.Domain.Entities.Post", b =>
                 {
                     b.Property<int>("Id")
@@ -262,6 +463,9 @@ namespace BlogHybrid.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("CommentCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("CommunityId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Content")
@@ -313,6 +517,8 @@ namespace BlogHybrid.Infrastructure.Migrations
                     b.HasIndex("AuthorId");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("CommunityId");
 
                     b.HasIndex("CreatedAt");
 
@@ -426,6 +632,10 @@ namespace BlogHybrid.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -437,6 +647,8 @@ namespace BlogHybrid.Infrastructure.Migrations
                         .HasColumnType("character varying(60)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -624,6 +836,70 @@ namespace BlogHybrid.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BlogHybrid.Domain.Entities.Community", b =>
+                {
+                    b.HasOne("BlogHybrid.Domain.Entities.Category", "Category")
+                        .WithMany("Communities")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BlogHybrid.Domain.Entities.ApplicationUser", "Creator")
+                        .WithMany("CreatedCommunities")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Creator");
+                });
+
+            modelBuilder.Entity("BlogHybrid.Domain.Entities.CommunityInvite", b =>
+                {
+                    b.HasOne("BlogHybrid.Domain.Entities.Community", "Community")
+                        .WithMany("CommunityInvites")
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BlogHybrid.Domain.Entities.ApplicationUser", "Invitee")
+                        .WithMany("ReceivedInvites")
+                        .HasForeignKey("InviteeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BlogHybrid.Domain.Entities.ApplicationUser", "Inviter")
+                        .WithMany("SentInvites")
+                        .HasForeignKey("InviterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Community");
+
+                    b.Navigation("Invitee");
+
+                    b.Navigation("Inviter");
+                });
+
+            modelBuilder.Entity("BlogHybrid.Domain.Entities.CommunityMember", b =>
+                {
+                    b.HasOne("BlogHybrid.Domain.Entities.Community", "Community")
+                        .WithMany("CommunityMembers")
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BlogHybrid.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("CommunityMemberships")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Community");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BlogHybrid.Domain.Entities.Post", b =>
                 {
                     b.HasOne("BlogHybrid.Domain.Entities.ApplicationUser", "Author")
@@ -638,9 +914,16 @@ namespace BlogHybrid.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("BlogHybrid.Domain.Entities.Community", "Community")
+                        .WithMany("Posts")
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Author");
 
                     b.Navigation("Category");
+
+                    b.Navigation("Community");
                 });
 
             modelBuilder.Entity("BlogHybrid.Domain.Entities.PostLike", b =>
@@ -690,6 +973,16 @@ namespace BlogHybrid.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BlogHybrid.Domain.Entities.Tag", b =>
+                {
+                    b.HasOne("BlogHybrid.Domain.Entities.ApplicationUser", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Creator");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -749,13 +1042,23 @@ namespace BlogHybrid.Infrastructure.Migrations
 
                     b.Navigation("Comments");
 
+                    b.Navigation("CommunityMemberships");
+
+                    b.Navigation("CreatedCommunities");
+
                     b.Navigation("PostLikes");
 
                     b.Navigation("Posts");
+
+                    b.Navigation("ReceivedInvites");
+
+                    b.Navigation("SentInvites");
                 });
 
             modelBuilder.Entity("BlogHybrid.Domain.Entities.Category", b =>
                 {
+                    b.Navigation("Communities");
+
                     b.Navigation("Posts");
                 });
 
@@ -764,6 +1067,15 @@ namespace BlogHybrid.Infrastructure.Migrations
                     b.Navigation("CommentLikes");
 
                     b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("BlogHybrid.Domain.Entities.Community", b =>
+                {
+                    b.Navigation("CommunityInvites");
+
+                    b.Navigation("CommunityMembers");
+
+                    b.Navigation("Posts");
                 });
 
             modelBuilder.Entity("BlogHybrid.Domain.Entities.Post", b =>

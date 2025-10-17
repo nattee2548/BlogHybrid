@@ -1,0 +1,344 @@
+﻿@model BlogHybrid.Web.Areas.Admin.Models.AdminUserDetailsViewModel
+@{
+    ViewData["Title"] = "รายละเอียด Admin";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h1><i class="bi bi-person-badge"></i> รายละเอียด Admin</h1>
+        <p class="text-muted">ข้อมูลเต็มของบัญชี Admin</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> กลับ
+        </a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> แก้ไข
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Profile Card -->
+    <div class="col-md-4">
+        <div class="admin-card mb-4">
+            <div class="admin-card-body text-center">
+                <div class="profile-avatar mb-3">
+                    @if (!string.IsNullOrEmpty(Model.FullName))
+                    {
+                        <span>@Model.FullName.Substring(0, 1).ToUpper()</span>
+                    }
+                    else
+                    {
+                        <span>@Model.UserName.Substring(0, 1).ToUpper()</span>
+                    }
+                </div>
+                <h4 class="mb-1">@Model.FullName</h4>
+                <p class="text-muted">@@@Model.UserName</p>
+
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success mb-3">
+                        <i class="bi bi-check-circle"></i> Active
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-warning mb-3">
+                        <i class="bi bi-clock-history"></i> รออนุมัติ
+                    </span>
+                }
+
+                <hr>
+
+                <div class="profile-info">
+                    <div class="info-item">
+                        <i class="bi bi-calendar-plus"></i>
+                        <div>
+                            <div class="info-label">สมัครเมื่อ</div>
+                            <div class="info-value">@Model.CreatedAt.ToString("dd MMM yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="bi bi-clock-history"></i>
+                        <div>
+                            <div class="info-label">เข้าใช้ล่าสุด</div>
+                            <div class="info-value">
+                                @if (Model.LastLoginAt.HasValue)
+                                {
+                                    @Model.LastLoginAt.Value.ToString("dd MMM yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">ยังไม่เคยเข้าใช้</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Roles Card -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h5><i class="bi bi-shield-lock"></i> บทบาท</h5>
+            </div>
+            <div class="admin-card-body">
+                @if (Model.Roles.Any())
+                {
+                    <div class="roles-list">
+                        @foreach (var role in Model.Roles)
+                        {
+                            <span class="badge bg-primary role-badge">
+                                <i class="bi bi-shield-check"></i> @role
+                            </span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">ไม่มีบทบาท</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Card -->
+    <div class="col-md-8">
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h5><i class="bi bi-info-circle"></i> ข้อมูลส่วนตัว</h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">ชื่อจริง</div>
+                        <div class="detail-value">@Model.FirstName</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">นามสกุล</div>
+                        <div class="detail-value">@Model.LastName</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">อีเมล</div>
+                        <div class="detail-value">
+                            @Model.Email
+                            @if (Model.EmailConfirmed)
+                            {
+                                <span class="badge bg-success ms-2">
+                                    <i class="bi bi-check-circle"></i> ยืนยันแล้ว
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary ms-2">
+                                    <i class="bi bi-x-circle"></i> ยังไม่ยืนยัน
+                                </span>
+                            }
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">ชื่อผู้ใช้</div>
+                        <div class="detail-value">@@@Model.UserName</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">เบอร์โทรศัพท์</div>
+                        <div class="detail-value">
+                            @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                            {
+                                @Model.PhoneNumber
+                                if (Model.PhoneNumberConfirmed)
+                                {
+                                    <span class="badge bg-success ms-2">
+                                        <i class="bi bi-check-circle"></i> ยืนยันแล้ว
+                                    </span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Card -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h5><i class="bi bi-shield-check"></i> ความปลอดภัย</h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">การยืนยันตัวตน 2 ชั้น (2FA)</div>
+                        <div class="detail-value">
+                            @if (Model.TwoFactorEnabled)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> เปิดใช้งาน
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-x-circle"></i> ปิดใช้งาน
+                                </span>
+                            }
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">สถานะบัญชี</div>
+                        <div class="detail-value">
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-clock-history"></i> รออนุมัติ
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Card -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h5><i class="bi bi-tools"></i> การจัดการ</h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="action-buttons">
+                    <form asp-action="ToggleActive" asp-route-id="@Model.Id" method="post" class="d-inline">
+                        @if (Model.IsActive)
+                        {
+                            <button type="submit"
+                                    class="btn btn-warning"
+                                    onclick="return confirm('คุณต้องการปิดการใช้งานบัญชีนี้หรือไม่?')">
+                                <i class="bi bi-pause-circle"></i> ปิดการใช้งาน
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit"
+                                    class="btn btn-success"
+                                    onclick="return confirm('คุณต้องการเปิดการใช้งานบัญชีนี้หรือไม่?')">
+                                <i class="bi bi-check-circle"></i> อนุมัติและเปิดใช้งาน
+                            </button>
+                        }
+                    </form>
+
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> แก้ไขข้อมูล
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 48px;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-info {
+            text-align: left;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--admin-card-border);
+        }
+
+            .info-item:last-child {
+                border-bottom: none;
+            }
+
+            .info-item i {
+                font-size: 20px;
+                color: var(--admin-text-muted);
+            }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--admin-text-muted);
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--admin-text-primary);
+        }
+
+        .roles-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .role-badge {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .detail-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .detail-item {
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--admin-card-border);
+        }
+
+            .detail-item:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+        .detail-label {
+            font-size: 13px;
+            color: var(--admin-text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: var(--admin-text-primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+    </style>
+}

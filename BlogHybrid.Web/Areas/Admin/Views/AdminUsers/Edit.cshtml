@@ -1,0 +1,249 @@
+﻿@model BlogHybrid.Web.Areas.Admin.Models.EditAdminUserViewModel
+@{
+    ViewData["Title"] = "แก้ไขข้อมูล Admin";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h1><i class="bi bi-pencil"></i> แก้ไขข้อมูล Admin</h1>
+        <p class="text-muted">อัปเดตข้อมูลบัญชี Admin</p>
+    </div>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+            <i class="bi bi-x-lg"></i> ยกเลิก
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <form asp-action="Edit" method="post" class="admin-card">
+            <div class="admin-card-body">
+                <input type="hidden" asp-for="Id" />
+
+                <!-- ข้อมูลการเข้าสู่ระบบ -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-key"></i> ข้อมูลการเข้าสู่ระบบ
+                    </h5>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">อีเมล</label>
+                        <input asp-for="Email" class="form-control" readonly />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                        <small class="text-muted">ไม่สามารถเปลี่ยนอีเมลได้</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="UserName" class="form-label">ชื่อผู้ใช้</label>
+                        <div class="input-group">
+                            <span class="input-group-text">@@</span>
+                            <input asp-for="UserName" class="form-control" readonly />
+                        </div>
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                        <small class="text-muted">ไม่สามารถเปลี่ยนชื่อผู้ใช้ได้</small>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ข้อมูลส่วนตัว -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-person"></i> ข้อมูลส่วนตัว
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FirstName" class="form-label required">ชื่อจริง</label>
+                            <input asp-for="FirstName" class="form-control" placeholder="กรอกชื่อจริง" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="LastName" class="form-label required">นามสกุล</label>
+                            <input asp-for="LastName" class="form-control" placeholder="กรอกนามสกุล" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="form-label">เบอร์โทรศัพท์</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="0XX-XXX-XXXX" />
+                        </div>
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- สถานะบัญชี -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-shield-check"></i> สถานะและความปลอดภัย
+                    </h5>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="form-check-label">
+                                เปิดใช้งานบัญชี
+                            </label>
+                        </div>
+                        <small class="text-muted">
+                            หากปิดการใช้งาน ผู้ใช้จะไม่สามารถเข้าสู่ระบบได้
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="EmailConfirmed" class="form-check-input" type="checkbox" />
+                            <label asp-for="EmailConfirmed" class="form-check-label">
+                                ยืนยันอีเมลแล้ว
+                            </label>
+                        </div>
+                        <small class="text-muted">
+                            การยืนยันอีเมลจะช่วยเพิ่มความปลอดภัยให้บัญชี
+                        </small>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ปุ่มดำเนินการ -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> ยกเลิก
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> บันทึกการเปลี่ยนแปลง
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- คำเตือนสำหรับการแก้ไขข้อมูลตัวเอง -->
+        @if (User.Identity?.Name == Model.UserName)
+        {
+            <div class="alert alert-warning mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>คำเตือน:</strong> คุณกำลังแก้ไขข้อมูลของตัวเอง กรุณาตรวจสอบให้แน่ใจก่อนบันทึกการเปลี่ยนแปลง
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Highlight changes
+        const originalValues = {
+            firstName: '@Html.Raw(Model.FirstName)',
+            lastName: '@Html.Raw(Model.LastName)',
+            phoneNumber: '@Html.Raw(Model.PhoneNumber)',
+            isActive: @Json.Serialize(Model.IsActive),
+            emailConfirmed: @Json.Serialize(Model.EmailConfirmed)
+        };
+
+        // Track form changes
+        let hasChanges = false;
+
+        $('input').on('change', function() {
+            hasChanges = true;
+        });
+
+        // Warn before leaving if there are unsaved changes
+        $(window).on('beforeunload', function(e) {
+            if (hasChanges) {
+                const message = 'คุณมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก คุณต้องการออกจากหน้านี้หรือไม่?';
+                e.returnValue = message;
+                return message;
+            }
+        });
+
+        // Don't warn when submitting form
+        $('form').on('submit', function() {
+            hasChanges = false;
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            color: var(--admin-text-primary);
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .section-title i {
+                color: #3b82f6;
+            }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--admin-text-primary);
+            margin-bottom: 8px;
+        }
+
+            .form-label.required::after {
+                content: ' *';
+                color: #ef4444;
+            }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+
+        .form-control[readonly] {
+            background-color: var(--admin-bg);
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .form-check-input:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+
+        .text-danger {
+            font-size: 0.875rem;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .input-group-text {
+            background-color: var(--admin-bg);
+            border-color: var(--admin-card-border);
+            color: var(--admin-text-muted);
+        }
+
+        .alert-warning {
+            background-color: #fef3c7;
+            border-color: #fcd34d;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+
+        hr {
+            border-color: var(--admin-card-border);
+            margin: 24px 0;
+        }
+    </style>
+}

@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="~/css/themes/dark-mode.css" />
     <link rel="stylesheet" href="~/css/themes/theme-switcher.css" />
     <link rel="stylesheet" href="~/css/admin/admin-layout.css" asp-append-version="true" />
-
+    @await RenderSectionAsync("Styles", required: false)
     <!-- Prevent theme flash -->
     <script>
         (function() {
@@ -133,7 +133,7 @@
                         <i class="bi bi-person-badge"></i>
                         <span>สมาชิก</span>
                     </a>
-                    <a asp-area="Admin" asp-controller="Users" asp-action="Admins" class="admin-menu-item">
+                    <a asp-area="Admin" asp-controller="AdminUsers" asp-action="Index" class="admin-menu-item">
                         <i class="bi bi-shield-lock"></i>
                         <span>Admin</span>
                     </a>
