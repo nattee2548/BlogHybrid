@@ -1,84 +1,20 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="light">
 <head>
+    <!-- Same head content as before -->
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
-    <!-- Primary Meta Tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - 404alk</title>
-    <meta name="title" content="@(ViewData["MetaTitle"] ?? ViewData["Title"] + " - 404alk")" />
-    <meta name="description" content="@(ViewData["MetaDescription"] ?? "404alk - ชุมชนแลกเปลี่ยนความรู้ด้านเทคโนโลยี โปรแกรมมิ่ง และการพัฒนาซอฟต์แวร์ สำหรับนักพัฒนาไทย")" />
-    <meta name="keywords" content="@(ViewData["MetaKeywords"] ?? "blog, tech, programming, technology, development, coding, software, 404alk, ชุมชน, โปรแกรมมิ่ง, เทคโนโลยี")" />
-    <meta name="author" content="404alk" />
-    <meta name="robots" content="@(ViewData["MetaRobots"] ?? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1")" />
 
-    <!-- Canonical URL -->
-    <link rel="canonical" href="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="@(ViewData["OGType"] ?? "website")" />
-    <meta property="og:url" content="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
-    <meta property="og:title" content="@(ViewData["OGTitle"] ?? ViewData["Title"] + " - 404alk")" />
-    <meta property="og:description" content="@(ViewData["OGDescription"] ?? ViewData["MetaDescription"] ?? "ชุมชนแลกเปลี่ยนความรู้ด้านเทคโนโลยีและการพัฒนาซอฟต์แวร์")" />
-    <meta property="og:image" content="@(ViewData["OGImage"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}/images/og-default.jpg")" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:site_name" content="404alk" />
-    <meta property="og:locale" content="th_TH" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
-    <meta name="twitter:title" content="@(ViewData["TwitterTitle"] ?? ViewData["Title"] + " - 404alk")" />
-    <meta name="twitter:description" content="@(ViewData["TwitterDescription"] ?? ViewData["MetaDescription"] ?? "ชุมชนแลกเปลี่ยนความรู้ด้านเทคโนโลยี")" />
-    <meta name="twitter:image" content="@(ViewData["TwitterImage"] ?? ViewData["OGImage"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}/images/og-default.jpg")" />
-    @if (ViewData["TwitterSite"] != null)
-    {
-        <meta name="twitter:site" content="@ViewData["TwitterSite"]" />
-    }
-    @if (ViewData["TwitterCreator"] != null)
-    {
-        <meta name="twitter:creator" content="@ViewData["TwitterCreator"]" />
-    }
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
-
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1a1a1b" media="(prefers-color-scheme: dark)" />
-
-    <!-- Preconnect for Performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-
-    <!-- CSS Files -->
+    <!-- CSS -->
     <link rel="stylesheet" href="~/css/core/reset.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/core/variables.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/themes/light-mode.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/themes/dark-mode.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/core/typography.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/layout/grid.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/layout/navbar.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/layout/sidebar.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/components/cards.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/components/buttons.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/components/forms.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/components/badges.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/components/modals.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/components/dropdown.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/components/toast.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/utilities/animations.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/utilities/accessibility.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/themes/main-theme.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/themes/theme-switcher.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modern/navbar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modern/sidebar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modern/homepage.css" asp-append-version="true" />
 
-    <!-- Prevent theme flash -->
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme');
@@ -87,168 +23,274 @@
             document.documentElement.setAttribute('data-theme', actualTheme);
         })();
     </script>
-
-    <!-- Organization Schema -->
-    <script type="application/ld+json">
-        {
-            "@@context": "https://schema.org",
-            "@@type": "Organization",
-            "name": "404alk",
-            "url": "@($"{Context.Request.Scheme}://{Context.Request.Host}")",
-            "logo": "@($"{Context.Request.Scheme}://{Context.Request.Host}/images/logo.png")",
-            "description": "ชุมชนแลกเปลี่ยนความรู้ด้านเทคโนโลยีและการพัฒนาซอฟต์แวร์",
-            "sameAs": [
-                "@(ViewData["FacebookUrl"] ?? "")",
-                "@(ViewData["TwitterUrl"] ?? "")",
-                "@(ViewData["GitHubUrl"] ?? "")"
-            ]
-        }
-    </script>
-
-    <!-- WebSite Schema -->
-    <script type="application/ld+json">
-        {
-            "@@context": "https://schema.org",
-            "@@type": "WebSite",
-            "name": "404alk",
-            "url": "@($"{Context.Request.Scheme}://{Context.Request.Host}")",
-            "potentialAction": {
-                "@@type": "SearchAction",
-                "target": "@($"{Context.Request.Scheme}://{Context.Request.Host}/search?q={{search_term_string}}")",
-                "query-input": "required name=search_term_string"
-            }
-        }
-    </script>
-
-    @await RenderSectionAsync("StructuredData", required: false)
-    @await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="main-layout">
-    <!-- Skip to main content (Accessibility) -->
-    <a href="#main-content" class="skip-to-main">ข้ามไปยังเนื้อหาหลัก</a>
+<body>
+    <!-- ========== MODERN NAVBAR ========== -->
+    <nav class="modern-navbar">
+        <div class="modern-navbar-container">
+            <!-- Logo -->
+            <a asp-controller="Home" asp-action="Index" class="modern-logo">
+                <div class="modern-logo-icon">4</div>
+                <span class="modern-logo-text">404alk</span>
+            </a>
 
-    <!-- Header -->
-    <header class="main-header" role="banner">
-        <nav class="main-navbar" role="navigation" aria-label="Main navigation">
-            <div class="main-navbar-left">
-                <a asp-controller="Home" asp-action="Index" class="main-logo" aria-label="404alk Homepage">
-                    <span class="main-logo-icon" aria-hidden="true">4</span>
-                    <span>404alk</span>
-                </a>
-
-                <ul class="main-nav-links" role="menubar">
-                    <li role="none">
-                        <a asp-controller="Home" asp-action="Index" class="main-nav-link" role="menuitem">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                            </svg>
-                            หน้าแรก
-                        </a>
-                    </li>
-                    <li role="none">
-                        <a asp-controller="Post" asp-action="Index" class="main-nav-link" role="menuitem">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                            </svg>
-                            บทความ
-                        </a>
-                    </li>
-                    <li role="none">
-                        <a asp-controller="Category" asp-action="Index" class="main-nav-link" role="menuitem">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-                            </svg>
-                            หมวดหมู่
-                        </a>
-                    </li>
-                    <li role="none">
-                        <a asp-controller="Community" asp-action="Index" class="main-nav-link" role="menuitem">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                            </svg>
-                            ชุมชน
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="main-navbar-right">
-                <div class="main-search" role="search">
-                    <svg class="main-search-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <!-- Search Bar -->
+            <div class="modern-search-container">
+                <div class="modern-search">
+                    <svg class="modern-search-icon" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
-                    <input type="search" class="main-search-input" placeholder="ค้นหา 404alk" aria-label="Search" />
+                    <input type="search" class="modern-search-input" placeholder="ค้นหาบทความ, ชุมชน, หรือผู้ใช้..." />
+                    <kbd class="modern-search-shortcut">Ctrl+K</kbd>
                 </div>
+            </div>
 
-                <button class="main-btn-icon" title="การแจ้งเตือน" aria-label="Notifications">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <!-- Actions -->
+            <div class="modern-actions">
+                <!-- Create Post Button -->
+                <button class="modern-create-btn">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    <span>สร้างโพสต์</span>
+                </button>
+
+                <!-- Notifications -->
+                <button class="modern-icon-btn">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
                         <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                    </svg>
+                    <span class="modern-badge">5</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button class="modern-theme-toggle">
+                    <svg class="modern-theme-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
                     </svg>
                 </button>
 
-                <div class="theme-switcher-container">
-                    <button class="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle dark mode">
-                        <span class="theme-toggle-ball">
-                            <svg class="theme-icon" width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
-                            </svg>
-                        </span>
+                <!-- User Menu -->
+                <div class="modern-user-menu">
+                    <button class="modern-user-btn">
+                        <img src="https://ui-avatars.com/api/?name=User&background=ff4500" alt="User" class="modern-user-avatar" />
+                        <div class="modern-user-info">
+                            <div class="modern-user-name">ชื่อผู้ใช้</div>
+                            <div class="modern-user-level">Level 5 • 1.2K คะแนน</div>
+                        </div>
+                        <svg class="modern-user-chevron" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
                     </button>
                 </div>
             </div>
-        </nav>
-    </header>
+        </div>
+    </nav>
 
-    <!-- Main Content -->
-    <div class="main-main">
-        <main id="main-content" class="main-content" role="main">
+    <!-- ========== MAIN CONTAINER ========== -->
+    <div class="main-main" style="max-width: 1400px; margin: 0 auto; padding: var(--space-6) var(--space-4);">
+        <!-- MAIN CONTENT -->
+        <main class="main-content" style="flex: 1;">
+            <!-- Feed Header -->
+            <div class="feed-header">
+                <div class="feed-tabs">
+                    <button class="feed-tab active">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                        </svg>
+                        <span>หน้าแรก</span>
+                    </button>
+                    <button class="feed-tab">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
+                        </svg>
+                        <span>มาแรง</span>
+                    </button>
+                    <button class="feed-tab">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                        </svg>
+                        <span>ติดตาม</span>
+                    </button>
+                </div>
+
+                <button class="feed-filter">
+                    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 16px; height: 16px;">
+                        <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" />
+                    </svg>
+                    <span>ใหม่สุด</span>
+                </button>
+            </div>
+
+            <!-- Create Post Box -->
+            <div class="create-post-box">
+                <div class="create-post-header">
+                    <img src="https://ui-avatars.com/api/?name=User&background=ff4500" alt="User" class="create-post-avatar" />
+                    <input type="text" class="create-post-input" placeholder="คุณกำลังคิดอะไรอยู่?" />
+                </div>
+                <div class="create-post-actions">
+                    <button class="create-action-btn">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                        </svg>
+                        <span>รูปภาพ</span>
+                    </button>
+                    <button class="create-action-btn">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        <span>โค้ด</span>
+                    </button>
+                    <button class="create-action-btn">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-.464 5.535a1 1 0 10-1.415-1.414 3 3 0 01-4.242 0 1 1 0 00-1.415 1.414 5 5 0 007.072 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span>อีโมจิ</span>
+                    </button>
+                </div>
+            </div>
+
             @RenderBody()
         </main>
 
-        <aside class="main-sidebar" role="complementary" aria-label="Sidebar">
-            <div class="main-sidebar-card">
-                <div class="main-sidebar-header">
-                    ชุมชนยอดนิยม
+        <!-- MODERN SIDEBAR -->
+        <aside class="modern-sidebar">
+            <!-- Quick Actions -->
+            <div class="quick-actions-card">
+                <div class="quick-actions-title">🚀 Quick Actions</div>
+                <div class="quick-actions-grid">
+                    <button class="quick-action-btn">
+                        <svg class="quick-action-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="quick-action-text">สร้างโพสต์</span>
+                    </button>
+                    <button class="quick-action-btn">
+                        <svg class="quick-action-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                        </svg>
+                        <span class="quick-action-text">ชุมชน</span>
+                    </button>
+                    <button class="quick-action-btn">
+                        <svg class="quick-action-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                        </svg>
+                        <span class="quick-action-text">บทความ</span>
+                    </button>
+                    <button class="quick-action-btn">
+                        <svg class="quick-action-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="quick-action-text">มาแรง</span>
+                    </button>
                 </div>
-                <div class="main-sidebar-content" style="padding: 0;">
-                    <a href="#" class="main-community-info">
-                        <div class="main-community-icon" style="background: #ff4500;">P</div>
-                        <div class="main-community-details">
-                            <h3>r/programming</h3>
-                            <p>8.5K สมาชิก</p>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="stats-card">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value">2.5K</span>
+                        <span class="stat-label">สมาชิก</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">850</span>
+                        <span class="stat-label">ออนไลน์</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">125</span>
+                        <span class="stat-label">โพสต์วันนี้</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trending Communities -->
+            <div class="trending-card">
+                <div class="trending-header">
+                    <div class="trending-title">
+                        <svg class="trending-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
+                        </svg>
+                        <span>ชุมชนมาแรง</span>
+                    </div>
+                    <a href="#" class="view-all-link">ดูทั้งหมด</a>
+                </div>
+                <div class="trending-list">
+                    <a href="#" class="trending-item">
+                        <span class="trending-rank">1</span>
+                        <div class="trending-avatar" style="background: #ff4500;">P</div>
+                        <div class="trending-info">
+                            <div class="trending-name">r/programming</div>
+                            <div class="trending-members">8.5K สมาชิก</div>
                         </div>
+                        <svg class="trending-arrow" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                    <a href="#" class="trending-item">
+                        <span class="trending-rank">2</span>
+                        <div class="trending-avatar" style="background: #46d160;">W</div>
+                        <div class="trending-info">
+                            <div class="trending-name">r/WebDev</div>
+                            <div class="trending-members">3.8K สมาชิก</div>
+                        </div>
+                        <svg class="trending-arrow" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
                     </a>
                 </div>
             </div>
 
-            <div class="main-sidebar-card" style="font-size: 12px;">
-                <div class="main-sidebar-content">
-                    <nav aria-label="Footer links">
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
-                            <a href="/about">เกี่ยวกับ</a>
-                            <span aria-hidden="true">•</span>
-                            <a href="/help">ช่วยเหลือ</a>
-                            <span aria-hidden="true">•</span>
-                            <a asp-controller="Home" asp-action="Privacy">นโยบาย</a>
-                        </div>
-                    </nav>
-                    <div style="color: var(--text-tertiary);">
-                        © @DateTime.Now.Year 404alk
-                    </div>
+            <!-- Categories Widget -->
+            <div class="categories-widget">
+                <div class="categories-title">📚 หมวดหมู่ยอดนิยม</div>
+                <div class="categories-grid">
+                    <a href="#" class="category-chip">
+                        <svg class="category-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Programming</span>
+                    </a>
+                    <a href="#" class="category-chip">
+                        <svg class="category-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                        </svg>
+                        <span>DevOps</span>
+                    </a>
+                    <a href="#" class="category-chip">
+                        <svg class="category-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                        </svg>
+                        <span>UX/UI</span>
+                    </a>
+                    <a href="#" class="category-chip">
+                        <svg class="category-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd" />
+                            <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+                        </svg>
+                        <span>Career</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="sidebar-footer">
+                <div class="footer-links">
+                    <a href="#" class="footer-link">เกี่ยวกับ</a>
+                    <a href="#" class="footer-link">ช่วยเหลือ</a>
+                    <a href="#" class="footer-link">เงื่อนไข</a>
+                    <a href="#" class="footer-link">นโยบาย</a>
+                    <a href="#" class="footer-link">API</a>
+                </div>
+                <div class="footer-copyright">
+                    © @DateTime.Now.Year 404alk. All rights reserved.
                 </div>
             </div>
         </aside>
     </div>
 
-    <partial name="_ToastNotification" />
-
     <!-- Scripts -->
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/mobile-menu.js" asp-append-version="true"></script>
     <script src="~/js/theme-switcher.js" asp-append-version="true"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

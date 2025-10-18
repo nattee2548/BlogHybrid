@@ -1,0 +1,331 @@
+﻿/* ================================================
+   Modern Navbar - Better than Reddit
+   ================================================ */
+
+/* ========== Navbar Container ========== */
+.modern-navbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    background: var(--navbar-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--navbar-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.modern-navbar-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+/* ========== Logo Section ========== */
+.modern-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    text-decoration: none;
+    transition: all var(--transition-base);
+}
+
+    .modern-logo:hover {
+        transform: translateY(-1px);
+    }
+
+.modern-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary) 0%, #ff6b35 100%);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: var(--font-extrabold);
+    font-size: var(--text-xl);
+    box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
+}
+
+.modern-logo-text {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    background: linear-gradient(135deg, var(--primary) 0%, #ff6b35 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ========== Search Bar (Prominent) ========== */
+.modern-search-container {
+    flex: 1;
+    max-width: 600px;
+    position: relative;
+}
+
+.modern-search {
+    position: relative;
+    width: 100%;
+}
+
+.modern-search-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 var(--space-12) 0 var(--space-12);
+    background: var(--bg-secondary);
+    border: 2px solid transparent;
+    border-radius: var(--radius-full);
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    transition: all var(--transition-base);
+}
+
+    .modern-search-input:focus {
+        outline: none;
+        background: var(--bg-primary);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(255, 69, 0, 0.1);
+    }
+
+    .modern-search-input::placeholder {
+        color: var(--text-tertiary);
+    }
+
+.modern-search-icon {
+    position: absolute;
+    left: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+}
+
+.modern-search-shortcut {
+    position: absolute;
+    right: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 4px 8px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    font-weight: var(--font-medium);
+    pointer-events: none;
+}
+
+/* ========== Action Buttons ========== */
+.modern-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.modern-create-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-full);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: 0 2px 8px rgba(255, 69, 0, 0.3);
+}
+
+    .modern-create-btn:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(255, 69, 0, 0.4);
+    }
+
+    .modern-create-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+.modern-icon-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-lg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .modern-icon-btn:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .modern-icon-btn svg {
+        width: 22px;
+        height: 22px;
+    }
+
+/* Notification Badge */
+.modern-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    background: var(--danger);
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: var(--font-bold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--navbar-bg);
+}
+
+/* ========== User Menu ========== */
+.modern-user-menu {
+    position: relative;
+}
+
+.modern-user-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .modern-user-btn:hover {
+        background: var(--bg-hover);
+    }
+
+.modern-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border-primary);
+    object-fit: cover;
+}
+
+.modern-user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 100px;
+}
+
+.modern-user-name {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+}
+
+.modern-user-level {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+}
+
+.modern-user-chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+    transition: transform var(--transition-base);
+}
+
+.modern-user-menu.active .modern-user-chevron {
+    transform: rotate(180deg);
+}
+
+/* ========== Theme Toggle (Modern) ========== */
+.modern-theme-toggle {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .modern-theme-toggle:hover {
+        background: var(--bg-active);
+        transform: scale(1.05);
+    }
+
+.modern-theme-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text-primary);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 991px) {
+    .modern-navbar-container {
+        height: 56px;
+    }
+
+    .modern-search-container {
+        max-width: 400px;
+    }
+
+    .modern-user-info {
+        display: none;
+    }
+
+    .modern-create-btn span {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .modern-navbar-container {
+        padding: 0 var(--space-3);
+    }
+
+    .modern-search-container {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        padding: var(--space-3);
+        background: var(--navbar-bg);
+        border-bottom: 1px solid var(--navbar-border);
+        display: none;
+    }
+
+        .modern-search-container.active {
+            display: block;
+        }
+
+    .modern-logo-text {
+        display: none;
+    }
+
+    .modern-search-shortcut {
+        display: none;
+    }
+}
