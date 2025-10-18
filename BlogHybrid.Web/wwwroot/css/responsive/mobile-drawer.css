@@ -1,0 +1,334 @@
+﻿/* ================================================
+   MOBILE SIDEBAR DRAWER
+   Responsive Sidebar แบบ Reddit
+   ไม่กระทบ Admin Layout
+   ================================================ */
+
+/* ========== Variables ========== */
+:root {
+    --drawer-width: 320px;
+    --drawer-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+    --z-drawer: 1050;
+    --z-overlay: 1040;
+}
+
+/* ========== Hamburger Menu Button ========== */
+.mobile-sidebar-toggle {
+    display: none;
+    position: relative;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+    .mobile-sidebar-toggle:hover {
+        background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+    }
+
+.hamburger {
+    position: relative;
+    width: 24px;
+    height: 2px;
+    background: var(--text-primary, #1f2937);
+    transition: all var(--drawer-transition);
+    border-radius: 2px;
+}
+
+    .hamburger::before,
+    .hamburger::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        width: 24px;
+        height: 2px;
+        background: var(--text-primary, #1f2937);
+        transition: all var(--drawer-transition);
+        border-radius: 2px;
+    }
+
+    .hamburger::before {
+        top: -7px;
+    }
+
+    .hamburger::after {
+        top: 7px;
+    }
+
+/* Hamburger Animation when active */
+.mobile-sidebar-toggle.active .hamburger {
+    background: transparent;
+}
+
+    .mobile-sidebar-toggle.active .hamburger::before {
+        top: 0;
+        transform: rotate(45deg);
+    }
+
+    .mobile-sidebar-toggle.active .hamburger::after {
+        top: 0;
+        transform: rotate(-45deg);
+    }
+
+/* ========== Drawer Overlay ========== */
+.sidebar-drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--overlay-bg);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--drawer-transition), visibility var(--drawer-transition);
+    z-index: var(--z-overlay);
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+    .sidebar-drawer-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+/* ========== Desktop: Sidebar แบบปกติ ========== */
+body:not(.admin-body) .user-sidebar,
+body:not(.admin-body) .modern-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+}
+
+/* ========== Mobile: Sidebar Drawer ========== */
+@media (max-width: 991px) {
+    body:not(.admin-body) .user-sidebar,
+    body:not(.admin-body) .modern-sidebar {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        bottom: 0;
+        width: var(--drawer-width);
+        max-width: 85vw;
+        background: var(--bg-primary, #ffffff);
+        box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        z-index: var(--z-drawer);
+        padding: 1rem;
+        transition: right var(--drawer-transition);
+    }
+
+    /* Dark Mode */
+    [data-theme="dark"] body:not(.admin-body) .user-sidebar,
+    [data-theme="dark"] body:not(.admin-body) .modern-sidebar {
+        background: var(--bg-primary, #1f2937);
+    }
+
+    /* Active State - เลื่อนออกมา */
+    body:not(.admin-body) .user-sidebar.active,
+    body:not(.admin-body) .modern-sidebar.active {
+        right: 0;
+    }
+
+    /* Show Hamburger Button */
+    .mobile-sidebar-toggle {
+        display: flex;
+    }
+}
+
+/* ========== Drawer Header (แสดงเฉพาะมือถือ) ========== */
+.drawer-header {
+    display: none;
+}
+
+@media (max-width: 991px) {
+    .drawer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-primary, #e5e7eb);
+        margin: -1rem -1rem 1rem -1rem;
+        background: var(--bg-secondary, #f9fafb);
+    }
+
+    [data-theme="dark"] .drawer-header {
+        background: var(--bg-secondary, #111827);
+        border-bottom-color: var(--border-primary, #374151);
+    }
+}
+
+.drawer-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary, #1f2937);
+    margin: 0;
+}
+
+.drawer-close {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary, #6b7280);
+    transition: all 0.2s;
+}
+
+    .drawer-close:hover {
+        background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+        color: var(--text-primary, #1f2937);
+    }
+
+    .drawer-close svg {
+        width: 20px;
+        height: 20px;
+    }
+
+/* ========== Prevent Body Scroll when Drawer Open ========== */
+body.drawer-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+/* ========== Safe Area Support (Notch) ========== */
+@supports (padding: max(0px)) {
+    @media (max-width: 991px) {
+        body:not(.admin-body) .user-sidebar,
+        body:not(.admin-body) .modern-sidebar {
+            padding-top: max(1rem, env(safe-area-inset-top));
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
+    }
+}
+
+/* ========== Navbar Integration ========== */
+@media (max-width: 991px) {
+    /* เพิ่ม Hamburger ใน Navbar */
+    body:not(.admin-body) .main-navbar-left,
+    body:not(.admin-body) .modern-navbar-left {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+}
+
+/* ========== Card Responsive Fix ========== */
+@media (max-width: 767px) {
+    body:not(.admin-body) .post-card,
+    body:not(.admin-body) .category-card,
+    body:not(.admin-body) .community-card {
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    body:not(.admin-body) .post-image img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
+
+    /* Container padding */
+    body:not(.admin-body) .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    body:not(.admin-body) .main-main {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 575px) {
+    body:not(.admin-body) .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    body:not(.admin-body) .main-main {
+        padding: 0.25rem;
+    }
+}
+
+/* ========== Scrollbar Styling (Desktop) ========== */
+@media (min-width: 992px) {
+    body:not(.admin-body) .user-sidebar::-webkit-scrollbar,
+    body:not(.admin-body) .modern-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    body:not(.admin-body) .user-sidebar::-webkit-scrollbar-track,
+    body:not(.admin-body) .modern-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    body:not(.admin-body) .user-sidebar::-webkit-scrollbar-thumb,
+    body:not(.admin-body) .modern-sidebar::-webkit-scrollbar-thumb {
+        background: var(--border-primary, #e5e7eb);
+        border-radius: 3px;
+    }
+
+        body:not(.admin-body) .user-sidebar::-webkit-scrollbar-thumb:hover,
+        body:not(.admin-body) .modern-sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--border-secondary, #d1d5db);
+        }
+}
+
+/* ========== Mobile Scrollbar ========== */
+@media (max-width: 991px) {
+    body:not(.admin-body) .user-sidebar,
+    body:not(.admin-body) .modern-sidebar {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-primary, #e5e7eb) transparent;
+    }
+}
+
+/* ========== Accessibility ========== */
+.mobile-sidebar-toggle:focus-visible {
+    outline: 2px solid var(--primary, #ff4500);
+    outline-offset: 2px;
+}
+
+.drawer-close:focus-visible {
+    outline: 2px solid var(--primary, #ff4500);
+    outline-offset: 2px;
+}
+
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+    .mobile-sidebar-toggle,
+    .hamburger,
+    .hamburger::before,
+    .hamburger::after,
+    .sidebar-drawer-overlay,
+    body:not(.admin-body) .user-sidebar,
+    body:not(.admin-body) .modern-sidebar {
+        transition: none !important;
+    }
+}
+
+/* ========== Admin Safety - ป้องกันไม่ให้กระทบ Admin ========== */
+.admin-body .mobile-sidebar-toggle,
+.admin-body .sidebar-drawer-overlay,
+.admin-body .drawer-header {
+    display: none !important;
+}
+
+/* Admin ใช้ sidebar ของตัวเอง */
+.admin-body .admin-sidebar {
+    /* ไม่ถูกกระทบจาก CSS นี้ */
+}

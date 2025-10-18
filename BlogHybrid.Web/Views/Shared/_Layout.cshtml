@@ -23,7 +23,8 @@
     <!-- Responsive CSS -->
     <link rel="stylesheet" href="~/css/responsive/responsive.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/responsive/utilities.css" asp-append-version="true" />
-
+    <link rel="stylesheet" href="~/css/responsive/user-layout-responsive.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive/mobile-drawer.css" asp-append-version="true" />
     <!-- Prevent theme flash -->
     <script>
         (function() {
@@ -141,6 +142,7 @@
 
     <!-- Scripts -->
     <script src="~/js/theme-switcher.js" asp-append-version="true"></script>
+    <script src="~/js/mobile-drawer.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
