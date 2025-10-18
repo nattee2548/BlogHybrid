@@ -1,0 +1,91 @@
+﻿@model BlogHybrid.Web.Models.Account.LoginViewModel
+@{
+    ViewData["Title"] = "เข้าสู่ระบบ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <title>@ViewData["Title"] - 404alk</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+            </div>
+            <h1 class="auth-title">ยินดีต้อนรับกลับ</h1>
+            <p class="auth-subtitle">เข้าสู่ระบบเพื่อใช้งาน 404alk</p>
+        </div>
+
+        <form method="post" asp-action="Login" class="auth-form" autocomplete="on">
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="form-group">
+                <label asp-for="Email" class="form-label">อีเมล</label>
+                <input asp-for="Email"
+                       type="email"
+                       class="form-control"
+                       placeholder="example@email.com"
+                       autocomplete="email"
+                       autofocus
+                       required />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="form-label">รหัสผ่าน</label>
+                <input asp-for="Password"
+                       type="password"
+                       class="form-control"
+                       placeholder="••••••••"
+                       autocomplete="current-password"
+                       required />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-check">
+                <input asp-for="RememberMe"
+                       type="checkbox"
+                       class="form-check-input"
+                       id="rememberMe" />
+                <label for="rememberMe" class="form-check-label">
+                    จดจำการเข้าสู่ระบบ
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-box-arrow-in-right"></i> เข้าสู่ระบบ
+            </button>
+
+            <a asp-action="Register" class="btn btn-secondary">
+                <i class="bi bi-person-plus"></i> สมัครสมาชิกใหม่
+            </a>
+        </form>
+
+        <div class="auth-footer">
+            <p>
+                <a asp-controller="Home" asp-action="Index">← กลับหน้าแรก</a>
+                <span style="margin: 0 10px;">|</span>
+                <a asp-action="AdminLogin">เข้าสู่ระบบแอดมิน</a>
+            </p>
+        </div>
+    </div>
+
+    <partial name="_ToastNotification" />
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>

@@ -1,0 +1,308 @@
+﻿@model BlogHybrid.Web.Areas.User.Models.EditProfileViewModel
+@{
+    ViewData["Title"] = "แก้ไขโปรไฟล์";
+}
+
+<style>
+    .user-nav-tabs {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+    }
+
+    .user-nav-tab {
+        padding: 10px 20px;
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-weight: 500;
+        white-space: nowrap;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+
+        .user-nav-tab:hover {
+            background: var(--bg-secondary);
+        }
+
+        .user-nav-tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+    .edit-profile-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 32px;
+    }
+
+    .form-section {
+        margin-bottom: 32px;
+    }
+
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .profile-image-section {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 20px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        margin-bottom: 24px;
+    }
+
+    .profile-image-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--border-color);
+    }
+
+    .profile-image-placeholder {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        font-weight: 600;
+        border: 3px solid var(--border-color);
+    }
+
+    .form-control {
+        padding: 12px;
+        font-size: 0.95rem;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        transition: border-color 0.2s;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 69, 0, 0.1);
+        }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 32px;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+    .btn-secondary {
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        padding: 12px 32px;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+        }
+</style>
+
+<div class="main-container" style="padding: 80px 0 40px;">
+    <div class="container" style="max-width: 1200px;">
+
+        <!-- User Navigation Tabs -->
+        <div class="user-nav-tabs">
+            <a asp-area="User" asp-controller="Profile" asp-action="Index" class="user-nav-tab">
+                <i class="bi bi-person"></i> โปรไฟล์
+            </a>
+            <a asp-area="User" asp-controller="Posts" asp-action="Index" class="user-nav-tab">
+                <i class="bi bi-file-earmark-text"></i> โพสต์ของฉัน
+            </a>
+            <a asp-area="User" asp-controller="Communities" asp-action="Index" class="user-nav-tab">
+                <i class="bi bi-people"></i> ชุมชนของฉัน
+            </a>
+            <a asp-area="User" asp-controller="Profile" asp-action="Edit" class="user-nav-tab active">
+                <i class="bi bi-gear"></i> ตั้งค่า
+            </a>
+        </div>
+
+        <div style="max-width: 800px; margin: 0 auto;">
+            <!-- Header -->
+            <div style="margin-bottom: 24px;">
+                <h2 style="color: var(--text-primary); font-weight: 600; font-size: 1.75rem;">
+                    <i class="bi bi-person-gear"></i> แก้ไขโปรไฟล์
+                </h2>
+                <p style="color: var(--text-secondary); margin-top: 8px;">อัปเดตข้อมูลส่วนตัวของคุณ</p>
+            </div>
+
+            <!-- Form -->
+            <div class="edit-profile-card">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="CurrentProfileImageUrl" />
+
+                    <!-- Profile Image Section -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i class="bi bi-image"></i> รูปโปรไฟล์
+                        </h3>
+                        <div class="profile-image-section">
+                            @if (!string.IsNullOrEmpty(Model.CurrentProfileImageUrl))
+                            {
+                                <img src="@Model.CurrentProfileImageUrl"
+                                     alt="Profile"
+                                     id="imagePreview"
+                                     class="profile-image-preview" />
+                            }
+                            else
+                            {
+                                <div id="imagePreview" class="profile-image-placeholder">
+                                    @Model.DisplayName.Substring(0, 1).ToUpper()
+                                </div>
+                            }
+                            <div style="flex: 1;">
+                                <input asp-for="ProfileImage"
+                                       type="file"
+                                       class="form-control mb-2"
+                                       accept="image/*"
+                                       id="profileImageInput" />
+                                <small style="color: var(--text-secondary);">
+                                    <i class="bi bi-info-circle"></i> รองรับ JPG, PNG, GIF | ขนาดไม่เกิน 5MB
+                                </small>
+                                <span asp-validation-for="ProfileImage" class="text-danger d-block mt-2"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i class="bi bi-person-badge"></i> ข้อมูลพื้นฐาน
+                        </h3>
+
+                        <div class="mb-3">
+                            <label asp-for="DisplayName" class="form-label fw-semibold" style="color: var(--text-primary);">
+                                ชื่อที่แสดง <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="DisplayName" class="form-control" />
+                            <span asp-validation-for="DisplayName" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FirstName" class="form-label" style="color: var(--text-primary);">
+                                    ชื่อจริง
+                                </label>
+                                <input asp-for="FirstName" class="form-control" placeholder="ชื่อจริง (ไม่บังคับ)" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LastName" class="form-label" style="color: var(--text-primary);">
+                                    นามสกุล
+                                </label>
+                                <input asp-for="LastName" class="form-control" placeholder="นามสกุล (ไม่บังคับ)" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label" style="color: var(--text-primary);">
+                                <i class="bi bi-telephone"></i> เบอร์โทรศัพท์
+                            </label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="0812345678" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- About -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i class="bi bi-chat-quote"></i> เกี่ยวกับคุณ
+                        </h3>
+
+                        <div class="mb-3">
+                            <label asp-for="Bio" class="form-label" style="color: var(--text-primary);">
+                                แนะนำตัว
+                            </label>
+                            <textarea asp-for="Bio"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="บอกเล่าเกี่ยวกับตัวคุณ..."
+                                      style="resize: vertical;"></textarea>
+                            <span asp-validation-for="Bio" class="text-danger"></span>
+                            <small style="color: var(--text-secondary); display: block; margin-top: 8px;">
+                                สูงสุด 500 ตัวอักษร
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div style="display: flex; gap: 12px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                        <button type="submit" class="btn-primary">
+                            <i class="bi bi-check-circle"></i> บันทึกการเปลี่ยนแปลง
+                        </button>
+                        <a asp-action="Index" class="btn-secondary">
+                            <i class="bi bi-x-circle"></i> ยกเลิก
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<partial name="_ToastNotification" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Preview image before upload
+        document.getElementById('profileImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    if (preview.tagName === 'IMG') {
+                        preview.src = e.target.result;
+                    } else {
+                        preview.outerHTML = '<img src="' + e.target.result + '" id="imagePreview" class="profile-image-preview" />';
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

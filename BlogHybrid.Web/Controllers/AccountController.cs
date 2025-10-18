@@ -26,11 +26,142 @@ public class AccountController : Controller
         _logger = logger;
     }
 
+    #region User Login & Register
+
+    // GET: /Account/Login
+    [HttpGet]
+    public async Task<IActionResult> Login(string? returnUrl = null)
+    {
+        if (_signInManager.IsSignedIn(User))
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        ViewData["ReturnUrl"] = returnUrl;
+        return View();
+    }
+
+    // POST: /Account/Login
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
+    {
+        ViewData["ReturnUrl"] = returnUrl;
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        try
+        {
+            var command = new LoginUserCommand
+            {
+                Email = model.Email,
+                Password = model.Password,
+                RememberMe = model.RememberMe
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.Errors?.FirstOrDefault() ?? "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+                _logger.LogWarning($"Failed login attempt for: {model.Email}");
+                return View(model);
+            }
+
+            _logger.LogInformation($"User logged in: {model.Email}");
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
+            _logger.LogError(ex, $"Error during login for: {model.Email}");
+            return View(model);
+        }
+    }
+
+    // GET: /Account/Register
+    [HttpGet]
+    public async Task<IActionResult> Register()
+    {
+        if (_signInManager.IsSignedIn(User))
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        return View();
+    }
+
+    // POST: /Account/Register
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(RegisterViewModel model)
+    {
+        if (!model.AcceptTerms)
+        {
+            TempData["ErrorMessage"] = "กรุณายอมรับข้อกำหนดและเงื่อนไข";
+            return View(model);
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        try
+        {
+            var command = new RegisterUserCommand
+            {
+                Email = model.Email,
+                Password = model.Password,
+                ConfirmPassword = model.ConfirmPassword,
+                DisplayName = model.DisplayName,
+                FirstName = null,
+                LastName = null,
+                PhoneNumber = null,
+                Role = "User",
+                IsActive = true
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (!result.Success)
+            {
+                ModelState.Remove(nameof(model.AcceptTerms));
+                TempData["ErrorMessage"] = result.Errors?.FirstOrDefault() ?? "ไม่สามารถสมัครสมาชิกได้";
+                _logger.LogWarning($"Failed registration for: {model.Email}");
+                return View(model);
+            }
+
+            TempData["SuccessMessage"] = "สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ";
+            _logger.LogInformation($"New user registered: {model.Email}");
+
+            return RedirectToAction("Login");
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
+            _logger.LogError(ex, $"Error during registration for: {model.Email}");
+            return View(model);
+        }
+    }
+
+    #endregion
+
+    #region Admin Login & Register
+
     // GET: /Account/AdminLogin
     [HttpGet]
     public async Task<IActionResult> AdminLogin()
     {
-        // ✅ ถ้า Login อยู่แล้ว → Redirect ไป Dashboard ตาม Role
         if (_signInManager.IsSignedIn(User))
         {
             var user = await _userManager.GetUserAsync(User);
@@ -42,7 +173,6 @@ public class AccountController : Controller
                     return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
                 }
 
-                // ถ้าไม่ใช่ Admin → ไป Home
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -62,7 +192,6 @@ public class AccountController : Controller
 
         try
         {
-            // 1. ส่ง Login Command
             var command = new LoginUserCommand
             {
                 Email = model.Email,
@@ -72,16 +201,13 @@ public class AccountController : Controller
 
             var result = await _mediator.Send(command);
 
-            // 2. ตรวจสอบผลลัพธ์
             if (!result.Success)
             {
-                // Login ไม่สำเร็จ
                 TempData["ErrorMessage"] = result.Errors?.FirstOrDefault() ?? "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
                 _logger.LogWarning($"Failed login attempt for: {model.Email}");
                 return View(model);
             }
 
-            // 3. Login สำเร็จ - ตรวจสอบว่าเป็น Admin หรือไม่
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
@@ -90,7 +216,6 @@ public class AccountController : Controller
                 return View(model);
             }
 
-            // 4. ตรวจสอบ Role Admin
             var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
             if (!isAdmin)
             {
@@ -100,7 +225,6 @@ public class AccountController : Controller
                 return View(model);
             }
 
-            // 5. ตรวจสอบว่าบัญชี Active หรือไม่
             if (!user.IsActive)
             {
                 TempData["WarningMessage"] = "บัญชีของคุณยังไม่ได้รับการอนุมัติ กรุณารอการอนุมัติจากผู้ดูแลระบบ";
@@ -109,7 +233,6 @@ public class AccountController : Controller
                 return View(model);
             }
 
-            // 6. ✅ Login สำเร็จและเป็น Admin ที่ Active → Redirect ไป Admin Dashboard
             TempData["SuccessMessage"] = "เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ";
             _logger.LogInformation($"Admin logged in successfully: {model.Email}");
 
@@ -127,7 +250,6 @@ public class AccountController : Controller
     [HttpGet]
     public async Task<IActionResult> AdminRegister()
     {
-        // ✅ ถ้า Login อยู่แล้ว → Redirect ไป Dashboard ตาม Role
         if (_signInManager.IsSignedIn(User))
         {
             var user = await _userManager.GetUserAsync(User);
@@ -139,7 +261,6 @@ public class AccountController : Controller
                     return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
                 }
 
-                // ถ้าไม่ใช่ Admin → ไป Home
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -154,18 +275,17 @@ public class AccountController : Controller
     {
         if (!model.AcceptTerms)
         {
-           // ModelState.AddModelError(nameof(model.AcceptTerms), "กรุณายอมรับข้อกำหนดและเงื่อนไข");
             TempData["ErrorMessage"] = "กรุณายอมรับข้อกำหนดและเงื่อนไข";
             return View(model);
         }
+
         if (!ModelState.IsValid)
         {
             return View(model);
         }
-       
+
         try
         {
-            // 1. สมัครสมาชิกด้วย RegisterUserCommand
             var command = new RegisterUserCommand
             {
                 Email = model.Email,
@@ -175,8 +295,8 @@ public class AccountController : Controller
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 PhoneNumber = model.PhoneNumber,
-                Role = "Admin",  //
-                IsActive = false  //
+                Role = "Admin",
+                IsActive = false
             };
 
             var result = await _mediator.Send(command);
@@ -189,7 +309,6 @@ public class AccountController : Controller
                 return View(model);
             }
 
-            // 2. แสดงข้อความสำเร็จ
             TempData["SuccessMessage"] = "สมัครสมาชิกสำเร็จ! กรุณารอการอนุมัติจากผู้ดูแลระบบ";
             _logger.LogInformation($"New admin registered: {model.Email} (Pending approval)");
 
@@ -203,6 +322,8 @@ public class AccountController : Controller
         }
     }
 
+    #endregion
+
     // POST: /Account/Logout
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -211,6 +332,6 @@ public class AccountController : Controller
         await _signInManager.SignOutAsync();
         TempData["InfoMessage"] = "ออกจากระบบเรียบร้อยแล้ว";
         _logger.LogInformation("User logged out");
-        return RedirectToAction("AdminLogin");
+        return RedirectToAction("Index", "Home");
     }
 }
