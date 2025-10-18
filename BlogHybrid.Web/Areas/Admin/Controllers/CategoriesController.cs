@@ -1,5 +1,6 @@
 ﻿// BlogHybrid.Web/Areas/Admin/Controllers/CategoriesController.cs
 using BlogHybrid.Application.Commands.Category;
+using BlogHybrid.Application.Interfaces.Services; // ✅ เพิ่ม
 using BlogHybrid.Application.Queries.Category;
 using BlogHybrid.Web.Areas.Admin.Models;
 using MediatR;
@@ -14,13 +15,16 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ILogger<CategoriesController> _logger;
+        private readonly IImageService _imageService; // ✅ เพิ่ม
 
         public CategoriesController(
             IMediator mediator,
-            ILogger<CategoriesController> logger)
+            ILogger<CategoriesController> logger,
+            IImageService imageService) // ✅ เพิ่ม
         {
             _mediator = mediator;
             _logger = logger;
+            _imageService = imageService; // ✅ เพิ่ม
         }
 
         // GET: /Admin/Categories
@@ -127,12 +131,29 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
 
             try
             {
+                string? imageUrl = model.ImageUrl;
+
+                // ✅ Upload รูปภาพถ้ามี
+                if (model.ImageFile != null)
+                {
+                    try
+                    {
+                        var uploadedPath = await _imageService.UploadAsync(model.ImageFile, "categories");
+                        imageUrl = _imageService.GetImageUrl(uploadedPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error uploading category image");
+                        TempData["WarningMessage"] = "อัปโหลดรูปภาพไม่สำเร็จ แต่ยังคงสร้างหมวดหมู่";
+                    }
+                }
+
                 var command = new CreateCategoryCommand
                 {
                     Name = model.Name,
                     Description = model.Description,
                     Color = model.Color,
-                    ImageUrl = model.ImageUrl,
+                    ImageUrl = imageUrl,
                     IsActive = model.IsActive,
                     SortOrder = model.SortOrder
                 };
@@ -179,6 +200,7 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                     Description = result.Description,
                     Color = result.Color,
                     ImageUrl = result.ImageUrl,
+                    CurrentImageUrl = result.ImageUrl, // ✅ เก็บรูปเดิม
                     IsActive = result.IsActive,
                     SortOrder = result.SortOrder
                 };
@@ -210,13 +232,38 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
 
             try
             {
+                string? imageUrl = model.ImageUrl;
+
+                // ✅ Upload รูปภาพใหม่ถ้ามี
+                if (model.ImageFile != null)
+                {
+                    try
+                    {
+                        // ลบรูปเดิมถ้ามี
+                        if (!string.IsNullOrEmpty(model.CurrentImageUrl))
+                        {
+                            await _imageService.DeleteAsync(model.CurrentImageUrl);
+                        }
+
+                        // Upload รูปใหม่
+                        var uploadedPath = await _imageService.UploadAsync(model.ImageFile, "categories");
+                        imageUrl = _imageService.GetImageUrl(uploadedPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error uploading category image");
+                        TempData["WarningMessage"] = "อัปโหลดรูปภาพไม่สำเร็จ แต่ยังคงอัปเดตข้อมูลอื่น";
+                        imageUrl = model.CurrentImageUrl; // ใช้รูปเดิม
+                    }
+                }
+
                 var command = new UpdateCategoryCommand
                 {
                     Id = model.Id,
                     Name = model.Name,
                     Description = model.Description,
                     Color = model.Color,
-                    ImageUrl = model.ImageUrl,
+                    ImageUrl = imageUrl,
                     IsActive = model.IsActive,
                     SortOrder = model.SortOrder
                 };

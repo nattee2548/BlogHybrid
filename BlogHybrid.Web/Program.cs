@@ -1,7 +1,11 @@
+using Amazon.Runtime;
+using Amazon.S3;
 using BlogHybrid.Application.Interfaces.Repositories;
+using BlogHybrid.Application.Interfaces.Services;
 using BlogHybrid.Domain.Entities;
 using BlogHybrid.Infrastructure.Data;
 using BlogHybrid.Infrastructure.Repositories;
+using BlogHybrid.Infrastructure.Services;
 using BlogHybrid.Web.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
@@ -92,6 +96,31 @@ builder.Services.AddSession(options =>
 // Caching
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<ISitemapService, SitemapService>();
+
+// Register IImageService
+builder.Services.AddScoped<IImageService, CloudflareR2ImageService>();
+
+// Register AWS S3 Client for Cloudflare R2
+builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
+{
+    var r2Options = serviceProvider.GetRequiredService<IConfiguration>()
+        .GetSection("CloudflareR2");
+
+    var credentials = new BasicAWSCredentials(
+        r2Options["AccessKeyId"],
+        r2Options["SecretAccessKey"]
+    );
+
+    var config = new AmazonS3Config
+    {
+        ServiceURL = $"https://{r2Options["AccountId"]}.r2.cloudflarestorage.com",
+        ForcePathStyle = true,
+        UseHttp = false,
+        AuthenticationRegion = r2Options["Region"] ?? "auto"
+    };
+
+    return new AmazonS3Client(credentials, config);
+});
 
 var app = builder.Build();
 

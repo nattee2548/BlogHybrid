@@ -1,0 +1,471 @@
+﻿@model BlogHybrid.Web.Areas.Admin.Models.CreateCategoryViewModel
+@{
+    ViewData["Title"] = "สร้างหมวดหมู่ใหม่";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h1><i class="bi bi-folder-plus"></i> สร้างหมวดหมู่ใหม่</h1>
+        <p class="text-muted">เพิ่มหมวดหมู่สำหรับ Posts และ Communities</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-x-lg"></i> ยกเลิก
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <form asp-action="Create" method="post" enctype="multipart/form-data" class="admin-card" id="createForm">
+            <div class="admin-card-body">
+                @Html.AntiForgeryToken()
+
+                <!-- ข้อมูลพื้นฐาน -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-info-circle"></i> ข้อมูลพื้นฐาน
+                    </h5>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label required">ชื่อหมวดหมู่</label>
+                        <input asp-for="Name" class="form-control" placeholder="เช่น เทคโนโลยี, กีฬา, ความบันเทิง" autofocus />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label required">คำอธิบาย</label>
+                        <textarea asp-for="Description" class="form-control" rows="3"
+                                  placeholder="อธิบายเกี่ยวกับหมวดหมู่นี้"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- การแสดงผล -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-palette"></i> การแสดงผล
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Color" class="form-label required">สีประจำหมวดหมู่</label>
+                            <div class="color-picker-wrapper">
+                                <input asp-for="Color" type="color" class="form-control form-control-color" id="colorPicker" />
+                                <input asp-for="Color" type="text" class="form-control mt-2" id="colorText" placeholder="#0066cc" />
+                            </div>
+                            <span asp-validation-for="Color" class="text-danger"></span>
+                            <small class="text-muted">เลือกสีที่เป็นตัวแทนของหมวดหมู่</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ตัวอย่างสี</label>
+                            <div class="color-preview-box" id="colorPreview">
+                                <div class="color-preview-icon">
+                                    <i class="bi bi-folder"></i>
+                                </div>
+                                <div class="color-preview-text">หมวดหมู่</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImageFile" class="form-label">อัปโหลดรูปภาพ (ไม่บังคับ)</label>
+                        <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" id="imageFileInput" />
+                        <span asp-validation-for="ImageFile" class="text-danger"></span>
+                        <small class="text-muted">รูปภาพ JPG, PNG, GIF หรือ WebP (สูงสุด 5MB)</small>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" class="mt-2" style="display: none;">
+                            <img id="previewImage" src="#" alt="Preview" class="img-thumbnail" style="max-height: 200px;" />
+                            <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeImage()">
+                                <i class="bi bi-trash"></i> ลบรูป
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label">หรือใส่ URL รูปภาพ</label>
+                        <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                        <small class="text-muted">ถ้าไม่ได้อัปโหลดรูป สามารถใส่ URL ได้</small>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- การตั้งค่า -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-gear"></i> การตั้งค่า
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SortOrder" class="form-label">ลำดับการแสดงผล</label>
+                            <input asp-for="SortOrder" type="number" class="form-control" min="0" max="9999" />
+                            <span asp-validation-for="SortOrder" class="text-danger"></span>
+                            <small class="text-muted">ยิ่งต่ำยิ่งแสดงก่อน (0 = แสดงแรก)</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label d-block">สถานะ</label>
+                            <div class="form-check form-switch" style="padding-top: 8px;">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                                <label asp-for="IsActive" class="form-check-label">เปิดใช้งานทันที</label>
+                            </div>
+                            <small class="text-muted d-block mt-1">เปิดเพื่อให้ผู้ใช้สามารถใช้หมวดหมู่นี้ได้</small>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ปุ่มดำเนินการ -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> ยกเลิก
+                    </a>
+                    <button type="button" class="btn btn-primary" onclick="confirmCreate()">
+                        <i class="bi bi-check-lg"></i> สร้างหมวดหมู่
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <i class="bi bi-question-circle text-primary"></i>
+                    ยืนยันการสร้างหมวดหมู่
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">คุณต้องการสร้างหมวดหมู่นี้หรือไม่?</p>
+                <div id="createSummary" class="mt-3 p-3 bg-light rounded">
+                    <!-- Summary will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> ยกเลิก
+                </button>
+                <button type="button" class="btn btn-primary" id="confirmCreateButton">
+                    <i class="bi bi-check-lg"></i> ยืนยันการสร้าง
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            color: var(--admin-text-primary);
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: #3b82f6;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--admin-text-primary);
+            margin-bottom: 8px;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #ef4444;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-control-color {
+            width: 100%;
+            height: 50px;
+            padding: 4px;
+            cursor: pointer;
+        }
+
+        .color-preview-box {
+            height: 100px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .color-preview-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .color-preview-text {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-check-input:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .text-danger {
+            font-size: 0.875rem;
+            margin-top: 4px;
+            display: block;
+        }
+
+        hr {
+            border-color: var(--admin-card-border);
+            margin: 24px 0;
+        }
+
+        /* Modal Customization */
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-title i {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
+        #createSummary {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .summary-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 13px;
+        }
+
+        .summary-value {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .summary-color-preview {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-color-box {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 2px solid #dee2e6;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        let confirmModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+
+            // Sync color picker and text input
+            const colorPicker = document.getElementById('colorPicker');
+            const colorText = document.getElementById('colorText');
+            const colorPreview = document.getElementById('colorPreview');
+
+            function updateColor(color) {
+                colorPicker.value = color;
+                colorText.value = color;
+                colorPreview.style.backgroundColor = color;
+            }
+
+            colorPicker.addEventListener('input', (e) => updateColor(e.target.value));
+
+            colorText.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (/^#[0-9A-F]{6}$/i.test(value)) {
+                    updateColor(value);
+                }
+            });
+
+            // Initialize with default color
+            updateColor(colorPicker.value);
+
+            // Image preview
+            const imageFileInput = document.getElementById('imageFileInput');
+            if (imageFileInput) {
+                imageFileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        // Validate file size (5MB)
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('ไฟล์ใหญ่เกินไป (สูงสุด 5MB)');
+                            this.value = '';
+                            return;
+                        }
+
+                        // Validate file type
+                        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                        if (!validTypes.includes(file.type)) {
+                            alert('ประเภทไฟล์ไม่ถูกต้อง (รองรับเฉพาะ JPG, PNG, GIF, WebP)');
+                            this.value = '';
+                            return;
+                        }
+
+                        // Show preview
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            document.getElementById('previewImage').src = e.target.result;
+                            document.getElementById('imagePreview').style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Confirm button
+            document.getElementById('confirmCreateButton').addEventListener('click', function() {
+                document.getElementById('createForm').submit();
+            });
+
+            // ✅ Enter key navigation - ไปช่องถัดไป
+            handleEnterKeyNavigation();
+        });
+
+        function handleEnterKeyNavigation() {
+            const form = document.getElementById('createForm');
+            const inputs = Array.from(form.querySelectorAll('input:not([type="file"]):not([type="checkbox"]):not([type="color"]), textarea'));
+
+            inputs.forEach((input, index) => {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // ป้องกันการ submit form
+
+                        // หาช่องถัดไปที่ไม่ readonly
+                        let nextIndex = index + 1;
+                        while (nextIndex < inputs.length) {
+                            const nextInput = inputs[nextIndex];
+                            if (!nextInput.readOnly && !nextInput.disabled) {
+                                nextInput.focus();
+                                nextInput.select(); // เลือกข้อความทั้งหมด
+                                break;
+                            }
+                            nextIndex++;
+                        }
+                    }
+                });
+            });
+        }
+
+        function removeImage() {
+            document.getElementById('imageFileInput').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+
+        function confirmCreate() {
+            // Validate form
+            if (!document.getElementById('createForm').checkValidity()) {
+                document.getElementById('createForm').reportValidity();
+                return;
+            }
+
+            // Get form values
+            const name = document.querySelector('[name="Name"]').value;
+            const description = document.querySelector('[name="Description"]').value;
+            const color = document.querySelector('[name="Color"]').value;
+            const imageUrl = document.querySelector('[name="ImageUrl"]').value;
+            const sortOrder = document.querySelector('[name="SortOrder"]').value;
+            const isActive = document.querySelector('[name="IsActive"]').checked;
+
+            // Build summary
+            let summary = `
+                <div class="summary-item">
+                    <div class="summary-label">ชื่อหมวดหมู่:</div>
+                    <div class="summary-value">${name}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">คำอธิบาย:</div>
+                    <div class="summary-value">${description}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">สี:</div>
+                    <div class="summary-value summary-color-preview">
+                        <span class="summary-color-box" style="background-color: ${color}"></span>
+                        <span>${color}</span>
+                    </div>
+                </div>`;
+
+            if (imageUrl) {
+                summary += `
+                    <div class="summary-item">
+                        <div class="summary-label">URL รูปภาพ:</div>
+                        <div class="summary-value">${imageUrl}</div>
+                    </div>`;
+            }
+
+            summary += `
+                <div class="summary-item">
+                    <div class="summary-label">ลำดับการแสดงผล:</div>
+                    <div class="summary-value">${sortOrder}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">สถานะ:</div>
+                    <div class="summary-value">
+                        <span class="badge ${isActive ? 'bg-success' : 'bg-secondary'}">
+                            ${isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
+                        </span>
+                    </div>
+                </div>`;
+
+            document.getElementById('createSummary').innerHTML = summary;
+            confirmModal.show();
+        }
+    </script>
+}

@@ -67,6 +67,9 @@ namespace BlogHybrid.Web.Areas.Admin.Models
         [RegularExpression(@"^#([A-Fa-f0-9]{6})$", ErrorMessage = "รูปแบบสีไม่ถูกต้อง (ต้องเป็น HEX เช่น #0066cc)")]
         public string Color { get; set; } = "#0066cc";
 
+        [Display(Name = "รูปภาพ")]
+        public IFormFile? ImageFile { get; set; } // ✅ เพิ่ม: สำหรับ Upload
+
         [Display(Name = "URL รูปภาพ")]
         [Url(ErrorMessage = "รูปแบบ URL ไม่ถูกต้อง")]
         public string? ImageUrl { get; set; }
@@ -99,9 +102,14 @@ namespace BlogHybrid.Web.Areas.Admin.Models
         [RegularExpression(@"^#([A-Fa-f0-9]{6})$", ErrorMessage = "รูปแบบสีไม่ถูกต้อง (ต้องเป็น HEX เช่น #0066cc)")]
         public string Color { get; set; } = "#0066cc";
 
+        [Display(Name = "รูปภาพใหม่")]
+        public IFormFile? ImageFile { get; set; } // ✅ เพิ่ม: สำหรับ Upload
+
         [Display(Name = "URL รูปภาพ")]
         [Url(ErrorMessage = "รูปแบบ URL ไม่ถูกต้อง")]
         public string? ImageUrl { get; set; }
+
+        public string? CurrentImageUrl { get; set; } // ✅ เพิ่ม: เก็บรูปเดิม
 
         [Display(Name = "เปิดใช้งาน")]
         public bool IsActive { get; set; }

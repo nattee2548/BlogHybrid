@@ -1,0 +1,510 @@
+﻿@model BlogHybrid.Web.Areas.Admin.Models.EditCategoryViewModel
+@{
+    ViewData["Title"] = "แก้ไขหมวดหมู่";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h1><i class="bi bi-pencil"></i> แก้ไขหมวดหมู่</h1>
+        <p class="text-muted">อัปเดตข้อมูลหมวดหมู่</p>
+    </div>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+            <i class="bi bi-x-lg"></i> ยกเลิก
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data" class="admin-card" id="editForm">
+            <div class="admin-card-body">
+                <input type="hidden" asp-for="Id" />
+                @Html.AntiForgeryToken()
+
+                <!-- ข้อมูลพื้นฐาน -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-info-circle"></i> ข้อมูลพื้นฐาน
+                    </h5>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label required">ชื่อหมวดหมู่</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label required">คำอธิบาย</label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- การแสดงผล -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-palette"></i> การแสดงผล
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Color" class="form-label required">สีประจำหมวดหมู่</label>
+                            <div class="color-picker-wrapper">
+                                <input asp-for="Color" type="color" class="form-control form-control-color" id="colorPicker" />
+                                <input asp-for="Color" type="text" class="form-control mt-2" id="colorText" />
+                            </div>
+                            <span asp-validation-for="Color" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ตัวอย่างสี</label>
+                            <div class="color-preview-box" id="colorPreview">
+                                <div class="color-preview-icon">
+                                    <i class="bi bi-folder"></i>
+                                </div>
+                                <div class="color-preview-text">@Model.Name</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImageFile" class="form-label">อัปโหลดรูปภาพใหม่</label>
+                        <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" id="imageFileInput" />
+                        <span asp-validation-for="ImageFile" class="text-danger"></span>
+                        <small class="text-muted">รูปภาพ JPG, PNG, GIF หรือ WebP (สูงสุด 5MB)</small>
+
+                        @if (!string.IsNullOrEmpty(Model.CurrentImageUrl))
+                        {
+                            <div class="mt-2">
+                                <label class="form-label">รูปภาพปัจจุบัน:</label>
+                                <div>
+                                    <img src="@Model.CurrentImageUrl" alt="Current" class="img-thumbnail" style="max-height: 150px;" />
+                                </div>
+                            </div>
+                        }
+
+                        <!-- New Image Preview -->
+                        <div id="imagePreview" class="mt-2" style="display: none;">
+                            <label class="form-label">ตัวอย่างรูปใหม่:</label>
+                            <div>
+                                <img id="previewImage" src="#" alt="Preview" class="img-thumbnail" style="max-height: 150px;" />
+                                <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeImage()">
+                                    <i class="bi bi-trash"></i> ยกเลิกรูปใหม่
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label">หรือใส่ URL รูปภาพ</label>
+                        <input asp-for="ImageUrl" class="form-control" />
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                    </div>
+
+                    <input type="hidden" asp-for="CurrentImageUrl" />
+                </div>
+
+                <hr>
+
+                <!-- การตั้งค่า -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-gear"></i> การตั้งค่า
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SortOrder" class="form-label">ลำดับการแสดงผล</label>
+                            <input asp-for="SortOrder" type="number" class="form-control" min="0" max="9999" />
+                            <span asp-validation-for="SortOrder" class="text-danger"></span>
+                            <small class="text-muted">ยิ่งต่ำยิ่งแสดงก่อน</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label d-block">สถานะ</label>
+                            <div class="form-check form-switch" style="padding-top: 8px;">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                                <label asp-for="IsActive" class="form-check-label">เปิดใช้งาน</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ปุ่มดำเนินการ -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> ยกเลิก
+                    </a>
+                    <button type="button" class="btn btn-primary" onclick="confirmSave()">
+                        <i class="bi bi-check-lg"></i> บันทึกการเปลี่ยนแปลง
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <i class="bi bi-question-circle text-primary"></i>
+                    ยืนยันการบันทึกข้อมูล
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">คุณต้องการบันทึกการเปลี่ยนแปลงหรือไม่?</p>
+                <div id="changesSummary" class="mt-3 p-3 bg-light rounded"></div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> ยกเลิก
+                </button>
+                <button type="button" class="btn btn-primary" id="confirmSaveButton">
+                    <i class="bi bi-check-lg"></i> ยืนยันการบันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            color: var(--admin-text-primary);
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .section-title i {
+                color: #3b82f6;
+            }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--admin-text-primary);
+            margin-bottom: 8px;
+        }
+
+            .form-label.required::after {
+                content: ' *';
+                color: #ef4444;
+            }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-control-color {
+            width: 100%;
+            height: 50px;
+            padding: 4px;
+            cursor: pointer;
+        }
+
+        .color-preview-box {
+            height: 100px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .color-preview-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .color-preview-text {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-check-input:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        hr {
+            border-color: var(--admin-card-border);
+            margin: 24px 0;
+        }
+
+        .change-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+            .change-item:last-child {
+                border-bottom: none;
+            }
+
+        .change-label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 13px;
+        }
+
+        .change-value {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .change-old {
+            text-decoration: line-through;
+            color: #ef4444;
+        }
+
+        .change-new {
+            color: #10b981;
+            font-weight: 500;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        let confirmModal;
+        let hasChanges = false;
+
+        // Store original values
+        const originalValues = {
+            name: '@Html.Raw(Model.Name)',
+            description: '@Html.Raw(Model.Description)',
+            color: '@Model.Color',
+            imageUrl: '@Html.Raw(Model.ImageUrl ?? "")',
+            sortOrder: @Model.SortOrder,
+            isActive: @Json.Serialize(Model.IsActive)
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+
+            // Color picker sync
+            const colorPicker = document.getElementById('colorPicker');
+            const colorText = document.getElementById('colorText');
+            const colorPreview = document.getElementById('colorPreview');
+
+            function updateColor(color) {
+                colorPicker.value = color;
+                colorText.value = color;
+                colorPreview.style.backgroundColor = color;
+            }
+
+            colorPicker.addEventListener('input', (e) => {
+                updateColor(e.target.value);
+                hasChanges = true;
+            });
+
+            colorText.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (/^#[0-9A-F]{6}$/i.test(value)) {
+                    updateColor(value);
+                    hasChanges = true;
+                }
+            });
+
+            updateColor(colorPicker.value);
+
+            // Image preview
+            const imageFileInput = document.getElementById('imageFileInput');
+            if (imageFileInput) {
+                imageFileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        // Validate file size (5MB)
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('ไฟล์ใหญ่เกินไป (สูงสุด 5MB)');
+                            this.value = '';
+                            return;
+                        }
+
+                        // Validate file type
+                        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                        if (!validTypes.includes(file.type)) {
+                            alert('ประเภทไฟล์ไม่ถูกต้อง (รองรับเฉพาะ JPG, PNG, GIF, WebP)');
+                            this.value = '';
+                            return;
+                        }
+
+                        // Show preview
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            document.getElementById('previewImage').src = e.target.result;
+                            document.getElementById('imagePreview').style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                        hasChanges = true;
+                    }
+                });
+            }
+
+            // Track changes
+            document.querySelectorAll('#editForm input, #editForm textarea').forEach(input => {
+                input.addEventListener('change', () => hasChanges = true);
+            });
+
+            // Confirm save
+            document.getElementById('confirmSaveButton').addEventListener('click', function() {
+                hasChanges = false;
+                document.getElementById('editForm').submit();
+            });
+        });
+
+        function removeImage() {
+            document.getElementById('imageFileInput').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+
+        function confirmSave() {
+            if (!document.getElementById('editForm').checkValidity()) {
+                document.getElementById('editForm').reportValidity();
+                return;
+            }
+
+            const currentValues = {
+                name: document.querySelector('[name="Name"]').value,
+                description: document.querySelector('[name="Description"]').value,
+                color: document.querySelector('[name="Color"]').value,
+                imageUrl: document.querySelector('[name="ImageUrl"]').value,
+                sortOrder: parseInt(document.querySelector('[name="SortOrder"]').value),
+                isActive: document.querySelector('[name="IsActive"]').checked
+            };
+
+            let changesSummary = '';
+            let changesCount = 0;
+
+            if (originalValues.name !== currentValues.name) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">ชื่อหมวดหมู่:</div>
+                        <div class="change-value">
+                            <span class="change-old">${originalValues.name}</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="change-new">${currentValues.name}</span>
+                        </div>
+                    </div>`;
+            }
+
+            if (originalValues.description !== currentValues.description) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">คำอธิบาย:</div>
+                        <div class="change-value">
+                            <span class="change-old">${originalValues.description}</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="change-new">${currentValues.description}</span>
+                        </div>
+                    </div>`;
+            }
+
+            if (originalValues.color !== currentValues.color) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">สี:</div>
+                        <div class="change-value d-flex align-items-center gap-2">
+                            <div style="width: 24px; height: 24px; background: ${originalValues.color}; border: 2px solid #ddd; border-radius: 4px;"></div>
+                            <span class="change-old">${originalValues.color}</span>
+                            <i class="bi bi-arrow-right"></i>
+                            <div style="width: 24px; height: 24px; background: ${currentValues.color}; border: 2px solid #ddd; border-radius: 4px;"></div>
+                            <span class="change-new">${currentValues.color}</span>
+                        </div>
+                    </div>`;
+            }
+
+            if (originalValues.imageUrl !== currentValues.imageUrl) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">URL รูปภาพ:</div>
+                        <div class="change-value">
+                            <span class="change-old">${originalValues.imageUrl || 'ไม่มี'}</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="change-new">${currentValues.imageUrl || 'ไม่มี'}</span>
+                        </div>
+                    </div>`;
+            }
+
+            if (originalValues.sortOrder !== currentValues.sortOrder) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">ลำดับการแสดงผล:</div>
+                        <div class="change-value">
+                            <span class="change-old">${originalValues.sortOrder}</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="change-new">${currentValues.sortOrder}</span>
+                        </div>
+                    </div>`;
+            }
+
+            if (originalValues.isActive !== currentValues.isActive) {
+                changesCount++;
+                changesSummary += `
+                    <div class="change-item">
+                        <div class="change-label">สถานะ:</div>
+                        <div class="change-value">
+                            <span class="change-old">${originalValues.isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="change-new">${currentValues.isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}</span>
+                        </div>
+                    </div>`;
+            }
+
+            const summaryDiv = document.getElementById('changesSummary');
+            if (changesCount === 0) {
+                summaryDiv.innerHTML = '<small class="text-muted">ไม่มีการเปลี่ยนแปลงข้อมูล</small>';
+            } else {
+                summaryDiv.innerHTML = `
+                    <div class="mb-2">
+                        <strong class="text-primary">พบการเปลี่ยนแปลง ${changesCount} รายการ:</strong>
+                    </div>
+                    ${changesSummary}`;
+            }
+
+            confirmModal.show();
+        }
+
+        // Warn before leaving
+        window.addEventListener('beforeunload', function(e) {
+            if (hasChanges) {
+                const message = 'คุณมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก';
+                e.preventDefault();
+                e.returnValue = message;
+                return message;
+            }
+        });
+    </script>
+}
