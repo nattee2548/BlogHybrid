@@ -20,13 +20,10 @@
     <link rel="stylesheet" href="~/css/modern/homepage.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components/user-sidebar.css" asp-append-version="true" />
 
-    <!-- Responsive CSS -->
-    <link rel="stylesheet" href="~/css/responsive/responsive.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/responsive/utilities.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/responsive/user-layout-responsive.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/responsive/mobile-drawer.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/complete-responsive.css" asp-append-version="true" />
-    <!-- Prevent theme flash -->
+    <!-- Responsive CSS - ใช้ไฟล์เดียว -->
+    <link rel="stylesheet" href="~/css/user-responsive.css" asp-append-version="true" />
+
+    <!-- Theme Flash Prevention -->
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme');
@@ -35,32 +32,9 @@
             document.documentElement.setAttribute('data-theme', actualTheme);
         })();
     </script>
-    <style>
-        .page-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: var(--space-6) var(--space-4);
-            display: flex;
-            gap: var(--space-4);
-            align-items: flex-start;
-        }
-
-        .main-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        @@media (max-width: 991px) {
-            .page-container
-
-        {
-            flex-direction: column;
-        }
-
-        }</style>
 </head>
 <body>
-    <!-- ========== MODERN NAVBAR ========== -->
+    <!-- Navbar -->
     <nav class="modern-navbar">
         <div class="modern-navbar-container">
             <!-- Logo -->
@@ -69,71 +43,65 @@
                 <span class="modern-logo-text">404alk</span>
             </a>
 
-            <!-- Search Bar -->
+            <!-- Search -->
             <div class="modern-search-container">
                 <div class="modern-search">
                     <svg class="modern-search-icon" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
-                    <input type="search" class="modern-search-input" placeholder="ค้นหาบทความ, ชุมชน, หรือผู้ใช้..." />
-                    <kbd class="modern-search-shortcut">Ctrl+K</kbd>
+                    <input type="search" class="modern-search-input" placeholder="ค้นหา..." />
                 </div>
             </div>
 
             <!-- Actions -->
             <div class="modern-actions">
-                <!-- Create Post Button -->
-                <button class="modern-create-btn">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                    </svg>
-                    <span>สร้างโพสต์</span>
-                </button>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <!-- Create Button -->
+                    <button class="modern-create-btn">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span>สร้างโพสต์</span>
+                    </button>
 
-                <!-- Notifications -->
-                <button class="modern-icon-btn modern-notification-btn">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-                    </svg>
-                    <span class="modern-badge">3</span>
-                </button>
-
-                <!-- Theme Switcher -->
-                <div class="theme-switcher-container">
-                    <button class="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+                    <!-- Theme Toggle -->
+                    <button class="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle theme">
                         <span class="theme-toggle-ball">
-                            <svg class="theme-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <svg class="theme-toggle-icon" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
                             </svg>
                         </span>
                     </button>
-                </div>
 
-                <!-- User Menu -->
-                @if (User.Identity.IsAuthenticated)
-                {
+                    <!-- User Menu -->
                     <div class="modern-user-menu">
                         <button class="modern-user-btn">
-                            <img class="modern-user-avatar" src="https://ui-avatars.com/api/?name=@User.Identity.Name&background=random" alt="User Avatar" />
+                            <img class="modern-user-avatar" src="https://ui-avatars.com/api/?name=@User.Identity.Name&background=random" alt="Avatar" />
                             <div class="modern-user-info">
                                 <span class="modern-user-name">@User.Identity.Name</span>
-                                <span class="modern-user-level">Member</span>
                             </div>
-                            <svg class="modern-user-chevron" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
                         </button>
                     </div>
                 }
                 else
                 {
-                    <a asp-area="Identity" asp-page="/Account/Login" class="modern-create-btn">เข้าสู่ระบบ</a>
+                    <!-- Theme Toggle (Guest) -->
+                    <button class="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle theme">
+                        <span class="theme-toggle-ball">
+                            <svg class="theme-toggle-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+                            </svg>
+                        </span>
+                    </button>
+
+                    <a asp-controller="Account" asp-action="Login" class="modern-create-btn">เข้าสู่ระบบ</a>
                 }
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
+    <!-- Main Container -->
     <div class="page-container">
         <main class="main-content">
             @RenderBody()
@@ -143,7 +111,7 @@
 
     <!-- Scripts -->
     <script src="~/js/theme-switcher.js" asp-append-version="true"></script>
-    <script src="~/js/mobile-drawer.js" asp-append-version="true"></script>
+    <script src="~/js/user-responsive.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,143 @@
+﻿/* ================================================
+   FIX: Theme Switcher + Mobile Drawer Conflict
+   แก้ไขปัญหา Theme Toggle กระทบ Hamburger Menu
+   ================================================ */
+
+/* ========== ป้องกัน CSS ทับกัน ========== */
+
+/* Hamburger button - ต้องแยกออกจาก theme toggle */
+.mobile-sidebar-toggle {
+    /* Reset ค่าที่อาจจะทับกับ theme-toggle */
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: 100 !important;
+}
+
+/* ป้องกัน theme-toggle กระทบ hamburger */
+.theme-toggle {
+    z-index: 100 !important;
+}
+
+/* ========== แยก Event Layer ========== */
+
+/* Navbar actions - จัด z-index ให้ชัดเจน */
+.modern-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 10;
+    position: relative;
+}
+
+    .modern-actions > * {
+        position: relative;
+        z-index: 10;
+    }
+
+/* Mobile sidebar toggle - อยู่ด้านซ้ายสุด */
+.mobile-sidebar-toggle {
+    order: -1; /* ให้อยู่ซ้ายสุดเสมอ */
+    margin-right: 0.5rem !important;
+}
+
+/* ========== Overlay - ต้องไม่ปิด theme switcher ========== */
+.sidebar-drawer-overlay {
+    pointer-events: auto;
+}
+
+    /* เมื่อ overlay active ต้องให้คลิกได้เฉพาะที่ overlay เท่านั้น */
+    .sidebar-drawer-overlay.active {
+        pointer-events: auto;
+    }
+
+/* ========== Drawer - ต้องไม่ทับ theme toggle ========== */
+body:not(.admin-body) .modern-sidebar.active,
+body:not(.admin-body) .user-sidebar.active {
+    /* ให้ drawer อยู่ต่ำกว่า navbar */
+    z-index: 1050;
+}
+
+/* Navbar ต้องสูงกว่า drawer */
+.modern-navbar {
+    z-index: 1060 !important;
+    position: sticky;
+    top: 0;
+}
+
+    /* ========== Theme Toggle ใน Navbar ========== */
+    .modern-navbar .theme-toggle,
+    .modern-navbar .theme-switcher-container {
+        /* ให้อยู่เหนือ overlay */
+        z-index: 1100 !important;
+        position: relative;
+    }
+
+/* ========== Drawer Open State ========== */
+body.drawer-open {
+    /* ป้องกันไม่ให้ body scroll */
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+    /* แต่ให้ navbar ยังคลิกได้ */
+    body.drawer-open .modern-navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1100;
+    }
+
+        body.drawer-open .modern-navbar * {
+            pointer-events: auto;
+        }
+
+    /* ========== Fix: Theme Toggle ต้องทำงานได้แม้ drawer เปิด ========== */
+    body.drawer-open .theme-toggle,
+    body.drawer-open .theme-switcher-container,
+    body.drawer-open .modern-actions {
+        pointer-events: auto !important;
+        z-index: 1100;
+    }
+
+/* ========== Mobile Specific ========== */
+@media (max-width: 991px) {
+    /* Logo และ Hamburger อยู่ซ้าย */
+    .modern-navbar-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    /* ฝั่งซ้าย: Hamburger + Logo */
+    .modern-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: 0;
+    }
+
+    /* ฝั่งขวา: Actions (Theme, User, etc) */
+    .modern-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+}
+
+/* ========== Debug Helper (ลบออกได้เมื่อแก้เสร็จ) ========== */
+/* 
+.mobile-sidebar-toggle {
+    outline: 2px solid red !important;
+}
+
+.theme-toggle {
+    outline: 2px solid blue !important;
+}
+*/

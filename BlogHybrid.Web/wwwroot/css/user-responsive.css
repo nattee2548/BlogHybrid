@@ -1,15 +1,15 @@
 ﻿/* ================================================
-   COMPLETE RESPONSIVE FIX
-   แก้ไขทุกปัญหา responsive ในส่วน User
+   USER RESPONSIVE - COMPLETE SOLUTION
+   ไฟล์เดียวจบ ไม่ซ้ำซ้อน
    ================================================ */
 
-/* ========== Variables ========== */
+/* ========== VARIABLES ========== */
 :root {
     --drawer-width: 320px;
     --drawer-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ========== Main Layout Structure ========== */
+/* ========== LAYOUT STRUCTURE ========== */
 body:not(.admin-body) {
     overflow-x: hidden;
 }
@@ -17,16 +17,15 @@ body:not(.admin-body) {
     body:not(.admin-body) .page-container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
+        padding: 1.5rem 1rem;
         display: flex;
-        gap: var(--space-6, 1.5rem);
+        gap: 1.5rem;
         align-items: flex-start;
     }
 
     body:not(.admin-body) .main-content {
         flex: 1;
         min-width: 0;
-        width: 100%;
     }
 
     body:not(.admin-body) .modern-sidebar,
@@ -36,7 +35,7 @@ body:not(.admin-body) {
     }
 
 /* ================================================
-   HAMBURGER MENU BUTTON
+   HAMBURGER BUTTON
    ================================================ */
 .mobile-sidebar-toggle {
     display: none;
@@ -48,8 +47,6 @@ body:not(.admin-body) {
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s;
-    align-items: center;
-    justify-content: center;
 }
 
     .mobile-sidebar-toggle:hover {
@@ -61,8 +58,8 @@ body:not(.admin-body) {
     width: 24px;
     height: 2px;
     background: var(--text-primary, #1f2937);
-    transition: all 0.3s;
     border-radius: 2px;
+    transition: all 0.3s;
 }
 
     .hamburger::before,
@@ -73,8 +70,8 @@ body:not(.admin-body) {
         width: 24px;
         height: 2px;
         background: var(--text-primary, #1f2937);
-        transition: all 0.3s;
         border-radius: 2px;
+        transition: all 0.3s;
     }
 
     .hamburger::before {
@@ -121,21 +118,23 @@ body:not(.admin-body) {
         visibility: visible;
     }
 
+body.drawer-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
 /* ================================================
-   TABLET & MOBILE - 991px and below
+   TABLET & MOBILE (≤ 991px)
    ================================================ */
 @media (max-width: 991px) {
-    /* Layout */
+    /* Layout becomes single column */
     body:not(.admin-body) .page-container {
         flex-direction: column;
-        padding: var(--space-3, 0.75rem);
+        padding: 0.75rem;
     }
 
-    body:not(.admin-body) .main-content {
-        width: 100%;
-    }
-
-    /* Sidebar becomes Drawer */
+    /* Sidebar becomes drawer */
     body:not(.admin-body) .modern-sidebar,
     body:not(.admin-body) .user-sidebar {
         position: fixed;
@@ -144,10 +143,9 @@ body:not(.admin-body) {
         bottom: 0;
         width: var(--drawer-width);
         max-width: 85vw;
-        background: var(--bg-primary, #ffffff);
+        background: var(--bg-primary, #fff);
         box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
         overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         z-index: 1050;
         padding: 1rem;
         transition: right var(--drawer-transition);
@@ -159,12 +157,14 @@ body:not(.admin-body) {
             right: 0;
         }
 
-    /* Show Hamburger */
+    /* Show hamburger */
     .mobile-sidebar-toggle {
         display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
 
-    /* Drawer Header */
+    /* Drawer header */
     .drawer-header {
         display: flex;
         justify-content: space-between;
@@ -192,16 +192,21 @@ body:not(.admin-body) {
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s;
+        transition: background 0.2s;
     }
 
         .drawer-close:hover {
             background: var(--bg-hover, rgba(0, 0, 0, 0.05));
         }
+
+    /* Hide nav links */
+    body:not(.admin-body) .main-nav-links {
+        display: none;
+    }
 }
 
 /* ================================================
-   MOBILE - 767px and below
+   MOBILE (≤ 767px)
    ================================================ */
 @media (max-width: 767px) {
     body:not(.admin-body) .page-container {
@@ -213,7 +218,7 @@ body:not(.admin-body) {
         padding: 0 0.5rem;
     }
 
-    /* Posts Grid - 1 Column */
+    /* Grid - 1 column */
     body:not(.admin-body) .posts-grid,
     body:not(.admin-body) .categories-grid,
     body:not(.admin-body) .communities-grid {
@@ -221,8 +226,10 @@ body:not(.admin-body) {
         gap: 1rem !important;
     }
 
-    /* Post Cards */
-    body:not(.admin-body) .post-card {
+    /* Cards */
+    body:not(.admin-body) .post-card,
+    body:not(.admin-body) .category-card,
+    body:not(.admin-body) .community-card {
         width: 100%;
         max-width: 100%;
         margin: 0 0 1rem 0;
@@ -230,7 +237,6 @@ body:not(.admin-body) {
 
     body:not(.admin-body) .post-image img {
         width: 100%;
-        max-width: 100%;
         height: 200px;
         object-fit: cover;
     }
@@ -241,7 +247,7 @@ body:not(.admin-body) {
         padding-right: 0.5rem;
     }
 
-    /* Hero Section */
+    /* Hero */
     body:not(.admin-body) .hero-section {
         padding: 1.5rem 0;
     }
@@ -250,7 +256,7 @@ body:not(.admin-body) {
         font-size: 1.75rem;
     }
 
-    /* Profile Page */
+    /* Profile */
     body:not(.admin-body) .profile-header-card {
         padding: 1rem !important;
     }
@@ -261,10 +267,9 @@ body:not(.admin-body) {
         height: 80px !important;
     }
 
-    /* User Nav Tabs */
+    /* User tabs */
     body:not(.admin-body) .user-nav-tabs {
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
     }
 
@@ -278,7 +283,7 @@ body:not(.admin-body) {
         white-space: nowrap;
     }
 
-    /* Stats Grid */
+    /* Stats */
     body:not(.admin-body) .stats-grid {
         grid-template-columns: 1fr !important;
     }
@@ -289,29 +294,38 @@ body:not(.admin-body) {
         width: 100%;
     }
 
-    /* Touch Targets */
+    /* Touch targets */
     body:not(.admin-body) input,
     body:not(.admin-body) button,
     body:not(.admin-body) .btn {
         min-height: 44px;
-        font-size: 16px; /* Prevent iOS zoom */
+        font-size: 16px;
+    }
+
+    /* Hide elements */
+    body:not(.admin-body) .modern-create-btn span,
+    body:not(.admin-body) .modern-user-info,
+    body:not(.admin-body) .modern-search-shortcut {
+        display: none;
     }
 }
 
 /* ================================================
-   EXTRA SMALL - 575px and below
+   EXTRA SMALL (≤ 575px)
    ================================================ */
 @media (max-width: 575px) {
     body:not(.admin-body) .page-container {
         padding: 0.25rem;
     }
 
-    body:not(.admin-body) .container {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
+    body:not(.admin-body) .modern-logo-text {
+        display: none;
     }
 
-    /* Typography */
+    body:not(.admin-body) .modern-search-container {
+        display: none;
+    }
+
     body:not(.admin-body) h1 {
         font-size: 1.5rem !important;
     }
@@ -319,87 +333,10 @@ body:not(.admin-body) {
     body:not(.admin-body) h2 {
         font-size: 1.25rem !important;
     }
-
-    body:not(.admin-body) h3 {
-        font-size: 1.125rem !important;
-    }
-
-    /* Logo Text */
-    body:not(.admin-body) .modern-logo-text {
-        display: none;
-    }
-
-    /* Search */
-    body:not(.admin-body) .modern-search-container {
-        display: none;
-    }
-
-    /* User Info */
-    body:not(.admin-body) .modern-user-info {
-        display: none;
-    }
 }
 
 /* ================================================
-   NAVBAR RESPONSIVE
-   ================================================ */
-@media (max-width: 991px) {
-    /* Hide desktop nav links */
-    body:not(.admin-body) .main-nav-links {
-        display: none;
-    }
-}
-
-@media (max-width: 767px) {
-    body:not(.admin-body) .modern-create-btn span {
-        display: none;
-    }
-
-    body:not(.admin-body) .modern-search-shortcut {
-        display: none;
-    }
-}
-
-/* ================================================
-   PREVENT BODY SCROLL WHEN DRAWER OPEN
-   ================================================ */
-body.drawer-open {
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-}
-
-/* ================================================
-   CARD FIXES
-   ================================================ */
-@media (max-width: 767px) {
-    /* Post Card */
-    body:not(.admin-body) .post-card {
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-    body:not(.admin-body) .post-header {
-        padding: 0.75rem;
-    }
-
-    body:not(.admin-body) .post-content {
-        padding: 0.75rem;
-    }
-
-    body:not(.admin-body) .post-footer {
-        padding: 0.75rem;
-    }
-
-    /* Category Chip */
-    body:not(.admin-body) .category-chip {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
-    }
-}
-
-/* ================================================
-   DARK MODE SUPPORT
+   DARK MODE
    ================================================ */
 [data-theme="dark"] body:not(.admin-body) .modern-sidebar,
 [data-theme="dark"] body:not(.admin-body) .user-sidebar {
@@ -427,36 +364,10 @@ body.drawer-open {
 }
 
 /* ================================================
-   SAFE AREA (Notch Support)
-   ================================================ */
-@supports (padding: max(0px)) {
-    @media (max-width: 991px) {
-        body:not(.admin-body) .modern-sidebar,
-        body:not(.admin-body) .user-sidebar {
-            padding-top: max(1rem, env(safe-area-inset-top));
-            padding-bottom: max(1rem, env(safe-area-inset-bottom));
-        }
-    }
-}
-
-/* ================================================
-   ADMIN PROTECTION - ห้ามกระทบ Admin
+   ADMIN PROTECTION
    ================================================ */
 .admin-body .mobile-sidebar-toggle,
 .admin-body .sidebar-drawer-overlay,
 .admin-body .drawer-header {
     display: none !important;
-}
-
-/* ================================================
-   LANDSCAPE MODE
-   ================================================ */
-@media (max-width: 991px) and (orientation: landscape) {
-    body:not(.admin-body) .page-container {
-        padding: 0.5rem;
-    }
-
-    body:not(.admin-body) .modern-navbar-container {
-        height: 56px;
-    }
 }
