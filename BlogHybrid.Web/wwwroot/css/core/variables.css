@@ -1,0 +1,100 @@
+﻿/* ================================================
+   Global CSS Variables
+   Spacing, Typography, Breakpoints, Z-index
+   Note: Colors are in themes/light-mode.css and themes/dark-mode.css
+   ================================================ */
+
+:root {
+    /* ========== Spacing Scale ========== */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-7: 28px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-20: 80px;
+    --space-24: 96px;
+    /* ========== Typography Scale ========== */
+    --text-xs: 0.75rem; /* 12px */
+    --text-sm: 0.875rem; /* 14px */
+    --text-base: 1rem; /* 16px */
+    --text-lg: 1.125rem; /* 18px */
+    --text-xl: 1.25rem; /* 20px */
+    --text-2xl: 1.5rem; /* 24px */
+    --text-3xl: 1.875rem; /* 30px */
+    --text-4xl: 2.25rem; /* 36px */
+    --text-5xl: 3rem; /* 48px */
+    /* Font Weights */
+    --font-light: 300;
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+    --font-extrabold: 800;
+    /* Line Heights */
+    --leading-none: 1;
+    --leading-tight: 1.25;
+    --leading-snug: 1.375;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose: 2;
+    /* Letter Spacing */
+    --tracking-tighter: -0.05em;
+    --tracking-tight: -0.025em;
+    --tracking-normal: 0;
+    --tracking-wide: 0.025em;
+    --tracking-wider: 0.05em;
+    --tracking-widest: 0.1em;
+    /* ========== Border Radius ========== */
+    --radius-sm: 4px;
+    --radius: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+    /* ========== Transitions ========== */
+    --transition-fast: 150ms;
+    --transition-base: 200ms;
+    --transition-slow: 300ms;
+    --transition-slower: 500ms;
+    /* Transition Timing Functions */
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    /* ========== Z-index Scale ========== */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+    /* ========== Layout ========== */
+    --container-max-width: 1280px;
+    --navbar-height: 56px;
+    --sidebar-width: 312px;
+    /* ========== Breakpoints (for reference in media queries) ========== */
+    /* xs: 0px - 575px (mobile) */
+    /* sm: 576px - 767px (mobile landscape) */
+    /* md: 768px - 991px (tablet) */
+    /* lg: 992px - 1199px (desktop) */
+    /* xl: 1200px - 1399px (large desktop) */
+    /* xxl: 1400px+ (extra large) */
+}
+
+/* ========== Media Query Breakpoints ========== */
+/* These are not CSS variables but defined for consistency */
+/* 
+Usage in CSS:
+@media (min-width: 576px) { } // sm
+@media (min-width: 768px) { } // md
+@media (min-width: 992px) { } // lg
+@media (min-width: 1200px) { } // xl
+@media (min-width: 1400px) { } // xxl
+*/

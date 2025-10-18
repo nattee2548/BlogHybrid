@@ -1,0 +1,315 @@
+﻿/* ================================================
+   Navbar Component Styles
+   ================================================ */
+
+/* ========== Main Header ========== */
+.main-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    background: var(--navbar-bg);
+    border-bottom: 1px solid var(--navbar-border);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ========== Navbar Container ========== */
+.main-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    height: var(--navbar-height);
+}
+
+/* ========== Left Side ========== */
+.main-navbar-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+/* Logo */
+.main-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    transition: opacity var(--transition-base);
+}
+
+    .main-logo:hover {
+        opacity: 0.8;
+    }
+
+.main-logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-md);
+    font-weight: var(--font-extrabold);
+    font-size: var(--text-lg);
+}
+
+/* Navigation Links */
+.main-nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.main-nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    color: var(--text-secondary);
+    font-weight: var(--font-medium);
+    font-size: var(--text-sm);
+    border-radius: var(--radius);
+    transition: all var(--transition-base);
+}
+
+    .main-nav-link:hover {
+        color: var(--text-primary);
+        background: var(--bg-hover);
+    }
+
+    .main-nav-link.active {
+        color: var(--text-primary);
+        background: var(--bg-active);
+    }
+
+    .main-nav-link svg {
+        width: 20px;
+        height: 20px;
+    }
+
+/* ========== Right Side ========== */
+.main-navbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* Search Bar */
+.main-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+.main-search-icon {
+    position: absolute;
+    left: var(--space-3);
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+}
+
+.main-search-input {
+    width: 100%;
+    padding: var(--space-2) var(--space-3) var(--space-2) var(--space-10);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    transition: all var(--transition-base);
+}
+
+    .main-search-input:focus {
+        outline: none;
+        border-color: var(--border-focus);
+        background: var(--bg-primary);
+    }
+
+    .main-search-input::placeholder {
+        color: var(--text-tertiary);
+    }
+
+/* Icon Buttons */
+.main-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .main-btn-icon:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .main-btn-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+/* User Menu */
+.main-user-menu {
+    position: relative;
+}
+
+.main-user-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: background var(--transition-base);
+}
+
+    .main-user-btn:hover {
+        background: var(--bg-hover);
+    }
+
+.main-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.main-user-name {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-primary);
+}
+
+/* User Dropdown */
+.main-user-dropdown {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    right: 0;
+    min-width: 200px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-2);
+    display: none;
+    z-index: var(--z-dropdown);
+}
+
+    .main-user-dropdown.active {
+        display: block;
+        animation: dropdown-fade-in var(--transition-base) var(--ease-out);
+    }
+
+@keyframes dropdown-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.main-user-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    color: var(--text-primary);
+    border-radius: var(--radius);
+    transition: background var(--transition-base);
+}
+
+    .main-user-dropdown a:hover {
+        background: var(--bg-hover);
+    }
+
+.main-user-dropdown svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Mobile Menu Toggle */
+.main-menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+    .main-menu-toggle svg {
+        width: 24px;
+        height: 24px;
+    }
+
+/* ========== Responsive Design ========== */
+@media (max-width: 991px) {
+    .main-nav-links {
+        display: none;
+    }
+
+    .main-search {
+        max-width: 250px;
+    }
+}
+
+@media (max-width: 767px) {
+    .main-navbar {
+        padding: 0 var(--space-3);
+    }
+
+    .main-menu-toggle {
+        display: flex;
+    }
+
+    .main-search {
+        display: none;
+    }
+
+    .main-user-name {
+        display: none;
+    }
+}
+
+@media (max-width: 575px) {
+    .main-navbar {
+        padding: 0 var(--space-2);
+    }
+
+    .main-logo span:not(.main-logo-icon) {
+        display: none;
+    }
+
+    .main-navbar-right {
+        gap: var(--space-1);
+    }
+}

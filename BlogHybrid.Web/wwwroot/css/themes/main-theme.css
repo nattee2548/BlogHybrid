@@ -1,48 +1,15 @@
 /* ================================================
-   Main Theme - Professional Blog Theme
-   Uses CSS Variables from light/dark mode files
+   Main Theme - Professional Blog Theme (Cleaned Version)
+   
+   Note: This file now contains only styles that haven't been 
+   moved to other CSS files yet. Layout, navbar, and sidebar 
+   styles have been moved to separate files.
+   
+   This file will be further refactored in Phase 2.
    ================================================ */
 
-/* ========== Base Styles ========== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--text-primary);
-    background: var(--bg-secondary);
-    transition: background-color 0.3s ease, color 0.3s ease;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-    color: var(--text-link);
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-a:hover {
-    color: var(--text-link-hover);
-}
-
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
-
 /* ========== Custom Scrollbar ========== */
+/* Keep this here as it's global */
 ::-webkit-scrollbar {
     width: 12px;
     height: 12px;
@@ -58,464 +25,294 @@ img {
     border: 2px solid var(--scrollbar-track);
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-hover);
-}
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--scrollbar-thumb-hover);
+    }
 
-/* ========== Layout Structure ========== */
-.main-layout {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.main-header {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: var(--navbar-bg);
-    border-bottom: 1px solid var(--navbar-border);
-    box-shadow: var(--shadow-sm);
-}
-
-.main-main {
-    flex: 1;
-    display: flex;
-    max-width: 1280px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 16px;
-    gap: 24px;
-}
-
-/* Content Area */
-.main-content {
-    flex: 1;
-    min-width: 0; /* Prevents flex item from overflowing */
-}
-
-/* Sidebar */
-.main-sidebar {
-    width: 312px;
-    flex-shrink: 0;
-}
-
-/* ========== Navbar ========== */
-.main-navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 20px;
-    height: 48px;
-}
-
-.main-navbar-left {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-}
-
-.main-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.main-logo-icon {
-    width: 32px;
-    height: 32px;
-    background: var(--primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-}
-
-/* Navbar Links */
-.main-nav-links {
-    display: flex;
-    gap: 8px;
-    list-style: none;
-}
-
-.main-nav-link {
-    padding: 6px 12px;
-    border-radius: 20px;
-    color: var(--text-primary);
-    font-weight: 500;
-    transition: background-color 0.2s ease;
-}
-
-.main-nav-link:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-}
-
-.main-nav-link.active {
-    background: var(--bg-active);
-    color: var(--primary);
-}
-
-/* Navbar Right */
-.main-navbar-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* ========== Search Bar ========== */
-.main-search {
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-}
-
-.main-search-input {
-    width: 100%;
-    padding: 8px 12px 8px 40px;
-    background: var(--bg-hover);
-    border: 1px solid var(--border-secondary);
-    border-radius: 20px;
-    color: var(--text-primary);
-    font-size: 14px;
-    outline: none;
-    transition: all 0.2s ease;
-}
-
-.main-search-input:focus {
-    background: var(--input-bg);
-    border-color: var(--input-focus);
-    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
-}
-
-.main-search-input::placeholder {
-    color: var(--input-placeholder);
-}
-
-.main-search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-    pointer-events: none;
-}
-
-/* ========== Buttons ========== */
-.main-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
-}
-
-.main-btn-primary {
-    background: var(--btn-primary-bg);
-    color: var(--btn-primary-text);
-}
-
-.main-btn-primary:hover {
-    background: var(--btn-primary-hover);
-}
-
-.main-btn-secondary {
-    background: var(--btn-secondary-bg);
-    color: var(--btn-secondary-text);
-    border: 1px solid var(--border-primary);
-}
-
-.main-btn-secondary:hover {
-    background: var(--btn-secondary-hover);
-}
-
-.main-btn-outline {
-    background: transparent;
-    color: var(--text-primary);
-    border: 1px solid var(--border-primary);
-}
-
-.main-btn-outline:hover {
-    background: var(--bg-hover);
-}
-
-.main-btn-icon {
-    background: transparent;
-    color: var(--text-secondary);
-    padding: 6px;
-    border-radius: 4px;
-}
-
-.main-btn-icon:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-}
-
-/* ========== Post Card ========== */
-.main-post {
+/* ========== Post Cards ========== */
+/* TODO: Move to components/cards.css in Phase 2 */
+.main-post-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 4px;
-    margin-bottom: 10px;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
     overflow: hidden;
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow var(--transition-base);
 }
 
-.main-post:hover {
-    box-shadow: var(--shadow);
-}
+    .main-post-card:hover {
+        box-shadow: var(--shadow-md);
+    }
 
-.main-post-container {
+.main-post {
     display: flex;
+    padding: var(--space-3);
 }
 
-/* Vote Section */
-.main-vote {
+.main-post-vote {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--bg-secondary);
-    padding: 8px 4px;
     width: 40px;
     flex-shrink: 0;
+    padding-right: var(--space-3);
 }
 
 .main-vote-btn {
-    background: none;
-    border: none;
-    padding: 2px;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all var(--transition-base);
 }
 
-.main-vote-btn:hover {
-    background: var(--bg-hover);
-    border-radius: 2px;
-}
+    .main-vote-btn:hover {
+        background: var(--bg-hover);
+    }
 
-.main-vote-btn.upvoted {
-    color: var(--upvote);
-}
+    .main-vote-btn.upvote:hover {
+        color: var(--upvote);
+        background: rgba(255, 69, 0, 0.1);
+    }
 
-.main-vote-btn.downvoted {
-    color: var(--downvote);
-}
+    .main-vote-btn.downvote:hover {
+        color: var(--downvote);
+        background: rgba(113, 147, 255, 0.1);
+    }
+
+    .main-vote-btn.voted.upvote {
+        color: var(--upvote);
+    }
+
+    .main-vote-btn.voted.downvote {
+        color: var(--downvote);
+    }
 
 .main-vote-count {
-    font-size: 12px;
-    font-weight: 700;
-    margin: 4px 0;
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
     color: var(--text-primary);
+    margin: 4px 0;
 }
 
-.main-vote-count.upvoted {
-    color: var(--upvote);
-}
-
-.main-vote-count.downvoted {
-    color: var(--downvote);
-}
-
-/* Post Content */
 .main-post-content {
     flex: 1;
-    padding: 8px 12px;
+    min-width: 0;
 }
 
 .main-post-header {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
     color: var(--text-secondary);
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2);
     flex-wrap: wrap;
 }
 
 .main-post-community {
+    font-weight: var(--font-bold);
     color: var(--text-primary);
-    font-weight: 700;
 }
+
+    .main-post-community:hover {
+        text-decoration: underline;
+    }
 
 .main-post-author {
     color: var(--text-secondary);
 }
 
-.main-post-author:hover {
-    text-decoration: underline;
-}
+    .main-post-author:hover {
+        text-decoration: underline;
+    }
 
 .main-post-time {
     color: var(--text-tertiary);
 }
 
 .main-post-title {
-    font-size: 18px;
-    font-weight: 500;
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
     color: var(--text-primary);
-    margin-bottom: 8px;
-    line-height: 1.4;
+    margin-bottom: var(--space-2);
+    line-height: var(--leading-tight);
 }
 
-.main-post-title:hover {
-    color: var(--text-link);
-}
+    .main-post-title a {
+        color: inherit;
+    }
+
+        .main-post-title a:hover {
+            color: var(--text-link);
+        }
 
 .main-post-text {
-    color: var(--text-primary);
-    line-height: 1.6;
-    margin-bottom: 8px;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-3);
 }
 
 .main-post-image {
-    margin: 8px 0;
-    border-radius: 4px;
+    margin-bottom: var(--space-3);
+    border-radius: var(--radius);
     overflow: hidden;
 }
 
-.main-post-image img {
-    width: 100%;
-    height: auto;
-}
+    .main-post-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
 
-/* Post Footer */
 .main-post-footer {
     display: flex;
-    gap: 8px;
-    padding-top: 4px;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
 }
 
 .main-post-action {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    border-radius: 2px;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
     color: var(--text-secondary);
-    font-size: 12px;
-    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background var(--transition-base);
 }
 
-.main-post-action:hover {
-    background: var(--bg-hover);
-}
+    .main-post-action:hover {
+        background: var(--bg-hover);
+    }
 
-/* ========== Sidebar Card ========== */
-.main-sidebar-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 4px;
-    margin-bottom: 16px;
-    overflow: hidden;
-}
+    .main-post-action svg {
+        width: 16px;
+        height: 16px;
+    }
 
-.main-sidebar-header {
-    padding: 12px;
-    border-bottom: 1px solid var(--border-secondary);
-}
-
-.main-sidebar-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.main-sidebar-content {
-    padding: 12px;
-}
-
-.main-sidebar-footer {
-    padding: 12px;
-    border-top: 1px solid var(--border-secondary);
-}
-
-/* ========== Community Info ========== */
-.main-community-info {
+/* ========== Feed Filters ========== */
+/* TODO: Move to components/filters.css in Phase 2 */
+.main-feed-tabs {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
+    gap: var(--space-2);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-full);
+    padding: var(--space-1);
+    margin-bottom: var(--space-4);
 }
 
-.main-community-icon {
-    width: 48px;
-    height: 48px;
+.main-feed-tab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .main-feed-tab:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .main-feed-tab.active {
+        background: var(--bg-primary);
+        color: var(--primary);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .main-feed-tab svg {
+        width: 16px;
+        height: 16px;
+    }
+
+/* ========== Create Post Button ========== */
+/* TODO: Move to components/buttons.css in Phase 2 */
+.main-create-post {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.main-create-post-avatar {
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
-    background: var(--primary);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.main-create-post-input {
+    flex: 1;
+    padding: var(--space-2) var(--space-4);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .main-create-post-input:hover {
+        background: var(--bg-primary);
+        border-color: var(--border-focus);
+    }
+
+.main-create-post-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.main-create-post-action {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-weight: 700;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all var(--transition-base);
 }
 
-.main-community-details h3 {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.main-community-details p {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-/* ========== Responsive Design ========== */
-@media (max-width: 960px) {
-    .main-sidebar {
-        display: none;
+    .main-create-post-action:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
     }
-    
-    .main-main {
-        padding: 8px;
-    }
-}
-
-@media (max-width: 768px) {
-    .main-navbar {
-        padding: 0 12px;
-    }
-    
-    .main-nav-links {
-        display: none;
-    }
-    
-    .main-search {
-        max-width: 200px;
-    }
-    
-    .main-post-title {
-        font-size: 16px;
-    }
-}
 
 /* ========== Loading States ========== */
 .main-skeleton {
-    background: linear-gradient(
-        90deg,
-        var(--bg-hover) 0%,
-        var(--bg-active) 50%,
-        var(--bg-hover) 100%
-    );
+    background: linear-gradient( 90deg, var(--bg-hover) 0%, var(--bg-active) 50%, var(--bg-hover) 100% );
     background-size: 200% 100%;
     animation: skeleton-loading 1.5s ease-in-out infinite;
 }
@@ -524,6 +321,7 @@ img {
     0% {
         background-position: 200% 0;
     }
+
     100% {
         background-position: -200% 0;
     }
@@ -533,15 +331,15 @@ img {
 .main-divider {
     height: 1px;
     background: var(--border-secondary);
-    margin: 16px 0;
+    margin: var(--space-4) 0;
 }
 
 .main-badge {
     display: inline-block;
     padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 700;
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
     text-transform: uppercase;
 }
 
@@ -553,4 +351,60 @@ img {
 .main-badge-secondary {
     background: var(--bg-active);
     color: var(--text-secondary);
+}
+
+/* ========== Responsive Design ========== */
+@media (max-width: 767px) {
+    .main-post-title {
+        font-size: var(--text-base);
+    }
+
+    .main-post-text {
+        font-size: var(--text-xs);
+    }
+
+    .main-feed-tabs {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+        .main-feed-tabs::-webkit-scrollbar {
+            display: none;
+        }
+}
+
+@media (max-width: 575px) {
+    .main-post {
+        padding: var(--space-2);
+    }
+
+    .main-post-vote {
+        width: 32px;
+        padding-right: var(--space-2);
+    }
+
+    .main-vote-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .main-create-post {
+        padding: var(--space-2);
+    }
+}
+
+/* ========== Print Styles ========== */
+@media print {
+    .main-navbar,
+    .main-sidebar,
+    .main-post-vote,
+    .main-post-footer {
+        display: none;
+    }
+
+    .main-post-card {
+        border: none;
+        box-shadow: none;
+        page-break-inside: avoid;
+    }
 }

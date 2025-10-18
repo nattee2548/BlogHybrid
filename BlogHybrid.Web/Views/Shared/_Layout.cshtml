@@ -3,17 +3,82 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Primary Meta Tags -->
+    <title>@ViewData["Title"] - 404alk</title>
+    <meta name="title" content="@(ViewData["MetaTitle"] ?? ViewData["Title"] + " - 404alk")" />
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "404alk - ชุมชนแลกเปลี่ยนความรู้ด้านเทคโนโลยี โปรแกรมมิ่ง และการพัฒนาซอฟต์แวร์ สำหรับนักพัฒนาไทย")" />
+    <meta name="keywords" content="@(ViewData["MetaKeywords"] ?? "blog, tech, programming, technology, development, coding, software, 404alk, ชุมชน, โปรแกรมมิ่ง, เทคโนโลยี")" />
+    <meta name="author" content="404alk" />
+    <meta name="robots" content="@(ViewData["MetaRobots"] ?? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1")" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="@(ViewData["OGType"] ?? "website")" />
+    <meta property="og:url" content="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    <meta property="og:title" content="@(ViewData["OGTitle"] ?? ViewData["Title"] + " - 404alk")" />
+    <meta property="og:description" content="@(ViewData["OGDescription"] ?? ViewData["MetaDescription"] ?? "ชุมชนแลกเปลี่ยนความรู้ด้านเทคโนโลยีและการพัฒนาซอฟต์แวร์")" />
+    <meta property="og:image" content="@(ViewData["OGImage"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}/images/og-default.jpg")" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="404alk" />
+    <meta property="og:locale" content="th_TH" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    <meta name="twitter:title" content="@(ViewData["TwitterTitle"] ?? ViewData["Title"] + " - 404alk")" />
+    <meta name="twitter:description" content="@(ViewData["TwitterDescription"] ?? ViewData["MetaDescription"] ?? "ชุมชนแลกเปลี่ยนความรู้ด้านเทคโนโลยี")" />
+    <meta name="twitter:image" content="@(ViewData["TwitterImage"] ?? ViewData["OGImage"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}/images/og-default.jpg")" />
+    @if (ViewData["TwitterSite"] != null)
+    {
+        <meta name="twitter:site" content="@ViewData["TwitterSite"]" />
+    }
+    @if (ViewData["TwitterCreator"] != null)
+    {
+        <meta name="twitter:creator" content="@ViewData["TwitterCreator"]" />
+    }
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Theme Color -->
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1a1a1b" media="(prefers-color-scheme: dark)" />
-    <title>@ViewData["Title"] - 404alk</title>
 
-    <!-- CSS Files - Main Theme -->
-    <link rel="stylesheet" href="~/css/themes/light-mode.css" />
-    <link rel="stylesheet" href="~/css/themes/dark-mode.css" />
-    <link rel="stylesheet" href="~/css/themes/main-theme.css" />
-    <link rel="stylesheet" href="~/css/themes/theme-switcher.css" />
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
 
-    <!-- ✅ Prevent theme flash - ใช้ localStorage key 'theme' เหมือนเดิม -->
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="~/css/core/reset.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/variables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/themes/light-mode.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/themes/dark-mode.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/typography.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout/grid.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout/navbar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout/sidebar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/cards.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/buttons.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/forms.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/badges.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/modals.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/dropdown.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/toast.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/utilities/animations.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/utilities/accessibility.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/themes/main-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/themes/theme-switcher.css" asp-append-version="true" />
+
+    <!-- Prevent theme flash -->
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme');
@@ -22,48 +87,83 @@
             document.documentElement.setAttribute('data-theme', actualTheme);
         })();
     </script>
+
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "Organization",
+            "name": "404alk",
+            "url": "@($"{Context.Request.Scheme}://{Context.Request.Host}")",
+            "logo": "@($"{Context.Request.Scheme}://{Context.Request.Host}/images/logo.png")",
+            "description": "ชุมชนแลกเปลี่ยนความรู้ด้านเทคโนโลยีและการพัฒนาซอฟต์แวร์",
+            "sameAs": [
+                "@(ViewData["FacebookUrl"] ?? "")",
+                "@(ViewData["TwitterUrl"] ?? "")",
+                "@(ViewData["GitHubUrl"] ?? "")"
+            ]
+        }
+    </script>
+
+    <!-- WebSite Schema -->
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "WebSite",
+            "name": "404alk",
+            "url": "@($"{Context.Request.Scheme}://{Context.Request.Host}")",
+            "potentialAction": {
+                "@@type": "SearchAction",
+                "target": "@($"{Context.Request.Scheme}://{Context.Request.Host}/search?q={{search_term_string}}")",
+                "query-input": "required name=search_term_string"
+            }
+        }
+    </script>
+
+    @await RenderSectionAsync("StructuredData", required: false)
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="main-layout">
-    <!-- ========== HEADER / NAVBAR ========== -->
-    <header class="main-header">
-        <nav class="main-navbar">
-            <!-- Left Side -->
+    <!-- Skip to main content (Accessibility) -->
+    <a href="#main-content" class="skip-to-main">ข้ามไปยังเนื้อหาหลัก</a>
+
+    <!-- Header -->
+    <header class="main-header" role="banner">
+        <nav class="main-navbar" role="navigation" aria-label="Main navigation">
             <div class="main-navbar-left">
-                <!-- Logo -->
-                <a asp-controller="Home" asp-action="Index" class="main-logo">
-                    <span class="main-logo-icon">4</span>
+                <a asp-controller="Home" asp-action="Index" class="main-logo" aria-label="404alk Homepage">
+                    <span class="main-logo-icon" aria-hidden="true">4</span>
                     <span>404alk</span>
                 </a>
 
-                <!-- Navigation Links (Desktop) -->
-                <ul class="main-nav-links">
-                    <li>
-                        <a asp-controller="Home" asp-action="Index" class="main-nav-link">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <ul class="main-nav-links" role="menubar">
+                    <li role="none">
+                        <a asp-controller="Home" asp-action="Index" class="main-nav-link" role="menuitem">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                             </svg>
                             หน้าแรก
                         </a>
                     </li>
-                    <li>
-                        <a asp-controller="Post" asp-action="Index" class="main-nav-link">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <li role="none">
+                        <a asp-controller="Post" asp-action="Index" class="main-nav-link" role="menuitem">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
                             </svg>
                             บทความ
                         </a>
                     </li>
-                    <li>
-                        <a asp-controller="Category" asp-action="Index" class="main-nav-link">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <li role="none">
+                        <a asp-controller="Category" asp-action="Index" class="main-nav-link" role="menuitem">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                             </svg>
                             หมวดหมู่
                         </a>
                     </li>
-                    <li>
-                        <a asp-controller="Community" asp-action="Index" class="main-nav-link">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <li role="none">
+                        <a asp-controller="Community" asp-action="Index" class="main-nav-link" role="menuitem">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                             </svg>
                             ชุมชน
@@ -72,130 +172,66 @@
                 </ul>
             </div>
 
-            <!-- Right Side -->
             <div class="main-navbar-right">
-                <!-- Search Bar -->
-                <div class="main-search">
-                    <svg class="main-search-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <div class="main-search" role="search">
+                    <svg class="main-search-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
-                    <input type="text" class="main-search-input" placeholder="ค้นหา 404alk" />
+                    <input type="search" class="main-search-input" placeholder="ค้นหา 404alk" aria-label="Search" />
                 </div>
 
-                <!-- Action Buttons -->
-                <button class="main-btn-icon" title="การแจ้งเตือน">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <button class="main-btn-icon" title="การแจ้งเตือน" aria-label="Notifications">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
                     </svg>
                 </button>
 
-                <button class="main-btn-icon" title="ข้อความ">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3.293 3.293 3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                    </svg>
-                </button>
-
-                <!-- Theme Switcher -->
                 <div class="theme-switcher-container">
                     <button class="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle dark mode">
                         <span class="theme-toggle-ball">
-                            <svg class="theme-toggle-icon" viewBox="0 0 20 20" fill="currentColor">
-                                <!-- Sun icon (will be shown in light mode) -->
+                            <svg class="theme-icon" width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
-                                <!-- Moon icon (will be shown in dark mode) -->
-                                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
                             </svg>
                         </span>
                     </button>
                 </div>
-
-                <!-- User Menu / Login -->
-                @if (User.Identity?.IsAuthenticated == true)
-                {
-                    <div class="main-user-menu">
-                        <button class="main-btn-icon main-user-avatar" title="@User.Identity.Name">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
-                }
-                else
-                {
-                    <a asp-controller="Account" asp-action="Login" class="main-btn-primary" style="padding: 6px 16px; font-size: 14px;">
-                        เข้าสู่ระบบ
-                    </a>
-                }
             </div>
         </nav>
     </header>
 
-    <!-- ========== MAIN CONTENT AREA ========== -->
+    <!-- Main Content -->
     <div class="main-main">
-        <!-- Main Content -->
-        <main class="main-content">
+        <main id="main-content" class="main-content" role="main">
             @RenderBody()
         </main>
 
-        <!-- Sidebar -->
-        <aside class="main-sidebar">
-            <!-- Create Post Card -->
-            <div class="main-sidebar-card">
-                <div class="main-sidebar-content">
-                    <h3 style="font-size: 16px; font-weight: 500; margin-bottom: 12px;">สร้างโพสต์</h3>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">
-                        แบ่งปันความคิด ประสบการณ์ หรือเนื้อหาที่น่าสนใจกับชุมชน
-                    </p>
-                    <a asp-controller="Post" asp-action="Create" class="main-btn-primary" style="width: 100%; text-align: center; padding: 8px 16px;">
-                        สร้างโพสต์
-                    </a>
-                </div>
-            </div>
-
-            <!-- Popular Communities -->
+        <aside class="main-sidebar" role="complementary" aria-label="Sidebar">
             <div class="main-sidebar-card">
                 <div class="main-sidebar-header">
-                    <h3>ชุมชนยอดนิยม</h3>
+                    ชุมชนยอดนิยม
                 </div>
-                <div class="main-sidebar-content">
-                    <a href="#" class="main-community-info" style="text-decoration: none;">
+                <div class="main-sidebar-content" style="padding: 0;">
+                    <a href="#" class="main-community-info">
                         <div class="main-community-icon" style="background: #ff4500;">P</div>
                         <div class="main-community-details">
-                            <h3>r/Programming</h3>
-                            <p>12.5K สมาชิก</p>
-                        </div>
-                    </a>
-                    <div class="main-divider" style="margin: 0 12px;"></div>
-                    <a href="#" class="main-community-info" style="text-decoration: none;">
-                        <div class="main-community-icon" style="background: #0079d3;">T</div>
-                        <div class="main-community-details">
-                            <h3>r/Technology</h3>
+                            <h3>r/programming</h3>
                             <p>8.5K สมาชิก</p>
                         </div>
                     </a>
-                    <div class="main-divider" style="margin: 0 12px;"></div>
-                    <a href="#" class="main-community-info" style="text-decoration: none;">
-                        <div class="main-community-icon" style="background: #46d160;">W</div>
-                        <div class="main-community-details">
-                            <h3>r/WebDev</h3>
-                            <p>3.8K สมาชิก</p>
-                        </div>
-                    </a>
                 </div>
             </div>
 
-            <!-- Footer Links in Sidebar -->
             <div class="main-sidebar-card" style="font-size: 12px;">
                 <div class="main-sidebar-content">
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
-                        <a href="#" style="color: var(--text-secondary);">เกี่ยวกับ</a>
-                        <span style="color: var(--text-tertiary);">•</span>
-                        <a href="#" style="color: var(--text-secondary);">ช่วยเหลือ</a>
-                        <span style="color: var(--text-tertiary);">•</span>
-                        <a href="#" style="color: var(--text-secondary);">API</a>
-                        <span style="color: var(--text-tertiary);">•</span>
-                        <a asp-controller="Home" asp-action="Privacy" style="color: var(--text-secondary);">นโยบาย</a>
-                    </div>
+                    <nav aria-label="Footer links">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                            <a href="/about">เกี่ยวกับ</a>
+                            <span aria-hidden="true">•</span>
+                            <a href="/help">ช่วยเหลือ</a>
+                            <span aria-hidden="true">•</span>
+                            <a asp-controller="Home" asp-action="Privacy">นโยบาย</a>
+                        </div>
+                    </nav>
                     <div style="color: var(--text-tertiary);">
                         © @DateTime.Now.Year 404alk
                     </div>
@@ -203,8 +239,10 @@
             </div>
         </aside>
     </div>
+
     <partial name="_ToastNotification" />
-    <!-- ========== SCRIPTS ========== -->
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

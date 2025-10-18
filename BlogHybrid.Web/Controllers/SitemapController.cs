@@ -1,124 +1,113 @@
-﻿using BlogHybrid.Web.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Text;
+using System.Xml.Linq;
 
 namespace BlogHybrid.Web.Controllers
 {
-    /// <summary>
-    /// Controller สำหรับ SEO: Sitemap.xml และ Robots.txt
-    /// </summary>
     public class SitemapController : Controller
     {
-        private readonly ISitemapService _sitemapService;
         private readonly ILogger<SitemapController> _logger;
 
-        public SitemapController(
-            ISitemapService sitemapService,
-            ILogger<SitemapController> logger)
+        // TODO: Inject your services here
+        // private readonly IPostService _postService;
+        // private readonly ICategoryService _categoryService;
+
+        public SitemapController(ILogger<SitemapController> logger)
         {
-            _sitemapService = sitemapService;
             _logger = logger;
         }
 
-        /// <summary>
-        /// GET: /sitemap.xml
-        /// </summary>
-        [HttpGet]
-        [Route("sitemap.xml")]
-        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
-        public async Task<IActionResult> SitemapXml()
+        [HttpGet("sitemap.xml")]
+        [ResponseCache(Duration = 3600)] // Cache for 1 hour
+        public async Task<IActionResult> Index()
         {
             try
             {
-                _logger.LogInformation("Sitemap.xml requested");
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var sitemap = new XElement("urlset",
+                    new XAttribute("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9"),
+                    new XAttribute(XNamespace.Xmlns + "image", "http://www.google.com/schemas/sitemap-image/1.1")
+                );
 
-                var xml = await _sitemapService.GenerateSitemapXmlAsync();
+                // Homepage
+                sitemap.Add(CreateUrlElement(baseUrl, "", "1.0", "daily", DateTime.UtcNow));
 
-                return Content(xml, "application/xml", Encoding.UTF8);
+                // Static pages
+                sitemap.Add(CreateUrlElement(baseUrl, "/about", "0.8", "monthly", DateTime.UtcNow));
+                sitemap.Add(CreateUrlElement(baseUrl, "/privacy", "0.5", "yearly", DateTime.UtcNow));
+
+                // Categories
+                // var categories = await _categoryService.GetAllActiveCategories();
+                // foreach (var category in categories)
+                // {
+                //     sitemap.Add(CreateUrlElement(
+                //         baseUrl, 
+                //         $"/category/{category.Slug}", 
+                //         "0.9", 
+                //         "weekly", 
+                //         category.UpdatedAt ?? category.CreatedAt
+                //     ));
+                // }
+
+                // Posts
+                // var posts = await _postService.GetAllPublishedPosts();
+                // foreach (var post in posts)
+                // {
+                //     var postUrl = CreateUrlElement(
+                //         baseUrl,
+                //         $"/post/{post.Slug}",
+                //         "0.7",
+                //         "monthly",
+                //         post.UpdatedAt ?? post.PublishedAt ?? post.CreatedAt
+                //     );
+                //     
+                //     // Add image if exists
+                //     if (!string.IsNullOrEmpty(post.ImageUrl))
+                //     {
+                //         postUrl.Add(new XElement(XNamespace.Get("http://www.google.com/schemas/sitemap-image/1.1") + "image",
+                //             new XElement(XNamespace.Get("http://www.google.com/schemas/sitemap-image/1.1") + "loc", post.ImageUrl)
+                //         ));
+                //     }
+                //     
+                //     sitemap.Add(postUrl);
+                // }
+
+                var xml = new XDeclaration("1.0", "UTF-8", null);
+                var document = new XDocument(xml, sitemap);
+
+                return Content(document.ToString(), "application/xml", Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generating sitemap.xml");
-                return StatusCode(500, "Error generating sitemap");
+                _logger.LogError(ex, "Error generating sitemap");
+                return StatusCode(500);
             }
         }
 
-        /// <summary>
-        /// GET: /sitemap-index.xml
-        /// Sitemap Index สำหรับเมื่อมี URLs เยอะ (> 50,000)
-        /// </summary>
-        [HttpGet]
-        [Route("sitemap-index.xml")]
-        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
-        public async Task<IActionResult> SitemapIndex()
+        private XElement CreateUrlElement(string baseUrl, string path, string priority, string changefreq, DateTime lastmod)
         {
-            try
-            {
-                _logger.LogInformation("Sitemap-index.xml requested");
-
-                var xml = await _sitemapService.GenerateSitemapIndexXmlAsync();
-
-                return Content(xml, "application/xml", Encoding.UTF8);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error generating sitemap-index.xml");
-                return StatusCode(500, "Error generating sitemap index");
-            }
+            return new XElement("url",
+                new XElement("loc", $"{baseUrl}{path}"),
+                new XElement("lastmod", lastmod.ToString("yyyy-MM-dd")),
+                new XElement("changefreq", changefreq),
+                new XElement("priority", priority)
+            );
         }
 
-        /// <summary>
-        /// GET: /robots.txt
-        /// </summary>
-        [HttpGet]
-        [Route("robots.txt")]
-        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)] // Cache 24 hours
-        public IActionResult RobotsTxt()
+        [HttpGet("robots.txt")]
+        [ResponseCache(Duration = 86400)] // Cache for 24 hours
+        public IActionResult Robots()
         {
-            try
-            {
-                _logger.LogInformation("Robots.txt requested");
+            var sb = new StringBuilder();
+            sb.AppendLine("User-agent: *");
+            sb.AppendLine("Allow: /");
+            sb.AppendLine("Disallow: /admin/");
+            sb.AppendLine("Disallow: /account/");
+            sb.AppendLine("Disallow: /api/");
+            sb.AppendLine("");
+            sb.AppendLine($"Sitemap: {Request.Scheme}://{Request.Host}/sitemap.xml");
 
-                var robotsTxt = _sitemapService.GenerateRobotsTxt();
-
-                return Content(robotsTxt, "text/plain", Encoding.UTF8);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error generating robots.txt");
-                return StatusCode(500, "Error generating robots.txt");
-            }
-        }
-
-        /// <summary>
-        /// GET: /clear-sitemap-cache (สำหรับ Admin เท่านั้น)
-        /// ใช้เมื่อต้องการ force regenerate sitemap
-        /// </summary>
-        [HttpGet]
-        [Route("admin/clear-sitemap-cache")]
-        // [Authorize(Roles = "Admin")] // Uncomment เมื่อมี Authentication
-        public IActionResult ClearSitemapCache()
-        {
-            try
-            {
-                _logger.LogInformation("Clearing sitemap cache");
-
-                // ใน production ควรใช้ IMemoryCache.Remove
-                // สำหรับตอนนี้แค่ return success
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Sitemap cache cleared. Next request will regenerate sitemap."
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error clearing sitemap cache");
-                return StatusCode(500, "Error clearing cache");
-            }
+            return Content(sb.ToString(), "text/plain", Encoding.UTF8);
         }
     }
 }
-
-

@@ -1,0 +1,283 @@
+﻿/* ================================================
+   Accessibility & SEO Styles
+   ================================================ */
+
+/* ========== Skip to Main Content ========== */
+.skip-to-main {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 999999;
+    padding: var(--space-3) var(--space-4);
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    font-weight: var(--font-semibold);
+}
+
+    .skip-to-main:focus {
+        left: var(--space-4);
+        top: var(--space-4);
+        outline: 2px solid white;
+        outline-offset: 2px;
+    }
+
+/* ========== Screen Reader Only ========== */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+}
+
+/* ========== Focus Styles ========== */
+*:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+}
+
+/* ========== Breadcrumb ========== */
+.breadcrumb {
+    margin-bottom: var(--space-4);
+}
+
+    .breadcrumb ol {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: var(--text-sm);
+    }
+
+    .breadcrumb li {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+        .breadcrumb li:not(:last-child)::after {
+            content: '/';
+            color: var(--text-tertiary);
+        }
+
+    .breadcrumb a {
+        color: var(--text-link);
+    }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+    .breadcrumb li[aria-current="page"] {
+        color: var(--text-secondary);
+    }
+
+/* ========== High Contrast Mode ========== */
+@media (prefers-contrast: high) {
+    * {
+        border-color: currentColor !important;
+    }
+
+    .card,
+    .post-card,
+    .btn {
+        border-width: 2px !important;
+    }
+}
+
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ========== Print Styles ========== */
+@media print {
+    /* Hide non-essential elements */
+    .main-navbar,
+    .main-sidebar,
+    .post-vote,
+    .post-actions,
+    .theme-switcher-container,
+    .btn,
+    button {
+        display: none !important;
+    }
+
+    /* Optimize for print */
+    body {
+        background: white;
+        color: black;
+        font-size: 12pt;
+    }
+
+    .main-content {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .post-card,
+    .card {
+        border: 1px solid #000;
+        box-shadow: none;
+        page-break-inside: avoid;
+    }
+
+    a {
+        text-decoration: underline;
+    }
+
+        a[href]::after {
+            content: " (" attr(href) ")";
+            font-size: 0.8em;
+        }
+
+    img {
+        max-width: 100%;
+        page-break-inside: avoid;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid;
+    }
+}
+
+/* ========== Color Contrast Helpers ========== */
+.text-high-contrast {
+    color: var(--text-primary);
+    font-weight: var(--font-medium);
+}
+
+/* ========== Keyboard Navigation ========== */
+.keyboard-focus:focus {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ========== ARIA Live Regions ========== */
+[role="alert"],
+[role="status"],
+[aria-live] {
+    position: relative;
+}
+
+/* ========== Semantic HTML Improvements ========== */
+article,
+section,
+nav,
+aside,
+header,
+footer {
+    display: block;
+}
+
+/* ========== Table Accessibility ========== */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    text-align: left;
+    font-weight: var(--font-semibold);
+}
+
+caption {
+    text-align: left;
+    padding: var(--space-2);
+    font-weight: var(--font-semibold);
+}
+
+/* ========== Form Accessibility ========== */
+label {
+    cursor: pointer;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    cursor: pointer;
+}
+
+input:required,
+select:required,
+textarea:required {
+    border-left: 3px solid var(--primary);
+}
+
+/* ========== Image Alt Text ========== */
+img:not([alt]) {
+    border: 2px dashed red;
+}
+
+/* ========== Link States ========== */
+a:link {
+    color: var(--text-link);
+}
+
+a:visited {
+    color: var(--text-link);
+}
+
+a:hover,
+a:focus {
+    color: var(--text-link-hover);
+}
+
+a:active {
+    color: var(--text-link-hover);
+}
+
+/* ========== Button States ========== */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* ========== Responsive Text ========== */
+@media (max-width: 767px) {
+    body {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+
+    input,
+    textarea,
+    select {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+}

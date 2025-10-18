@@ -1,0 +1,385 @@
+﻿/* ================================================
+   Form Components - Modern Design
+   ================================================ */
+
+/* ========== Form Group ========== */
+.form-group {
+    margin-bottom: var(--space-4);
+}
+
+.form-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.form-label-required::after {
+    content: '*';
+    color: var(--danger);
+    margin-left: var(--space-1);
+}
+
+.form-help {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    margin-top: var(--space-1);
+}
+
+/* ========== Input Fields ========== */
+.form-control {
+    display: block;
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--input-text);
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius);
+    transition: all var(--transition-base);
+}
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--input-focus);
+        box-shadow: 0 0 0 3px rgba(0, 121, 211, 0.1);
+    }
+
+    .form-control:disabled {
+        background: var(--bg-tertiary);
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .form-control::placeholder {
+        color: var(--input-placeholder);
+    }
+
+/* Input Sizes */
+.form-control-sm {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-xs);
+}
+
+.form-control-lg {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-base);
+}
+
+/* ========== Textarea ========== */
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+textarea.form-control-fixed {
+    resize: none;
+}
+
+/* ========== Select ========== */
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-3) center;
+    padding-right: var(--space-8);
+}
+
+/* ========== Checkbox & Radio ========== */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    border: 2px solid var(--border-primary);
+    transition: all var(--transition-base);
+}
+
+    .form-check-input[type="checkbox"] {
+        border-radius: var(--radius-sm);
+    }
+
+    .form-check-input[type="radio"] {
+        border-radius: 50%;
+    }
+
+    .form-check-input:checked {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .form-check-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 121, 211, 0.1);
+    }
+
+.form-check-label {
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+}
+
+/* ========== Switch Toggle ========== */
+.form-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+
+.form-switch-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.form-switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-base);
+}
+
+    .form-switch-slider::before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background: white;
+        border-radius: 50%;
+        transition: all var(--transition-base);
+    }
+
+.form-switch-input:checked + .form-switch-slider {
+    background: var(--primary);
+}
+
+    .form-switch-input:checked + .form-switch-slider::before {
+        transform: translateX(24px);
+    }
+
+/* ========== Input Groups ========== */
+.input-group {
+    display: flex;
+    align-items: stretch;
+}
+
+    .input-group .form-control {
+        flex: 1;
+        border-radius: 0;
+    }
+
+        .input-group .form-control:first-child {
+            border-top-left-radius: var(--radius);
+            border-bottom-left-radius: var(--radius);
+        }
+
+        .input-group .form-control:last-child {
+            border-top-right-radius: var(--radius);
+            border-bottom-right-radius: var(--radius);
+        }
+
+.input-group-text {
+    display: flex;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    background: var(--bg-secondary);
+    border: 1px solid var(--input-border);
+    color: var(--text-secondary);
+}
+
+    .input-group-text:first-child {
+        border-right: none;
+        border-top-left-radius: var(--radius);
+        border-bottom-left-radius: var(--radius);
+    }
+
+    .input-group-text:last-child {
+        border-left: none;
+        border-top-right-radius: var(--radius);
+        border-bottom-right-radius: var(--radius);
+    }
+
+/* ========== Form Validation ========== */
+.form-control.is-valid {
+    border-color: var(--success);
+}
+
+    .form-control.is-valid:focus {
+        box-shadow: 0 0 0 3px rgba(70, 209, 96, 0.1);
+    }
+
+.form-control.is-invalid {
+    border-color: var(--danger);
+}
+
+    .form-control.is-invalid:focus {
+        box-shadow: 0 0 0 3px rgba(234, 0, 39, 0.1);
+    }
+
+.valid-feedback {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--success);
+    margin-top: var(--space-1);
+}
+
+.invalid-feedback {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--danger);
+    margin-top: var(--space-1);
+}
+
+/* ========== File Upload ========== */
+.form-file {
+    position: relative;
+}
+
+.form-file-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.form-file-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    background: var(--input-bg);
+    border: 1px dashed var(--input-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .form-file-label:hover {
+        border-color: var(--input-focus);
+        background: var(--bg-hover);
+    }
+
+.form-file-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text-secondary);
+}
+
+.form-file-text {
+    flex: 1;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.form-file-input:focus + .form-file-label {
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 3px rgba(0, 121, 211, 0.1);
+}
+
+/* ========== Range Slider ========== */
+.form-range {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    outline: none;
+    appearance: none;
+}
+
+    .form-range::-webkit-slider-thumb {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        background: var(--primary);
+        cursor: pointer;
+        border-radius: 50%;
+        transition: all var(--transition-base);
+    }
+
+        .form-range::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+    .form-range::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        background: var(--primary);
+        cursor: pointer;
+        border-radius: 50%;
+        border: none;
+        transition: all var(--transition-base);
+    }
+
+/* ========== Form Layouts ========== */
+.form-inline {
+    display: flex;
+    gap: var(--space-3);
+    align-items: end;
+}
+
+    .form-inline .form-group {
+        margin-bottom: 0;
+    }
+
+.form-horizontal .form-group {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: var(--space-3);
+    align-items: start;
+}
+
+/* ========== Search Input ========== */
+.search-input {
+    position: relative;
+}
+
+.search-input-icon {
+    position: absolute;
+    left: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+}
+
+.search-input .form-control {
+    padding-left: var(--space-10);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 767px) {
+    .form-inline {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-horizontal .form-group {
+        grid-template-columns: 1fr;
+    }
+
+    .input-group {
+        flex-wrap: wrap;
+    }
+}

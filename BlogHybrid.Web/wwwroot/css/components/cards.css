@@ -1,0 +1,420 @@
+﻿/* ================================================
+   Card Components - Modern Design
+   Post cards, sidebar cards, info cards
+   ================================================ */
+
+/* ========== Base Card ========== */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+}
+
+    .card:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+/* Card Sections */
+.card-header {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border-secondary);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+}
+
+.card-body {
+    padding: var(--space-4);
+}
+
+.card-footer {
+    padding: var(--space-4);
+    border-top: 1px solid var(--border-secondary);
+}
+
+/* Card Variants */
+.card-compact .card-header,
+.card-compact .card-body,
+.card-compact .card-footer {
+    padding: var(--space-3);
+}
+
+.card-bordered {
+    border: 2px solid var(--border-primary);
+}
+
+.card-elevated {
+    box-shadow: var(--shadow);
+}
+
+/* ========== Post Card ========== */
+.post-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+    overflow: hidden;
+    transition: all var(--transition-base);
+}
+
+    .post-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: var(--border-focus);
+    }
+
+.post-card-content {
+    display: flex;
+    padding: var(--space-4);
+    gap: var(--space-3);
+}
+
+/* Post Vote Section */
+.post-vote {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.vote-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all var(--transition-base);
+}
+
+    .vote-btn:hover {
+        background: var(--bg-hover);
+    }
+
+    .vote-btn.upvote:hover {
+        color: var(--upvote);
+        background: rgba(255, 69, 0, 0.1);
+    }
+
+    .vote-btn.downvote:hover {
+        color: var(--downvote);
+        background: rgba(113, 147, 255, 0.1);
+    }
+
+    .vote-btn.active.upvote {
+        color: var(--upvote);
+    }
+
+    .vote-btn.active.downvote {
+        color: var(--downvote);
+    }
+
+.vote-count {
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 4px 0;
+    user-select: none;
+}
+
+/* Post Main Content */
+.post-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.post-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.post-community {
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+}
+
+    .post-community:hover {
+        text-decoration: underline;
+    }
+
+.post-author:hover {
+    text-decoration: underline;
+}
+
+.post-time {
+    color: var(--text-tertiary);
+}
+
+.post-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
+    line-height: var(--leading-tight);
+}
+
+    .post-title a {
+        color: inherit;
+    }
+
+        .post-title a:hover {
+            color: var(--text-link);
+        }
+
+.post-excerpt {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-3);
+}
+
+.post-image {
+    margin-bottom: var(--space-3);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+    .post-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: transform var(--transition-slow);
+    }
+
+.post-card:hover .post-image img {
+    transform: scale(1.02);
+}
+
+.post-tags {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.post-action {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .post-action:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .post-action svg {
+        width: 16px;
+        height: 16px;
+    }
+
+/* ========== Sidebar Card ========== */
+.sidebar-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+    overflow: hidden;
+}
+
+.sidebar-card-header {
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--border-secondary);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+}
+
+.sidebar-card-body {
+    padding: var(--space-3);
+}
+
+.sidebar-card-footer {
+    padding: var(--space-3);
+    border-top: 1px solid var(--border-secondary);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+}
+
+/* ========== Info Card ========== */
+.info-card {
+    background: var(--info-bg);
+    border: 1px solid var(--info);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    display: flex;
+    gap: var(--space-3);
+    align-items: start;
+}
+
+.info-card-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--info);
+    flex-shrink: 0;
+}
+
+.info-card-content {
+    flex: 1;
+}
+
+.info-card-title {
+    font-weight: var(--font-semibold);
+    color: var(--info);
+    margin-bottom: var(--space-1);
+}
+
+.info-card-text {
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+}
+
+/* Card Variants */
+.success-card {
+    background: var(--success-bg);
+    border-color: var(--success);
+}
+
+    .success-card .info-card-icon,
+    .success-card .info-card-title {
+        color: var(--success);
+    }
+
+.warning-card {
+    background: var(--warning-bg);
+    border-color: var(--warning);
+}
+
+    .warning-card .info-card-icon,
+    .warning-card .info-card-title {
+        color: var(--warning);
+    }
+
+.danger-card {
+    background: var(--danger-bg);
+    border-color: var(--danger);
+}
+
+    .danger-card .info-card-icon,
+    .danger-card .info-card-title {
+        color: var(--danger);
+    }
+
+/* ========== Profile Card ========== */
+.profile-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    text-align: center;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto var(--space-3);
+    border: 3px solid var(--border-primary);
+}
+
+.profile-name {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-1);
+}
+
+.profile-username {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-3);
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-secondary);
+}
+
+.profile-stat {
+    text-align: center;
+}
+
+.profile-stat-value {
+    display: block;
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+}
+
+.profile-stat-label {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    margin-top: var(--space-1);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 767px) {
+    .post-card-content {
+        padding: var(--space-3);
+    }
+
+    .post-vote {
+        width: 32px;
+    }
+
+    .vote-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .post-title {
+        font-size: var(--text-base);
+    }
+
+    .post-excerpt {
+        font-size: var(--text-xs);
+    }
+}
+
+@media (max-width: 575px) {
+    .post-card-content {
+        padding: var(--space-2);
+    }
+
+    .post-actions {
+        gap: var(--space-1);
+    }
+
+    .post-action {
+        padding: var(--space-1) var(--space-2);
+        font-size: 11px;
+    }
+}
