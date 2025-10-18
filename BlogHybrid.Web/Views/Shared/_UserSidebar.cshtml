@@ -1,0 +1,191 @@
+﻿@* User Sidebar - Reddit Style *@
+<aside class="user-sidebar">
+    @* 1. Quick Actions Card (สำหรับ Login User) *@
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="quick-actions-card">
+            <h3 class="quick-actions-title">Quick Actions</h3>
+            <div class="quick-actions-grid">
+                <a href="#" class="quick-action-btn">
+                    <svg class="quick-action-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    </svg>
+                    <span class="quick-action-text">สร้างโพสต์</span>
+                </a>
+                <a href="#" class="quick-action-btn">
+                    <svg class="quick-action-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                    <span class="quick-action-text">สร้างชุมชน</span>
+                </a>
+            </div>
+        </div>
+
+        @* 2. Profile Card *@
+        <div class="profile-card">
+            <div class="profile-header">
+                <img src="https://ui-avatars.com/api/?name=@User.Identity.Name&background=random"
+                     alt="Profile"
+                     class="profile-avatar" />
+                <div class="profile-info">
+                    <h4 class="profile-name">@User.Identity.Name</h4>
+                    <p class="profile-username">@@(User.Identity.Name?.ToLower().Replace(" ", ""))</p>
+                </div>
+            </div>
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <span class="profile-stat-value">123</span>
+                    <span class="profile-stat-label">โพสต์</span>
+                </div>
+                <div class="profile-stat">
+                    <span class="profile-stat-value">45</span>
+                    <span class="profile-stat-label">ความคิดเห็น</span>
+                </div>
+                <div class="profile-stat">
+                    <span class="profile-stat-value">678</span>
+                    <span class="profile-stat-label">คะแนน</span>
+                </div>
+            </div>
+            <a href="#" class="profile-view-btn">ดูโปรไฟล์</a>
+        </div>
+    }
+    else
+    {
+        @* Guest User - CTA Card *@
+        <div class="guest-cta-card">
+            <div class="guest-cta-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+            </div>
+            <h3 class="guest-cta-title">เข้าร่วม 404alk</h3>
+            <p class="guest-cta-text">สร้างโพสต์, แสดงความคิดเห็น และเชื่อมต่อกับชุมชนนักพัฒนา</p>
+            <a asp-area="Identity" asp-page="/Account/Register" class="guest-cta-btn-primary">สร้างบัญชี</a>
+            <a asp-area="Identity" asp-page="/Account/Login" class="guest-cta-btn-secondary">เข้าสู่ระบบ</a>
+        </div>
+    }
+
+    @* 3. Trending Communities *@
+    <div class="trending-card">
+        <div class="card-header">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
+            </svg>
+            <h3 class="card-title">ชุมชนยอดนิยม</h3>
+        </div>
+        <div class="trending-list">
+            <a href="#" class="trending-item">
+                <div class="trending-rank">1</div>
+                <div class="trending-icon">💻</div>
+                <div class="trending-info">
+                    <span class="trending-name">Programming</span>
+                    <span class="trending-members">+567 สมาชิกใหม่</span>
+                </div>
+            </a>
+            <a href="#" class="trending-item">
+                <div class="trending-rank">2</div>
+                <div class="trending-icon">🎮</div>
+                <div class="trending-info">
+                    <span class="trending-name">Gaming</span>
+                    <span class="trending-members">+423 สมาชิกใหม่</span>
+                </div>
+            </a>
+            <a href="#" class="trending-item">
+                <div class="trending-rank">3</div>
+                <div class="trending-icon">📚</div>
+                <div class="trending-info">
+                    <span class="trending-name">Education</span>
+                    <span class="trending-members">+301 สมาชิกใหม่</span>
+                </div>
+            </a>
+            <a href="#" class="trending-item">
+                <div class="trending-rank">4</div>
+                <div class="trending-icon">🎨</div>
+                <div class="trending-info">
+                    <span class="trending-name">Design</span>
+                    <span class="trending-members">+256 สมาชิกใหม่</span>
+                </div>
+            </a>
+            <a href="#" class="trending-item">
+                <div class="trending-rank">5</div>
+                <div class="trending-icon">🍳</div>
+                <div class="trending-info">
+                    <span class="trending-name">Cooking</span>
+                    <span class="trending-members">+189 สมาชิกใหม่</span>
+                </div>
+            </a>
+        </div>
+        <a href="#" class="card-footer-link">ดูชุมชนทั้งหมด →</a>
+    </div>
+
+    @* 4. Popular Tags *@
+    <div class="tags-card">
+        <div class="card-header">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z" />
+            </svg>
+            <h3 class="card-title">แท็กยอดนิยม</h3>
+        </div>
+        <div class="tags-grid">
+            <a href="#" class="tag-chip">#javascript</a>
+            <a href="#" class="tag-chip">#python</a>
+            <a href="#" class="tag-chip">#webdev</a>
+            <a href="#" class="tag-chip">#react</a>
+            <a href="#" class="tag-chip">#nodejs</a>
+            <a href="#" class="tag-chip">#typescript</a>
+            <a href="#" class="tag-chip">#css</a>
+            <a href="#" class="tag-chip">#html</a>
+        </div>
+    </div>
+
+    @* 5. Recent Activity (สำหรับ Login User) *@
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="activity-card">
+            <div class="card-header">
+                <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+                </svg>
+                <h3 class="card-title">กิจกรรมล่าสุด</h3>
+            </div>
+            <div class="activity-list">
+                <div class="activity-item">
+                    <div class="activity-icon upvote">▲</div>
+                    <div class="activity-content">
+                        <p class="activity-text">Upvoted "How to learn React?"</p>
+                        <span class="activity-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon comment">💬</div>
+                    <div class="activity-content">
+                        <p class="activity-text">Commented on "Best practices"</p>
+                        <span class="activity-time">5 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon post">✍️</div>
+                    <div class="activity-content">
+                        <p class="activity-text">Posted "My coding journey"</p>
+                        <span class="activity-time">1 day ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* 6. Footer Links *@
+    <div class="sidebar-footer">
+        <div class="footer-links">
+            <a href="#" class="footer-link">เกี่ยวกับ</a>
+            <a href="#" class="footer-link">ช่วยเหลือ</a>
+            <a href="#" class="footer-link">เงื่อนไข</a>
+            <a href="#" class="footer-link">นโยบาย</a>
+            <a href="#" class="footer-link">Careers</a>
+            <a href="#" class="footer-link">API</a>
+        </div>
+        <div class="footer-copyright">
+            © @DateTime.Now.Year 404alk. All rights reserved.
+        </div>
+    </div>
+</aside>
