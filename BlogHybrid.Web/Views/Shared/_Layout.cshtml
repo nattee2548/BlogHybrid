@@ -33,6 +33,29 @@
             document.documentElement.setAttribute('data-theme', actualTheme);
         })();
     </script>
+    <style>
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-6) var(--space-4);
+            display: flex;
+            gap: var(--space-4);
+            align-items: flex-start;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        @@media (max-width: 991px) {
+            .page-container
+
+        {
+            flex-direction: column;
+        }
+
+        }</style>
 </head>
 <body>
     <!-- ========== MODERN NAVBAR ========== -->
@@ -109,9 +132,12 @@
     </nav>
 
     <!-- Main Content -->
-    <main>
-        @RenderBody()
-    </main>
+    <div class="page-container">
+        <main class="main-content">
+            @RenderBody()
+        </main>
+        <partial name="_UserSidebar" />
+    </div>
 
     <!-- Scripts -->
     <script src="~/js/theme-switcher.js" asp-append-version="true"></script>
