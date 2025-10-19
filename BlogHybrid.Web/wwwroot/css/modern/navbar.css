@@ -329,3 +329,197 @@
         display: none;
     }
 }
+/* เพิ่มส่วนนี้ต่อจาก .modern-create-btn ในไฟล์ navbar.css */
+
+/* ========== Create Community Button ========== */
+.modern-create-community-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-base);
+}
+
+    .modern-create-community-btn:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(255, 69, 0, 0.4);
+    }
+
+/* ========== Auth Buttons (Guest Users) ========== */
+.modern-btn-outline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: transparent;
+    border: 2px solid var(--border-primary);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .modern-btn-outline:hover {
+        background: var(--bg-hover);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+.modern-btn-primary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: var(--primary);
+    color: white;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .modern-btn-primary:hover {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(255, 69, 0, 0.4);
+    }
+
+/* ========== User Menu Button ========== */
+.modern-user-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    position: relative;
+}
+
+    .modern-user-menu-btn:hover {
+        background: var(--bg-hover);
+    }
+
+.modern-username {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ========== User Dropdown ========== */
+.modern-user-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 240px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all var(--transition-base);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+    .modern-user-dropdown.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+[data-theme="dark"] .modern-user-dropdown {
+    background: var(--card-bg);
+    border-color: var(--border-primary);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.modern-user-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: background var(--transition-base);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    font-size: var(--text-sm);
+}
+
+    .modern-user-dropdown-item:hover {
+        background: var(--bg-hover);
+    }
+
+    .modern-user-dropdown-item i {
+        width: 1.25rem;
+        font-size: 1.1rem;
+    }
+
+.modern-user-dropdown-divider {
+    height: 1px;
+    background: var(--border-secondary);
+    margin: var(--space-2) 0;
+}
+
+.modern-user-dropdown-logout {
+    color: #ef4444;
+}
+
+    .modern-user-dropdown-logout:hover {
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+/* ========== Responsive ========== */
+@media (max-width: 991px) {
+    .modern-btn-text {
+        display: none;
+    }
+
+    .modern-create-btn,
+    .modern-create-community-btn,
+    .modern-btn-outline,
+    .modern-btn-primary {
+        padding: var(--space-2);
+    }
+
+    .modern-username {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .modern-create-community-btn {
+        display: none;
+    }
+
+    .modern-actions {
+        gap: var(--space-1);
+    }
+}

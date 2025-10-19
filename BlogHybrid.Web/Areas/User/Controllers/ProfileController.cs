@@ -24,7 +24,7 @@ namespace BlogHybrid.Web.Areas.User.Controllers
             UserManager<ApplicationUser> userManager,
             IImageService imageService,
             ILogger<ProfileController> logger,
-            SignInManager<ApplicationUser> signInManager)
+           SignInManager<ApplicationUser> signInManager)
         {
             _mediator = mediator;
             _userManager = userManager;

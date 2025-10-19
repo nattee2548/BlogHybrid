@@ -28,7 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\User\Views\Communities\" />
     <Folder Include="Areas\User\Views\Settings\" />
     <Folder Include="Areas\User\Views\Posts\" />
     <Folder Include="Areas\User\Views\Shared\" />

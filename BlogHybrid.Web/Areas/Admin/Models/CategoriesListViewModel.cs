@@ -49,9 +49,11 @@ namespace BlogHybrid.Web.Areas.Admin.Models
         public DateTime CreatedAt { get; set; }
     }
 
-    // ViewModel สำหรับสร้าง Category
     public class CreateCategoryViewModel
     {
+        [Display(Name = "หมวดหมู่หลัก")]
+        public int? ParentCategoryId { get; set; }
+
         [Required(ErrorMessage = "กรุณากรอกชื่อหมวดหมู่")]
         [StringLength(100, ErrorMessage = "ชื่อหมวดหมู่ต้องไม่เกิน 100 ตัวอักษร")]
         [Display(Name = "ชื่อหมวดหมู่")]
@@ -68,7 +70,7 @@ namespace BlogHybrid.Web.Areas.Admin.Models
         public string Color { get; set; } = "#0066cc";
 
         [Display(Name = "รูปภาพ")]
-        public IFormFile? ImageFile { get; set; } // ✅ เพิ่ม: สำหรับ Upload
+        public IFormFile? ImageFile { get; set; }
 
         [Display(Name = "URL รูปภาพ")]
         [Url(ErrorMessage = "รูปแบบ URL ไม่ถูกต้อง")]
@@ -82,10 +84,12 @@ namespace BlogHybrid.Web.Areas.Admin.Models
         public int SortOrder { get; set; } = 0;
     }
 
-    // ViewModel สำหรับแก้ไข Category
     public class EditCategoryViewModel
     {
         public int Id { get; set; }
+
+        [Display(Name = "หมวดหมู่หลัก")]
+        public int? ParentCategoryId { get; set; }
 
         [Required(ErrorMessage = "กรุณากรอกชื่อหมวดหมู่")]
         [StringLength(100, ErrorMessage = "ชื่อหมวดหมู่ต้องไม่เกิน 100 ตัวอักษร")]
@@ -103,13 +107,13 @@ namespace BlogHybrid.Web.Areas.Admin.Models
         public string Color { get; set; } = "#0066cc";
 
         [Display(Name = "รูปภาพใหม่")]
-        public IFormFile? ImageFile { get; set; } // ✅ เพิ่ม: สำหรับ Upload
+        public IFormFile? ImageFile { get; set; }
 
         [Display(Name = "URL รูปภาพ")]
         [Url(ErrorMessage = "รูปแบบ URL ไม่ถูกต้อง")]
         public string? ImageUrl { get; set; }
 
-        public string? CurrentImageUrl { get; set; } // ✅ เพิ่ม: เก็บรูปเดิม
+        public string? CurrentImageUrl { get; set; }
 
         [Display(Name = "เปิดใช้งาน")]
         public bool IsActive { get; set; }
@@ -118,4 +122,5 @@ namespace BlogHybrid.Web.Areas.Admin.Models
         [Range(0, 9999, ErrorMessage = "ลำดับต้องอยู่ระหว่าง 0-9999")]
         public int SortOrder { get; set; }
     }
+
 }

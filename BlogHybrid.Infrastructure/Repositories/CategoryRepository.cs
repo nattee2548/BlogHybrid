@@ -2,11 +2,6 @@
 using BlogHybrid.Domain.Entities;
 using BlogHybrid.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BlogHybrid.Infrastructure.Repositories
 {
@@ -22,18 +17,21 @@ namespace BlogHybrid.Infrastructure.Repositories
         public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.Categories
+                .Include(c => c.ParentCategory)
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
         public async Task<Category?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
         {
             return await _context.Categories
+                .Include(c => c.ParentCategory)
                 .FirstOrDefaultAsync(c => c.Slug == slug, cancellationToken);
         }
 
         public async Task<List<Category>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Categories
+                .Include(c => c.ParentCategory)
                 .OrderBy(c => c.SortOrder)
                 .ThenBy(c => c.Name)
                 .ToListAsync(cancellationToken);
@@ -42,6 +40,7 @@ namespace BlogHybrid.Infrastructure.Repositories
         public async Task<List<Category>> GetActiveAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Categories
+                .Include(c => c.ParentCategory)
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.SortOrder)
                 .ThenBy(c => c.Name)
@@ -57,7 +56,9 @@ namespace BlogHybrid.Infrastructure.Repositories
             string sortDirection = "asc",
             CancellationToken cancellationToken = default)
         {
-            var query = _context.Categories.AsQueryable();
+            var query = _context.Categories
+                .Include(c => c.ParentCategory)
+                .AsQueryable();
 
             // Apply filters
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -71,6 +72,9 @@ namespace BlogHybrid.Infrastructure.Repositories
                 query = query.Where(c => c.IsActive == isActive.Value);
             }
 
+            // Get total count
+            var totalCount = await query.CountAsync(cancellationToken);
+
             // Apply sorting
             query = sortBy.ToLower() switch
             {
@@ -80,16 +84,12 @@ namespace BlogHybrid.Infrastructure.Repositories
                 "createdat" => sortDirection.ToLower() == "desc"
                     ? query.OrderByDescending(c => c.CreatedAt)
                     : query.OrderBy(c => c.CreatedAt),
-                "isactive" => sortDirection.ToLower() == "desc"
-                    ? query.OrderByDescending(c => c.IsActive)
-                    : query.OrderBy(c => c.IsActive),
                 _ => sortDirection.ToLower() == "desc"
                     ? query.OrderByDescending(c => c.SortOrder)
                     : query.OrderBy(c => c.SortOrder)
             };
 
-            var totalCount = await query.CountAsync(cancellationToken);
-
+            // Apply pagination
             var categories = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -100,20 +100,26 @@ namespace BlogHybrid.Infrastructure.Repositories
 
         public async Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default)
         {
-            _context.Categories.Add(category);
+            await _context.Categories.AddAsync(category, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
             return category;
         }
 
         public async Task UpdateAsync(Category category, CancellationToken cancellationToken = default)
         {
             _context.Categories.Update(category);
-            await Task.CompletedTask;
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task DeleteAsync(Category category, CancellationToken cancellationToken = default)
         {
             _context.Categories.Remove(category);
-            await Task.CompletedTask;
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Categories.AnyAsync(c => c.Id == id, cancellationToken);
         }
 
         public async Task<bool> SlugExistsAsync(string slug, int? excludeId = null, CancellationToken cancellationToken = default)
@@ -128,27 +134,81 @@ namespace BlogHybrid.Infrastructure.Repositories
             return await query.AnyAsync(cancellationToken);
         }
 
+        // ========== Hierarchical Methods ==========
+
+        public async Task<List<Category>> GetParentCategoriesAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Categories
+                .Where(c => c.ParentCategoryId == null)
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.SortOrder)
+                .ThenBy(c => c.Name)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<Category>> GetSubCategoriesAsync(int parentCategoryId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Categories
+                .Where(c => c.ParentCategoryId == parentCategoryId)
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.SortOrder)
+                .ThenBy(c => c.Name)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<Category?> GetByIdWithSubCategoriesAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Categories
+                .Include(c => c.ParentCategory)
+                .Include(c => c.SubCategories.Where(sc => sc.IsActive))
+                .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        }
+
+        public async Task<List<Category>> GetCategoryTreeAsync(CancellationToken cancellationToken = default)
+        {
+            // ดึงหมวดหมู่หลักพร้อมหมวดหมู่ย่อย
+            return await _context.Categories
+                .Where(c => c.ParentCategoryId == null)
+                .Where(c => c.IsActive)
+                .Include(c => c.SubCategories.Where(sc => sc.IsActive))
+                .OrderBy(c => c.SortOrder)
+                .ThenBy(c => c.Name)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<bool> HasSubCategoriesAsync(int categoryId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Categories
+                .AnyAsync(c => c.ParentCategoryId == categoryId, cancellationToken);
+        }
+
+        public async Task<int> CountSubCategoriesAsync(int categoryId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Categories
+                .CountAsync(c => c.ParentCategoryId == categoryId, cancellationToken);
+        }
+
+        public async Task<int> GetMaxSortOrderAsync(CancellationToken cancellationToken = default)
+        {
+            if (!await _context.Categories.AnyAsync(cancellationToken))
+            {
+                return 0;
+            }
+
+            return await _context.Categories
+                .MaxAsync(c => c.SortOrder, cancellationToken);
+        }
+
         public async Task<int> GetPostCountAsync(int categoryId, CancellationToken cancellationToken = default)
         {
             return await _context.Posts
-                .Where(p => p.CategoryId == categoryId)
-                .CountAsync(cancellationToken);
+                .CountAsync(p => p.CategoryId == categoryId, cancellationToken);
         }
+
         public async Task<int> GetCommunityCountAsync(int categoryId, CancellationToken cancellationToken = default)
         {
             return await _context.Communities
-                .Where(c => c.CategoryId == categoryId && !c.IsDeleted)
-                .CountAsync(cancellationToken);
-        }
-        public async Task<int> GetMaxSortOrderAsync(CancellationToken cancellationToken = default)
-        {
-            return await _context.Categories
-                .MaxAsync(c => (int?)c.SortOrder, cancellationToken) ?? 0;
-        }
-
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            return await _context.SaveChangesAsync(cancellationToken);
+                .CountAsync(c => c.CategoryId == categoryId, cancellationToken);
         }
     }
 }

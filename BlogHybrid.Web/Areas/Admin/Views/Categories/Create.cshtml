@@ -27,6 +27,24 @@
                         <i class="bi bi-info-circle"></i> ข้อมูลพื้นฐาน
                     </h5>
 
+                    <!-- Parent Category -->
+                    <div class="mb-3">
+                        <label asp-for="ParentCategoryId" class="form-label">หมวดหมู่หลัก</label>
+                        <select asp-for="ParentCategoryId" class="form-control">
+                            <option value="">-- ไม่มี (สร้างเป็นหมวดหมู่หลัก) --</option>
+                            @if (ViewBag.ParentCategories != null)
+                            {
+                                foreach (var cat in ViewBag.ParentCategories)
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            }
+                        </select>
+                        <small class="text-muted">
+                            เลือกหมวดหมู่หลัก หากต้องการสร้างหมวดหมู่ย่อย (เช่น "AI" อยู่ภายใต้ "เทคโนโลยี")
+                        </small>
+                    </div>
+
                     <div class="mb-3">
                         <label asp-for="Name" class="form-label required">ชื่อหมวดหมู่</label>
                         <input asp-for="Name" class="form-control" placeholder="เช่น เทคโนโลยี, กีฬา, ความบันเทิง" autofocus />
@@ -77,7 +95,6 @@
                         <span asp-validation-for="ImageFile" class="text-danger"></span>
                         <small class="text-muted">รูปภาพ JPG, PNG, GIF หรือ WebP (สูงสุด 5MB)</small>
 
-                        <!-- Image Preview -->
                         <div id="imagePreview" class="mt-2" style="display: none;">
                             <img id="previewImage" src="#" alt="Preview" class="img-thumbnail" style="max-height: 200px;" />
                             <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeImage()">
@@ -102,29 +119,24 @@
                         <i class="bi bi-gear"></i> การตั้งค่า
                     </h5>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="SortOrder" class="form-label">ลำดับการแสดงผล</label>
-                            <input asp-for="SortOrder" type="number" class="form-control" min="0" max="9999" />
-                            <span asp-validation-for="SortOrder" class="text-danger"></span>
-                            <small class="text-muted">ยิ่งต่ำยิ่งแสดงก่อน (0 = แสดงแรก)</small>
-                        </div>
+                    <div class="mb-3">
+                        <label asp-for="SortOrder" class="form-label">ลำดับการแสดงผล</label>
+                        <input asp-for="SortOrder" type="number" class="form-control" />
+                        <span asp-validation-for="SortOrder" class="text-danger"></span>
+                        <small class="text-muted">ตัวเลขน้อยจะแสดงก่อน (0 = ด้านบนสุด)</small>
+                    </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label d-block">สถานะ</label>
-                            <div class="form-check form-switch" style="padding-top: 8px;">
-                                <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
-                                <label asp-for="IsActive" class="form-check-label">เปิดใช้งานทันที</label>
-                            </div>
-                            <small class="text-muted d-block mt-1">เปิดเพื่อให้ผู้ใช้สามารถใช้หมวดหมู่นี้ได้</small>
-                        </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                        <label asp-for="IsActive" class="form-check-label">
+                            เปิดใช้งาน
+                        </label>
+                        <br />
+                        <small class="text-muted">หมวดหมู่ที่ปิดใช้งานจะไม่แสดงในหน้าเว็บ</small>
                     </div>
                 </div>
 
-                <hr>
-
-                <!-- ปุ่มดำเนินการ -->
-                <div class="d-flex gap-2 justify-content-end">
+                <div class="d-flex justify-content-end gap-2">
                     <a asp-action="Index" class="btn btn-secondary">
                         <i class="bi bi-x-lg"></i> ยกเลิก
                     </a>
@@ -137,35 +149,26 @@
     </div>
 </div>
 
-<!-- Confirm Modal -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<!-- Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header border-0">
+            <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="bi bi-question-circle text-primary"></i>
-                    ยืนยันการสร้างหมวดหมู่
+                    <i class="bi bi-check-circle text-primary"></i> ยืนยันการสร้างหมวดหมู่
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p class="mb-2">คุณต้องการสร้างหมวดหมู่นี้หรือไม่?</p>
-                <div id="createSummary" class="mt-3 p-3 bg-light rounded">
-                    <!-- Summary will be inserted here -->
-                </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-lg"></i> ยกเลิก
-                </button>
+            <div class="modal-body" id="createSummary"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
                 <button type="button" class="btn btn-primary" id="confirmCreateButton">
-                    <i class="bi bi-check-lg"></i> ยืนยันการสร้าง
+                    <i class="bi bi-check-lg"></i> ยืนยัน
                 </button>
             </div>
         </div>
     </div>
 </div>
-
 @section Styles {
     <style>
         .form-section {

@@ -44,32 +44,57 @@ function getAntiForgeryToken() {
     return token ? token.value : '';
 }
 
-// ========== Helper: Show Toast Message ==========
+// ========== Helper: Show Toast Message (with close button) ==========
 function showToast(message, type = 'info') {
     // Create toast element
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    toast.textContent = message;
+
+    // เลือกสี
+    const bgColor = type === 'success' ? '#10b981' :
+        type === 'error' ? '#ef4444' :
+            '#3b82f6';
+
     toast.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
         padding: 1rem 1.5rem;
-        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        padding-right: 2.5rem;
+        background: ${bgColor};
         color: white;
         border-radius: 8px;
         box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         z-index: 9999;
         animation: slideIn 0.3s ease;
+        max-width: 400px;
+    `;
+
+    // สร้าง HTML
+    toast.innerHTML = `
+        ${message}
+        <button onclick="this.parentElement.remove()" style="
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0.7;
+            padding: 4px 8px;
+        ">✕</button>
     `;
 
     document.body.appendChild(toast);
 
-    // Auto remove after 3 seconds
+    // Auto remove after 5 seconds
     setTimeout(() => {
         toast.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    }, 5000);
 }
 
 // ========== Helper: Debounce Function ==========
@@ -106,6 +131,36 @@ function formatDate(dateString) {
         month: 'long',
         day: 'numeric'
     });
+}
+
+// ========== Add CSS Animations ==========
+if (!document.querySelector('#toast-animations')) {
+    const style = document.createElement('style');
+    style.id = 'toast-animations';
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // ========== Export for module usage ==========

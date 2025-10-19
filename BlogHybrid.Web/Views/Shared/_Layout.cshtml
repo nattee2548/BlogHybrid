@@ -69,25 +69,32 @@
 
             <!-- Actions -->
             <div class="modern-actions">
-                @if (SignInManager.IsSignedIn(User))
+                <!-- Create Buttons -->
+                @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <!-- Create Button -->
-                    <button class="modern-create-btn">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                        </svg>
-                        <span>สร้างโพสต์</span>
+                    <button class="modern-create-btn" onclick="handleCreatePost()">
+                        <i class="bi bi-plus-circle"></i>
+                        <span class="modern-btn-text">สร้างโพสต์</span>
                     </button>
-
-                    <!-- Theme Toggle -->
-                    <button class="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle theme">
-                        <span class="theme-toggle-ball">
-                            <svg class="theme-toggle-icon" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
-                            </svg>
-                        </span>
+                    <a href="/create-community" class="modern-btn-outline modern-create-community-btn">
+                        <i class="bi bi-people"></i>
+                        <span class="modern-btn-text">สร้างชุมชน</span>
+                    </a>
+                }
+                else
+                {
+                    <button class="modern-create-btn" onclick="showToast('กรุณาเข้าสู่ระบบก่อนสร้างโพสต์', 'error')">
+                        <i class="bi bi-plus-circle"></i>
+                        <span class="modern-btn-text">สร้างโพสต์</span>
                     </button>
+                    <button class="modern-btn-outline modern-create-community-btn" onclick="showToast('กรุณาเข้าสู่ระบบก่อนสร้างชุมชน', 'error')">
+                        <i class="bi bi-people"></i>
+                        <span class="modern-btn-text">สร้างชุมชน</span>
+                    </button>
+                }
 
+                @if (User.Identity?.IsAuthenticated == true)
+                {
                     <!-- User Menu -->
                     <div class="modern-user-menu">
                         <button class="modern-user-btn" id="userMenuButton">
@@ -144,23 +151,12 @@
                 }
                 else
                 {
-                    <!-- Theme Toggle (Guest) -->
-                    <button class="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle theme">
-                        <span class="theme-toggle-ball">
-                            <svg class="theme-toggle-icon" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
-                            </svg>
-                        </span>
+                    <!-- Auth Buttons -->
+                    <button class="modern-btn-outline" onclick="openLoginModal()">
+                        เข้าสู่ระบบ
                     </button>
-
-                    <!-- ปุ่มเปิด Modal -->
-                    <button onclick="openLoginModal()" class="modern-btn-outline" type="button">
-                        <i class="bi bi-box-arrow-in-right"></i>
-                        <span class="modern-btn-text">เข้าสู่ระบบ</span>
-                    </button>
-                    <button onclick="openRegisterModal()" class="modern-create-btn" type="button">
-                        <i class="bi bi-person-plus"></i>
-                        <span class="modern-btn-text">สมัครสมาชิก</span>
+                    <button class="modern-btn-primary" onclick="openRegisterModal()">
+                        สมัครสมาชิก
                     </button>
                 }
             </div>
@@ -204,11 +200,17 @@
     }
 
     <!-- Scripts -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/theme-switcher.js" asp-append-version="true"></script>
     <script src="~/js/responsive.js" asp-append-version="true"></script>
     <script src="~/js/auth-modal.js" asp-append-version="true"></script>
 
     <script>
+        // Handle Create Post for logged-in users
+        function handleCreatePost() {
+            showToast('ฟีเจอร์กำลังพัฒนา กรุณารอติดตาม!', 'info');
+        }
+
         // User Menu Dropdown Toggle
         document.addEventListener('DOMContentLoaded', function() {
             const userMenuButton = document.getElementById('userMenuButton');
@@ -246,185 +248,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-
-<style>
-    /* Guest User Buttons */
-    .modern-btn-outline {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background: transparent;
-        border: 2px solid var(--border-color, #e5e7eb);
-        border-radius: 20px;
-        color: var(--main-text-color);
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-        .modern-btn-outline:hover {
-            background: var(--hover-bg-color, #f3f4f6);
-            border-color: var(--primary-color, #ff4500);
-            color: var(--primary-color, #ff4500);
-        }
-
-    [data-theme="dark"] .modern-btn-outline {
-        border-color: var(--border-color, #374151);
-    }
-
-        [data-theme="dark"] .modern-btn-outline:hover {
-            background: var(--hover-bg-color, #374151);
-        }
-
-    /* User Dropdown Styles */
-    .modern-user-dropdown {
-        position: absolute;
-        top: calc(100% + 0.5rem);
-        right: 0;
-        min-width: 240px;
-        background: var(--card-bg-color, #ffffff);
-        border: 1px solid var(--border-color, #e5e7eb);
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.2s ease;
-        z-index: 1000;
-    }
-
-        .modern-user-dropdown.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-    [data-theme="dark"] .modern-user-dropdown {
-        background: var(--card-bg-color, #1f2937);
-        border-color: var(--border-color, #374151);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    }
-
-    .modern-user-dropdown-header {
-        padding: 1rem;
-    }
-
-    .modern-user-dropdown-name {
-        font-weight: 600;
-        color: var(--main-text-color);
-        margin: 0 0 0.25rem 0;
-    }
-
-    .modern-user-dropdown-email {
-        font-size: 0.875rem;
-        color: var(--secondary-text-color);
-        margin: 0;
-    }
-
-    .modern-user-dropdown-divider {
-        height: 1px;
-        background: var(--border-color, #e5e7eb);
-        margin: 0.5rem 0;
-    }
-
-    .modern-user-dropdown-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
-        color: var(--main-text-color);
-        text-decoration: none;
-        transition: background 0.2s ease;
-        cursor: pointer;
-        border: none;
-        background: transparent;
-        width: 100%;
-        text-align: left;
-        font-size: 0.95rem;
-    }
-
-        .modern-user-dropdown-item:hover {
-            background: var(--hover-bg-color, #f3f4f6);
-        }
-
-    [data-theme="dark"] .modern-user-dropdown-item:hover {
-        background: var(--hover-bg-color, #374151);
-    }
-
-    .modern-user-dropdown-item i {
-        width: 1.25rem;
-        font-size: 1.1rem;
-    }
-
-    .modern-user-dropdown-logout {
-        color: #ef4444;
-    }
-
-        .modern-user-dropdown-logout:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-    /* Toast Notifications */
-    .toast-notification {
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 1rem 1.5rem;
-        background: var(--card-bg-color, #ffffff);
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        font-weight: 500;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.3s ease;
-        z-index: 10000;
-        max-width: 400px;
-    }
-
-        .toast-notification.toast-show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .toast-notification i {
-            font-size: 1.5rem;
-        }
-
-    .toast-success {
-        color: #10b981;
-        border-left: 4px solid #10b981;
-    }
-
-    .toast-error {
-        color: #ef4444;
-        border-left: 4px solid #ef4444;
-    }
-
-    .toast-info {
-        color: #3b82f6;
-        border-left: 4px solid #3b82f6;
-    }
-
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .modern-btn-text {
-            display: none;
-        }
-
-        .modern-btn-outline,
-        .modern-create-btn {
-            padding: 0.5rem;
-        }
-
-        .toast-notification {
-            bottom: 1rem;
-            right: 1rem;
-            left: 1rem;
-            max-width: none;
-        }
-    }
-</style>

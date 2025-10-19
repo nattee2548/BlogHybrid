@@ -1,14 +1,8 @@
 ﻿using BlogHybrid.Application.Commands.Category;
 using BlogHybrid.Application.Common;
 using BlogHybrid.Application.Interfaces.Repositories;
-using BlogHybrid.Application.Queries.Category;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BlogHybrid.Application.Handlers.Category
 {
@@ -51,6 +45,51 @@ namespace BlogHybrid.Application.Handlers.Category
                     };
                 }
 
+                // Validate ParentCategoryId ถ้ามีการระบุ
+                if (request.ParentCategoryId.HasValue)
+                {
+                    // ป้องกันการเซ็ต parent เป็นตัวเอง
+                    if (request.ParentCategoryId.Value == request.Id)
+                    {
+                        return new UpdateCategoryResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { "ไม่สามารถเซ็ตหมวดหมู่หลักเป็นตัวเองได้" }
+                        };
+                    }
+
+                    var parentCategory = await _unitOfWork.Categories.GetByIdAsync(request.ParentCategoryId.Value, cancellationToken);
+                    if (parentCategory == null)
+                    {
+                        return new UpdateCategoryResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { "ไม่พบหมวดหมู่หลักที่ระบุ" }
+                        };
+                    }
+
+                    // ป้องกันการสร้าง subcategory ของ subcategory
+                    if (parentCategory.ParentCategoryId.HasValue)
+                    {
+                        return new UpdateCategoryResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { "ไม่สามารถเซ็ตหมวดหมู่ย่อยของหมวดหมู่ย่อยได้" }
+                        };
+                    }
+
+                    // ป้องกันการเซ็ต parent ให้กับหมวดหมู่ที่มี subcategories อยู่แล้ว
+                    var hasChildren = await _unitOfWork.Categories.HasSubcategoriesAsync(request.Id, cancellationToken);
+                    if (hasChildren)
+                    {
+                        return new UpdateCategoryResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { "ไม่สามารถเปลี่ยนเป็นหมวดหมู่ย่อยได้ เนื่องจากมีหมวดหมู่ย่อยอยู่แล้ว" }
+                        };
+                    }
+                }
+
                 // Generate new slug if name changed
                 var slug = category.Slug;
                 if (category.Name != request.Name.Trim())
@@ -70,11 +109,13 @@ namespace BlogHybrid.Application.Handlers.Category
                 category.Color = request.Color.Trim();
                 category.IsActive = request.IsActive;
                 category.SortOrder = request.SortOrder;
+                category.ParentCategoryId = request.ParentCategoryId;
 
                 await _unitOfWork.Categories.UpdateAsync(category, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation("Category updated: {CategoryId} - {CategoryName}", category.Id, category.Name);
+                _logger.LogInformation("Category updated: {CategoryId} - {CategoryName}, ParentCategoryId: {ParentCategoryId}",
+                    category.Id, category.Name, category.ParentCategoryId);
 
                 return new UpdateCategoryResult
                 {

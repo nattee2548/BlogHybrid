@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BlogHybrid.Domain.Entities
 {
@@ -18,8 +15,41 @@ namespace BlogHybrid.Domain.Entities
         public int SortOrder { get; set; } = 0;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        // ========== Hierarchical Structure ==========
+        /// <summary>
+        /// ID ของหมวดหมู่หลัก (null = หมวดหมู่หลัก)
+        /// </summary>
+        public int? ParentCategoryId { get; set; }
+
         // Navigation properties
+        /// <summary>
+        /// หมวดหมู่หลัก (Parent)
+        /// </summary>
+        public virtual Category? ParentCategory { get; set; }
+
+        /// <summary>
+        /// หมวดหมู่ย่อย (Children/Subcategories)
+        /// </summary>
+        public virtual ICollection<Category> SubCategories { get; set; } = new List<Category>();
+
+        // Existing navigation properties
         public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
         public virtual ICollection<Community> Communities { get; set; } = new List<Community>();
+
+        // ========== Helper Properties ==========
+        /// <summary>
+        /// เช็คว่าเป็นหมวดหมู่หลักหรือไม่
+        /// </summary>
+        public bool IsParentCategory => ParentCategoryId == null;
+
+        /// <summary>
+        /// เช็คว่าเป็นหมวดหมู่ย่อยหรือไม่
+        /// </summary>
+        public bool IsSubCategory => ParentCategoryId != null;
+
+        /// <summary>
+        /// จำนวนหมวดหมู่ย่อย
+        /// </summary>
+        public int SubCategoryCount => SubCategories?.Count ?? 0;
     }
 }

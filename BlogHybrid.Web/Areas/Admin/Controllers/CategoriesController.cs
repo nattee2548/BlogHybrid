@@ -15,12 +15,12 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ILogger<CategoriesController> _logger;
-        private readonly IImageService _imageService; // ✅ เพิ่ม
+        private readonly IImageService _imageService; 
 
         public CategoriesController(
             IMediator mediator,
             ILogger<CategoriesController> logger,
-            IImageService imageService) // ✅ เพิ่ม
+            IImageService imageService) 
         {
             _mediator = mediator;
             _logger = logger;
@@ -114,8 +114,13 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
         }
 
         // GET: /Admin/Categories/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var parentCategoriesQuery = new GetParentCategoriesQuery { ActiveOnly = false };
+            var parentCategories = await _mediator.Send(parentCategoriesQuery);
+
+            ViewBag.ParentCategories = parentCategories;
+
             return View(new CreateCategoryViewModel());
         }
 
@@ -126,26 +131,22 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                // โหลด parent categories กลับมาถ้า validation ผิด
+                var parentCategoriesQuery = new GetParentCategoriesQuery { ActiveOnly = false };
+                var parentCategories = await _mediator.Send(parentCategoriesQuery);
+                ViewBag.ParentCategories = parentCategories;
+
                 return View(model);
             }
 
             try
             {
-                string? imageUrl = model.ImageUrl;
+                string? imageKey = null;
 
-                // ✅ Upload รูปภาพถ้ามี
+                // Upload image ถ้ามี
                 if (model.ImageFile != null)
                 {
-                    try
-                    {
-                        var uploadedPath = await _imageService.UploadAsync(model.ImageFile, "categories");
-                        imageUrl = _imageService.GetImageUrl(uploadedPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error uploading category image");
-                        TempData["WarningMessage"] = "อัปโหลดรูปภาพไม่สำเร็จ แต่ยังคงสร้างหมวดหมู่";
-                    }
+                    imageKey = await _imageService.UploadAsync(model.ImageFile, "categories");
                 }
 
                 var command = new CreateCategoryCommand
@@ -153,21 +154,35 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                     Name = model.Name,
                     Description = model.Description,
                     Color = model.Color,
-                    ImageUrl = imageUrl,
+                    ImageUrl = !string.IsNullOrEmpty(imageKey)
+                        ? imageKey
+                        : model.ImageUrl,
                     IsActive = model.IsActive,
-                    SortOrder = model.SortOrder
+                    SortOrder = model.SortOrder,
+                    ParentCategoryId = model.ParentCategoryId  // ← เพิ่มบรรทัดนี้
                 };
 
                 var result = await _mediator.Send(command);
 
                 if (result.Success)
                 {
-                    TempData["SuccessMessage"] = "สร้างหมวดหมู่สำเร็จ";
-                    return RedirectToAction(nameof(Details), new { id = result.CategoryId });
+                    TempData["SuccessMessage"] = result.Message;
+                    return RedirectToAction(nameof(Index));
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = result.Errors?.FirstOrDefault() ?? "ไม่สามารถสร้างหมวดหมู่ได้";
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error);
+                    }
+
+                    TempData["ErrorMessage"] = result.Message;
+
+                    // โหลด parent categories กลับมา
+                    var parentCategoriesQuery = new GetParentCategoriesQuery { ActiveOnly = false };
+                    var parentCategories = await _mediator.Send(parentCategoriesQuery);
+                    ViewBag.ParentCategories = parentCategories;
+
                     return View(model);
                 }
             }
@@ -175,6 +190,11 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
             {
                 _logger.LogError(ex, "Error creating category");
                 TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการสร้างหมวดหมู่";
+
+                var parentCategoriesQuery = new GetParentCategoriesQuery { ActiveOnly = false };
+                var parentCategories = await _mediator.Send(parentCategoriesQuery);
+                ViewBag.ParentCategories = parentCategories;
+
                 return View(model);
             }
         }
@@ -193,14 +213,22 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
+                // โหลดหมวดหมู่หลัก (ยกเว้นตัวมันเอง)
+                var parentCategoriesQuery = new GetParentCategoriesQuery { ActiveOnly = false };
+                var parentCategories = await _mediator.Send(parentCategoriesQuery);
+
+                // กรองออกตัวมันเอง (ป้องกัน circular reference)
+                ViewBag.ParentCategories = parentCategories.Where(c => c.Id != id).ToList();
+
                 var viewModel = new EditCategoryViewModel
                 {
                     Id = result.Id,
+                    ParentCategoryId = result.ParentCategoryId,  // ← เพิ่มบรรทัดนี้
                     Name = result.Name,
                     Description = result.Description,
                     Color = result.Color,
                     ImageUrl = result.ImageUrl,
-                    CurrentImageUrl = result.ImageUrl, // ✅ เก็บรูปเดิม
+                    CurrentImageUrl = result.ImageUrl,
                     IsActive = result.IsActive,
                     SortOrder = result.SortOrder
                 };
@@ -227,43 +255,32 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
 
             if (!ModelState.IsValid)
             {
+                // โหลด parent categories กลับมา
+                var parentCategoriesQuery = new GetParentCategoriesQuery { ActiveOnly = false };
+                var parentCategories = await _mediator.Send(parentCategoriesQuery);
+                ViewBag.ParentCategories = parentCategories.Where(c => c.Id != id).ToList();
+
                 return View(model);
             }
 
             try
             {
-                string? imageUrl = model.ImageUrl;
+                string? imageKey = model.ImageUrl;
 
-                // ✅ Upload รูปภาพใหม่ถ้ามี
+                // Upload image ใหม่ถ้ามี
                 if (model.ImageFile != null)
                 {
-                    try
-                    {
-                        // ลบรูปเดิมถ้ามี
-                        if (!string.IsNullOrEmpty(model.CurrentImageUrl))
-                        {
-                            await _imageService.DeleteAsync(model.CurrentImageUrl);
-                        }
-
-                        // Upload รูปใหม่
-                        var uploadedPath = await _imageService.UploadAsync(model.ImageFile, "categories");
-                        imageUrl = _imageService.GetImageUrl(uploadedPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error uploading category image");
-                        TempData["WarningMessage"] = "อัปโหลดรูปภาพไม่สำเร็จ แต่ยังคงอัปเดตข้อมูลอื่น";
-                        imageUrl = model.CurrentImageUrl; // ใช้รูปเดิม
-                    }
+                    imageKey = await _imageService.UploadAsync(model.ImageFile, "categories");
                 }
 
                 var command = new UpdateCategoryCommand
                 {
                     Id = model.Id,
+                    ParentCategoryId = model.ParentCategoryId,  // ← เพิ่มบรรทัดนี้
                     Name = model.Name,
                     Description = model.Description,
                     Color = model.Color,
-                    ImageUrl = imageUrl,
+                    ImageUrl = imageKey,
                     IsActive = model.IsActive,
                     SortOrder = model.SortOrder
                 };
@@ -272,12 +289,22 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
 
                 if (result.Success)
                 {
-                    TempData["SuccessMessage"] = "อัปเดตหมวดหมู่สำเร็จ";
+                    TempData["SuccessMessage"] = result.Message;
                     return RedirectToAction(nameof(Details), new { id = model.Id });
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = result.Errors?.FirstOrDefault() ?? "ไม่สามารถอัปเดตหมวดหมู่ได้";
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error);
+                    }
+
+                    TempData["ErrorMessage"] = result.Message;
+
+                    var parentCategoriesQuery = new GetParentCategoriesQuery { ActiveOnly = false };
+                    var parentCategories = await _mediator.Send(parentCategoriesQuery);
+                    ViewBag.ParentCategories = parentCategories.Where(c => c.Id != id).ToList();
+
                     return View(model);
                 }
             }
@@ -285,6 +312,11 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
             {
                 _logger.LogError(ex, $"Error updating category ID: {id}");
                 TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการอัปเดตหมวดหมู่";
+
+                var parentCategoriesQuery = new GetParentCategoriesQuery { ActiveOnly = false };
+                var parentCategories = await _mediator.Send(parentCategoriesQuery);
+                ViewBag.ParentCategories = parentCategories.Where(c => c.Id != id).ToList();
+
                 return View(model);
             }
         }

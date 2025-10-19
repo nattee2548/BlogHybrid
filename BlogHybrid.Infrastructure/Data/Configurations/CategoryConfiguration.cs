@@ -1,11 +1,6 @@
 ﻿using BlogHybrid.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BlogHybrid.Infrastructure.Data.Configurations
 {
@@ -32,10 +27,17 @@ namespace BlogHybrid.Infrastructure.Data.Configurations
             builder.Property(c => c.Color)
                 .HasMaxLength(7);
 
+            // ========== Hierarchical Relationship ==========
+            builder.HasOne(c => c.ParentCategory)
+                .WithMany(c => c.SubCategories)
+                .HasForeignKey(c => c.ParentCategoryId)
+                .OnDelete(DeleteBehavior.Restrict); // ป้องกันการลบหมวดหมู่หลักที่มีหมวดหมู่ย่อย
+
             // Indexes
             builder.HasIndex(c => c.Slug).IsUnique();
             builder.HasIndex(c => c.IsActive);
             builder.HasIndex(c => c.SortOrder);
+            builder.HasIndex(c => c.ParentCategoryId); // เพิ่ม index สำหรับ query หมวดหมู่ย่อย
         }
     }
 }

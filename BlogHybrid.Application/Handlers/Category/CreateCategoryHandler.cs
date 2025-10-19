@@ -39,6 +39,32 @@ namespace BlogHybrid.Application.Handlers.Category
                 // เริ่ม Transaction
                 await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
+                // Validate ParentCategoryId ถ้ามีการระบุ
+                if (request.ParentCategoryId.HasValue)
+                {
+                    var parentCategory = await _unitOfWork.Categories.GetByIdAsync(request.ParentCategoryId.Value, cancellationToken);
+                    if (parentCategory == null)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return new CreateCategoryResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { "ไม่พบหมวดหมู่หลักที่ระบุ" }
+                        };
+                    }
+
+                    // ป้องกันการสร้าง subcategory ของ subcategory (ถ้าต้องการให้มีแค่ 2 level)
+                    if (parentCategory.ParentCategoryId.HasValue)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return new CreateCategoryResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { "ไม่สามารถสร้างหมวดหมู่ย่อยของหมวดหมู่ย่อยได้" }
+                        };
+                    }
+                }
+
                 // เช็คว่ามี slug มาจาก view หรือไม่ ถ้าไม่มีให้ generate
                 string slug;
                 if (!string.IsNullOrWhiteSpace(request.Slug))
@@ -79,6 +105,7 @@ namespace BlogHybrid.Application.Handlers.Category
                     ImageUrl = request.ImageUrl?.Trim(),
                     SortOrder = request.SortOrder,
                     IsActive = request.IsActive,
+                    ParentCategoryId = request.ParentCategoryId,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -88,13 +115,15 @@ namespace BlogHybrid.Application.Handlers.Category
                 // Commit Transaction
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-                _logger.LogInformation("Created category: {CategoryName} with slug: {Slug}", category.Name, category.Slug);
+                _logger.LogInformation("Created category: {CategoryName} with slug: {Slug}, ParentCategoryId: {ParentCategoryId}",
+                    category.Name, category.Slug, category.ParentCategoryId);
 
                 return new CreateCategoryResult
                 {
                     Success = true,
                     CategoryId = category.Id,
-                    Slug = category.Slug
+                    Slug = category.Slug,
+                    Message = "สร้างหมวดหมู่สำเร็จ"
                 };
             }
             catch (Exception ex)
