@@ -142,31 +142,35 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
+app.MapControllers();
+// 1) Area routes ก่อน
+app.MapAreaControllerRoute(
+    name: "user_area",
+    areaName: "User",
+    pattern: "User/{controller=Home}/{action=Index}/{id?}");
 
-// 1. Area routes (ต้องมาก่อน!) - สำหรับ /Admin/... และ /User/...
+app.MapAreaControllerRoute(
+    name: "admin_area",
+    areaName: "Admin",
+    pattern: "Admin/{controller=Home}/{action=Index}/{id?}");
+
+// 2) เส้นทางอื่น ๆ
 app.MapControllerRoute(
-    name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+    name: "create-community",
+    pattern: "create-community",
+    defaults: new { controller = "Community", action = "Create" });
 
-// 2. Community routes (ต้องมี constraints เข้มงวด)
 app.MapControllerRoute(
     name: "community",
     pattern: "{categorySlug}/{communitySlug}",
     defaults: new { controller = "Community", action = "Details" },
     constraints: new
     {
-        // ป้องกันไม่ให้จับ Area routes, Account, Home
         categorySlug = @"^(?!user|admin|account|home|api)([a-z0-9\-]+)$",
         communitySlug = @"^[a-z0-9\-]+$"
     });
 
-// 3. Create community route
-app.MapControllerRoute(
-    name: "create-community",
-    pattern: "create-community",
-    defaults: new { controller = "Community", action = "Create" });
-
-// 4. Default route
+// 3) Default route ปิดท้าย
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

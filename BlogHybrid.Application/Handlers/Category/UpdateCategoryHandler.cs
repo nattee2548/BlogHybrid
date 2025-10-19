@@ -79,7 +79,7 @@ namespace BlogHybrid.Application.Handlers.Category
                     }
 
                     // ป้องกันการเซ็ต parent ให้กับหมวดหมู่ที่มี subcategories อยู่แล้ว
-                    var hasChildren = await _unitOfWork.Categories.HasSubcategoriesAsync(request.Id, cancellationToken);
+                    var hasChildren = await _unitOfWork.Categories.HasSubCategoriesAsync(request.Id, cancellationToken);
                     if (hasChildren)
                     {
                         return new UpdateCategoryResult

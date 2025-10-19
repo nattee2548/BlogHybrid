@@ -56,7 +56,9 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                         SortOrder = c.SortOrder,
                         PostCount = c.PostCount,
                         CommunityCount = c.CommunityCount,
-                        CreatedAt = c.CreatedAt
+                        CreatedAt = c.CreatedAt,
+                        ParentCategoryId = c.ParentCategoryId,           // เพิ่ม
+                        ParentCategoryName = c.ParentCategoryName        // เพิ่ม
                     }).ToList(),
                     TotalCount = result.TotalCount,
                     PageNumber = result.PageNumber,
@@ -100,7 +102,9 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                     SortOrder = result.SortOrder,
                     PostCount = result.PostCount,
                     CommunityCount = result.CommunityCount,
-                    CreatedAt = result.CreatedAt
+                    CreatedAt = result.CreatedAt,
+                    ParentCategoryId = result.ParentCategoryId,          // เพิ่ม
+                    ParentCategoryName = result.ParentCategoryName       // เพิ่ม
                 };
 
                 return View(viewModel);

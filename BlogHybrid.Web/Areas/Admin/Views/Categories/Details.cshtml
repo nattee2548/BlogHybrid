@@ -63,7 +63,26 @@
                             <div class="info-value">@Model.SortOrder</div>
                         </div>
                     </div>
-
+                    <div class="info-item">
+                        <i class="bi bi-folder-symlink"></i>
+                        <div class="flex-fill">
+                            <div class="info-label">หมวดหมู่หลัก</div>
+                            <div class="info-value">
+                                @if (Model.ParentCategoryId.HasValue)
+                                {
+                                    <a asp-action="Details" asp-route-id="@Model.ParentCategoryId" class="text-decoration-none">
+                                        <i class="bi bi-arrow-return-right"></i> @Model.ParentCategoryName
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        <i class="bi bi-dash"></i> ไม่มี (เป็นหมวดหมู่หลัก)
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
                     <div class="info-item">
                         <i class="bi bi-calendar"></i>
                         <div class="flex-fill">

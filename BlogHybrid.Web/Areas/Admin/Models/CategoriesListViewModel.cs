@@ -31,6 +31,10 @@ namespace BlogHybrid.Web.Areas.Admin.Models
         public int PostCount { get; set; }
         public int CommunityCount { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        // Hierarchical
+        public int? ParentCategoryId { get; set; }
+        public string? ParentCategoryName { get; set; }
     }
 
     // ViewModel สำหรับรายละเอียด Category
@@ -47,6 +51,9 @@ namespace BlogHybrid.Web.Areas.Admin.Models
         public int PostCount { get; set; }
         public int CommunityCount { get; set; }
         public DateTime CreatedAt { get; set; }
+        // Hierarchical
+        public int? ParentCategoryId { get; set; }
+        public string? ParentCategoryName { get; set; }
     }
 
     public class CreateCategoryViewModel
