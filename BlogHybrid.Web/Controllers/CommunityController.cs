@@ -32,8 +32,14 @@ namespace BlogHybrid.Web.Controllers
         {
             try
             {
-                // Get active categories for dropdown
-                var categoriesQuery = new GetActiveCategoriesQuery();
+                //// Get active categories for dropdown
+                //var categoriesQuery = new GetActiveCategoriesQuery();
+                //var categories = await _mediator.Send(categoriesQuery);
+
+                //ViewBag.Categories = categories;
+                //return View();
+                // Get category tree (parent + subcategories)
+                var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                 var categories = await _mediator.Send(categoriesQuery);
 
                 ViewBag.Categories = categories;

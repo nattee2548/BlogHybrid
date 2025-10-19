@@ -193,31 +193,47 @@
 </div>
 
 <script>
-    const MAX_CATEGORIES = @maxCategories; // อ่านจาก appsettings
+    const MAX_CATEGORIES = @maxCategories;
     let selectedCategories = [];
 
-    // Sample categories - จะโหลดจาก controller จริงๆ
-    const categories = [
-        { id: 1, name: 'เทคโนโลยี', icon: 'bi-cpu' },
-        { id: 2, name: 'กีฬา', icon: 'bi-trophy' },
-        { id: 3, name: 'เกม', icon: 'bi-controller' },
-        { id: 4, name: 'ความบันเทิง', icon: 'bi-film' },
-        { id: 5, name: 'อาหาร', icon: 'bi-cup-hot' },
-        { id: 6, name: 'ท่องเที่ยว', icon: 'bi-airplane' },
-        { id: 7, name: 'การศึกษา', icon: 'bi-book' },
-        { id: 8, name: 'ธุรกิจ', icon: 'bi-briefcase' },
-    ];
+    // โหลด categories จาก ViewBag
+    const categoryTree = @Html.Raw(Json.Serialize(ViewBag.Categories ?? new List<object>()));
 
-    // Load categories into modal
+    // Load categories into modal with hierarchical structure
     function loadCategories() {
         const grid = document.getElementById('categoryGrid');
-        grid.innerHTML = categories.map(cat => `
-            <div class="category-item" data-id="${cat.id}" onclick="toggleCategory(${cat.id})">
-                <i class="bi ${cat.icon}"></i>
-                <span>${cat.name}</span>
-                <i class="bi bi-check-circle category-check"></i>
-            </div>
-        `).join('');
+
+        let html = '';
+        categoryTree.forEach(parent => {
+            // Parent category
+            html += `
+                <div class="category-group">
+                    <div class="category-item parent-category" data-id="${parent.id}" onclick="toggleCategory(${parent.id})">
+                        <i class="bi bi-folder"></i>
+                        <span>${parent.name}</span>
+                        <i class="bi bi-check-circle category-check"></i>
+                    </div>
+            `;
+
+            // Subcategories
+            if (parent.subCategories && parent.subCategories.length > 0) {
+                html += '<div class="subcategory-list">';
+                parent.subCategories.forEach(sub => {
+                    html += `
+                        <div class="category-item subcategory-item" data-id="${sub.id}" onclick="toggleCategory(${sub.id})">
+                            <i class="bi bi-arrow-return-right"></i>
+                            <span>${sub.name}</span>
+                            <i class="bi bi-check-circle category-check"></i>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            html += '</div>';
+        });
+
+        grid.innerHTML = html;
     }
 
     // Open modal
@@ -239,10 +255,8 @@
         const index = selectedCategories.indexOf(id);
 
         if (index > -1) {
-            // Remove
             selectedCategories.splice(index, 1);
         } else {
-            // Add
             if (selectedCategories.length >= MAX_CATEGORIES) {
                 showToast(`เลือกได้สูงสุด ${MAX_CATEGORIES} หมวดหมู่เท่านั้น`, 'error');
                 return;
@@ -289,16 +303,25 @@
             return;
         }
 
-        // Update hidden input
         input.value = selectedCategories.join(',');
         text.textContent = `เลือกแล้ว ${selectedCategories.length} หมวดหมู่`;
 
-        // Update display tags
+        // Find category names from tree
+        const allCategories = [];
+        categoryTree.forEach(parent => {
+            allCategories.push(parent);
+            if (parent.subCategories) {
+                allCategories.push(...parent.subCategories);
+            }
+        });
+
         container.innerHTML = selectedCategories.map(id => {
-            const cat = categories.find(c => c.id === id);
+            const cat = allCategories.find(c => c.id === id);
+            if (!cat) return '';
+
             return `
                 <div class="category-tag">
-                    <i class="bi ${cat.icon}"></i>
+                    <i class="bi ${cat.isParentCategory ? 'bi-folder' : 'bi-arrow-return-right'}"></i>
                     <span>${cat.name}</span>
                     <button type="button" onclick="removeCategory(${id})" class="category-tag-remove">
                         <i class="bi bi-x"></i>
@@ -310,46 +333,51 @@
 
     // Remove category
     function removeCategory(id) {
-        selectedCategories = selectedCategories.filter(cid => cid !== id);
+        selectedCategories = selectedCategories.filter(catId => catId !== id);
         updateSelectedDisplay();
+        updateModalUI();
     }
 
-    // Image preview (same as before)
-    const imageFileInput = document.getElementById('imageFileInput');
-    if (imageFileInput) {
-        imageFileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                // Validate file size (5MB)
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast('ไฟล์ใหญ่เกินไป (สูงสุด 5MB)', 'error');
-                    this.value = '';
-                    return;
-                }
+    // Toast notification
+    function showToast(message, type = 'info') {
+        // ลบ toast เก่า
+        const oldToast = document.querySelector('.community-toast');
+        if (oldToast) oldToast.remove();
 
-                // Validate file type
-                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-                if (!validTypes.includes(file.type)) {
-                    showToast('ประเภทไฟล์ไม่ถูกต้อง (รองรับเฉพาะ JPG, PNG, GIF, WebP)', 'error');
-                    this.value = '';
-                    return;
-                }
+        const toast = document.createElement('div');
+        toast.className = `community-toast community-toast-${type}`;
 
-                // Show preview
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('previewImage').src = e.target.result;
-                    document.getElementById('imagePreview').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        let icon = 'bi-info-circle-fill';
+        if (type === 'error') icon = 'bi-exclamation-triangle-fill';
+        else if (type === 'success') icon = 'bi-check-circle-fill';
+        else if (type === 'warning') icon = 'bi-exclamation-circle-fill';
+
+        toast.innerHTML = `
+            <i class="bi ${icon}"></i>
+            <span>${message}</span>
+        `;
+
+        document.body.appendChild(toast);
+
+        // แสดง toast
+        setTimeout(() => toast.classList.add('show'), 10);
+
+        // ซ่อนและลบ toast
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
     }
 
-    function removeImage() {
-        document.getElementById('imageFileInput').value = '';
-        document.getElementById('imagePreview').style.display = 'none';
-    }
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // ถ้ามี categories ที่เลือกไว้แล้ว (กรณี validation error)
+        const existingValue = document.getElementById('categoryIdsInput').value;
+        if (existingValue) {
+            selectedCategories = existingValue.split(',').map(id => parseInt(id));
+            updateSelectedDisplay();
+        }
+    });
 </script>
 
 <style>
@@ -603,22 +631,29 @@
     }
 
     .category-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        display: flex;
+        flex-direction: column;
         gap: 0.75rem;
     }
+
+    .category-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
 
     .category-item {
         position: relative;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 0.5rem;
-        padding: 1rem;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
         border: 2px solid var(--border-primary, #e5e7eb);
-        border-radius: 12px;
+        border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s ease;
+        background: var(--bg-primary, #ffffff);
     }
 
         .category-item:hover {
@@ -630,7 +665,76 @@
             border-color: var(--primary, #ff4500);
             background: rgba(255, 69, 0, 0.1);
         }
+    /* Parent category styling */
+    .parent-category {
+        font-weight: 600;
+    }
 
+        .parent-category > i:first-child {
+            font-size: 1.25rem;
+            color: var(--text-secondary, #666);
+        }
+
+        .parent-category.selected > i:first-child {
+            color: var(--primary, #ff4500);
+        }
+
+    /* Subcategory styling */
+    .subcategory-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-left: 1.5rem;
+    }
+
+    .subcategory-item {
+        border-left: 3px solid var(--border-primary, #e5e7eb);
+        border-radius: 0 8px 8px 0;
+    }
+
+        .subcategory-item > i:first-child {
+            font-size: 1rem;
+            color: var(--text-tertiary, #999);
+        }
+
+        .subcategory-item.selected {
+            border-left-color: var(--primary, #ff4500);
+        }
+
+            .subcategory-item.selected > i:first-child {
+                color: var(--primary, #ff4500);
+            }
+
+    .category-item > span {
+        flex: 1;
+        font-size: 0.875rem;
+        color: var(--text-primary, #1a1a1a);
+    }
+
+    .category-check {
+        font-size: 1.25rem;
+        color: var(--primary, #ff4500);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .category-item.selected .category-check {
+        opacity: 1;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .subcategory-list
+
+    {
+        margin-left: 1rem;
+    }
+
+    .category-item {
+        padding: 0.625rem 0.875rem;
+    }
+
+    }
         .category-item > i:first-child {
             font-size: 1.75rem;
             color: var(--text-secondary, #666);
@@ -1017,4 +1121,98 @@
     }
 
     }
+    /* แทนที่ CSS .community-toast เดิมด้วยโค้ดนี้ */
+
+    /* Toast สำหรับ Community Create Modal - แสดงเหนือทุกอย่าง */
+    .community-toast {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
+        z-index: 10002; /* สูงกว่า modal (10000) และ overlay */
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 320px;
+        max-width: 420px;
+        pointer-events: auto; /* สำคัญ! ให้ toast สามารถคลิกได้ */
+    }
+
+    [data-theme="dark"] .community-toast {
+        background: #1f2937;
+        color: #f9fafb;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .community-toast.show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .community-toast i {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .community-toast span {
+        font-size: 14px;
+        font-weight: 500;
+        flex: 1;
+        color: #1a1a1a;
+    }
+
+    [data-theme="dark"] .community-toast span {
+        color: #f9fafb;
+    }
+
+    /* Toast Types */
+    .community-toast-error {
+        border-left: 4px solid #ef4444;
+    }
+
+        .community-toast-error i {
+            color: #ef4444;
+        }
+
+    .community-toast-success {
+        border-left: 4px solid #10b981;
+    }
+
+        .community-toast-success i {
+            color: #10b981;
+        }
+
+    .community-toast-warning {
+        border-left: 4px solid #f59e0b;
+    }
+
+        .community-toast-warning i {
+            color: #f59e0b;
+        }
+
+    .community-toast-info {
+        border-left: 4px solid #3b82f6;
+    }
+
+        .community-toast-info i {
+            color: #3b82f6;
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .community-toast
+
+    {
+        right: 16px;
+        left: 16px;
+        max-width: none;
+        top: 70px;
+    }
+
 </style>
