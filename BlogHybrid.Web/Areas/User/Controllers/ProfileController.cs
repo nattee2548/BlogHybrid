@@ -18,17 +18,19 @@ namespace BlogHybrid.Web.Areas.User.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IImageService _imageService;
         private readonly ILogger<ProfileController> _logger;
-
+        private readonly SignInManager<ApplicationUser> _signInManager;
         public ProfileController(
             IMediator mediator,
             UserManager<ApplicationUser> userManager,
             IImageService imageService,
-            ILogger<ProfileController> logger)
+            ILogger<ProfileController> logger,
+            SignInManager<ApplicationUser> signInManager)
         {
             _mediator = mediator;
             _userManager = userManager;
             _imageService = imageService;
             _logger = logger;
+            _signInManager = signInManager;
         }
 
         // GET: /User/Profile
@@ -221,9 +223,15 @@ namespace BlogHybrid.Web.Areas.User.Controllers
 
                 if (result.Succeeded)
                 {
-                    TempData["SuccessMessage"] = "เปลี่ยนรหัสผ่านสำเร็จ";
-                    _logger.LogInformation($"User {user.Email} changed password");
-                    return RedirectToAction(nameof(Index));
+                    _logger.LogInformation($"User {user.Email} changed password successfully");
+
+                    // ✨ เปลี่ยนรหัสผ่านสำเร็จ → Logout + เปิด Login Modal
+                    await _signInManager.SignOutAsync();
+
+                    TempData["SuccessMessage"] = "เปลี่ยนรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่";
+                    TempData["OpenLoginModal"] = true;
+
+                    return RedirectToAction("Index", "Home", new { area = "" });
                 }
                 else
                 {
@@ -242,5 +250,6 @@ namespace BlogHybrid.Web.Areas.User.Controllers
                 return View(model);
             }
         }
+
     }
 }

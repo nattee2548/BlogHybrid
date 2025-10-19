@@ -2,7 +2,7 @@
    AUTH MODALS - Login & Register Popup
    ======================================== */
 
-/* Modal Overlay */
+/* Modal Overlay - ไม่มี animation */
 .auth-modal-overlay {
     position: fixed;
     top: 0;
@@ -17,22 +17,11 @@
     justify-content: center;
     z-index: 9999;
     padding: 1rem;
-    animation: fadeIn 0.3s ease-out;
 }
 
     .auth-modal-overlay.active {
         display: flex;
     }
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
 
 /* Modal Container */
 .auth-modal {
@@ -44,24 +33,11 @@
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
-    animation: slideUp 0.3s ease-out;
 }
 
 [data-theme="dark"] .auth-modal {
     background: var(--card-bg-color, #1a1a1a);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
 }
 
 /* Modal Header */
@@ -210,7 +186,7 @@
         color: var(--primary-color, #ff4500);
     }
 
-/* Form Options (Remember Me & Forgot Password) */
+/* Form Options (Remember Me) */
 .form-options {
     display: flex;
     justify-content: space-between;
@@ -219,27 +195,35 @@
     font-size: 0.9rem;
 }
 
+/* ✨ Checkbox Styles - ปรับปรุงให้ชัดเจนและกดง่าย */
 .form-check {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem;
     border-radius: 6px;
+    cursor: pointer;
     transition: background 0.2s ease;
+    user-select: none;
 }
 
     .form-check:hover {
         background: var(--hover-bg-color, #f9fafb);
     }
 
+[data-theme="dark"] .form-check:hover {
+    background: var(--hover-bg-color, #374151);
+}
+
 .form-check-input {
     width: 1.25rem;
     height: 1.25rem;
     cursor: pointer;
-    accent-color: var(--primary-color, #ff4500);
     border: 2px solid var(--border-color, #d1d5db);
     border-radius: 4px;
     transition: all 0.2s ease;
+    accent-color: var(--primary-color, #ff4500);
+    flex-shrink: 0;
 }
 
     .form-check-input:hover {
@@ -247,10 +231,25 @@
         box-shadow: 0 0 0 3px rgba(255, 69, 0, 0.1);
     }
 
+    .form-check-input:focus {
+        outline: none;
+        border-color: var(--primary-color, #ff4500);
+        box-shadow: 0 0 0 3px rgba(255, 69, 0, 0.2);
+    }
+
     .form-check-input:checked {
         background-color: var(--primary-color, #ff4500);
         border-color: var(--primary-color, #ff4500);
     }
+
+    /* ✨ Checkbox Invalid State */
+    .form-check-input:invalid {
+        border-color: #ef4444;
+    }
+
+        .form-check-input:invalid:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
 
 .form-check-label {
     color: var(--main-text-color, #333);
@@ -258,7 +257,18 @@
     margin: 0;
     user-select: none;
     font-size: 0.95rem;
+    line-height: 1.5;
 }
+
+    .form-check-label a {
+        color: var(--primary-color, #ff4500);
+        text-decoration: underline;
+        font-weight: 500;
+    }
+
+        .form-check-label a:hover {
+            opacity: 0.8;
+        }
 
 .forgot-password-link {
     color: var(--primary-color, #ff4500);
@@ -300,65 +310,6 @@
         transform: translateY(0);
     }
 
-/* Divider */
-.auth-divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin: 1.5rem 0;
-    color: var(--secondary-text-color, #9ca3af);
-    font-size: 0.9rem;
-}
-
-    .auth-divider::before,
-    .auth-divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid var(--border-color, #e5e7eb);
-    }
-
-    .auth-divider span {
-        padding: 0 1rem;
-    }
-
-/* Social Login */
-.btn-social {
-    width: 100%;
-    padding: 0.75rem 1.5rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border: 2px solid var(--border-color, #e5e7eb);
-    border-radius: 10px;
-    background: var(--main-bg-color, #ffffff);
-    color: var(--main-text-color, #333);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-}
-
-[data-theme="dark"] .btn-social {
-    background: var(--card-bg-color, #2a2a2a);
-    border-color: var(--border-color, #374151);
-}
-
-.btn-social:hover:not(:disabled) {
-    border-color: var(--primary-color, #ff4500);
-    background: rgba(255, 69, 0, 0.05);
-}
-
-.btn-social:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.btn-social i {
-    font-size: 1.2rem;
-}
-
 /* Modal Footer */
 .auth-modal-footer {
     text-align: center;
@@ -380,6 +331,7 @@
     color: var(--primary-color, #ff4500);
     text-decoration: none;
     font-weight: 600;
+    cursor: pointer;
     transition: opacity 0.2s ease;
 }
 
@@ -387,27 +339,6 @@
         opacity: 0.8;
         text-decoration: underline;
     }
-
-/* Validation Errors */
-.alert-danger {
-    padding: 0.75rem 1rem;
-    margin-bottom: 1.5rem;
-    border-radius: 10px;
-    background: #fee;
-    border: 1px solid #fcc;
-    color: #c33;
-    font-size: 0.9rem;
-}
-
-[data-theme="dark"] .alert-danger {
-    background: rgba(220, 53, 69, 0.2);
-    border-color: rgba(220, 53, 69, 0.3);
-    color: #ff6b7a;
-}
-
-.alert-danger.d-none {
-    display: none;
-}
 
 /* Responsive - Mobile */
 @media (max-width: 576px) {
@@ -432,18 +363,44 @@
     .auth-modal-title {
         font-size: 1.25rem;
     }
+}
 
-    /* Slide up from bottom on mobile */
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(100%);
-        }
+/* Error Message in Modal */
+.modal-error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    margin-bottom: 1.5rem;
+    background: #fee;
+    border: 1px solid #fcc;
+    border-left: 4px solid #ef4444;
+    border-radius: 8px;
+    color: #c33;
+    font-size: 0.9rem;
+    animation: slideDown 0.3s ease;
+}
 
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+[data-theme="dark"] .modal-error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ff6b7a;
+}
+
+.modal-error-message i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 

@@ -3,267 +3,453 @@
     ViewData["Title"] = "โปรไฟล์ของฉัน";
 }
 
+<!-- Profile Page Container -->
+<div class="profile-page-container">
+    <!-- Profile Header Card -->
+    <div class="profile-header-card">
+        <div class="profile-cover">
+            <div class="profile-cover-gradient"></div>
+        </div>
+
+        <div class="profile-info-section">
+            <div class="profile-avatar-wrapper">
+                @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                {
+                    <img src="@Model.ProfileImageUrl" alt="@Model.DisplayName" class="profile-avatar-large" />
+                }
+                else
+                {
+                    <div class="profile-avatar-large profile-avatar-placeholder">
+                        @Model.DisplayName.Substring(0, 1).ToUpper()
+                    </div>
+                }
+            </div>
+
+            <div class="profile-details">
+                <h1 class="profile-display-name">@Model.DisplayName</h1>
+
+                @if (!string.IsNullOrEmpty(Model.FirstName) || !string.IsNullOrEmpty(Model.LastName))
+                {
+                    <p class="profile-full-name">@Model.FirstName @Model.LastName</p>
+                }
+
+                <div class="profile-meta">
+                    <span class="profile-meta-item">
+                        <i class="bi bi-envelope"></i> @Model.Email
+                        @if (Model.EmailConfirmed)
+                        {
+                            <i class="bi bi-patch-check-fill text-success" title="อีเมลยืนยันแล้ว"></i>
+                        }
+                    </span>
+
+                    @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                    {
+                        <span class="profile-meta-item">
+                            <i class="bi bi-telephone"></i> @Model.PhoneNumber
+                        </span>
+                    }
+
+                    <span class="profile-meta-item">
+                        <i class="bi bi-calendar"></i> เข้าร่วมเมื่อ @Model.CreatedAt.ToString("dd/MM/yyyy")
+                    </span>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Bio))
+                {
+                    <p class="profile-bio">@Model.Bio</p>
+                }
+            </div>
+
+            <div class="profile-actions">
+                <a asp-action="Edit" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> แก้ไขโปรไฟล์
+                </a>
+                <a asp-action="ChangePassword" class="btn btn-outline">
+                    <i class="bi bi-key"></i> เปลี่ยนรหัสผ่าน
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Stats Cards -->
+    <div class="profile-stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-posts">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-value">0</h3>
+                <p class="stat-label">โพสต์ทั้งหมด</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-comments">
+                <i class="bi bi-chat-dots"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-value">0</h3>
+                <p class="stat-label">ความคิดเห็น</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-communities">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-value">0</h3>
+                <p class="stat-label">ชุมชนที่เข้าร่วม</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-karma">
+                <i class="bi bi-star"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-value">0</h3>
+                <p class="stat-label">คะแนนรวม</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Section -->
+    <div class="profile-content-section">
+        <div class="section-header">
+            <h2><i class="bi bi-clock-history"></i> กิจกรรมล่าสุด</h2>
+        </div>
+
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h3>ยังไม่มีกิจกรรม</h3>
+            <p>เริ่มต้นสร้างโพสต์แรกของคุณวันนี้!</p>
+            <a href="#" class="btn btn-primary">สร้างโพสต์</a>
+        </div>
+    </div>
+</div>
+
 <style>
-    .user-nav-tabs {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 8px;
-        margin-bottom: 24px;
-        display: flex;
-        gap: 8px;
-        overflow-x: auto;
+    .profile-page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
     }
 
-    .user-nav-tab {
-        padding: 10px 20px;
-        border-radius: 6px;
-        color: var(--text-primary);
-        font-weight: 500;
-        white-space: nowrap;
-        text-decoration: none;
-        transition: background 0.2s;
-    }
-
-        .user-nav-tab:hover {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-        }
-
-        .user-nav-tab.active {
-            background: var(--primary-color);
-            color: white !important;
-        }
-
+    /* Profile Header Card */
     .profile-header-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 32px;
-        margin-bottom: 24px;
+        background: var(--card-bg-color);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
     }
 
-    .profile-avatar {
+    .profile-cover {
+        height: 200px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+    }
+
+    [data-theme="dark"] .profile-cover {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .profile-cover-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.3));
+    }
+
+    .profile-info-section {
+        padding: 0 2rem 2rem;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .profile-avatar-wrapper {
+        margin-top: -60px;
+        position: relative;
+    }
+
+    .profile-avatar-large {
         width: 120px;
         height: 120px;
         border-radius: 50%;
+        border: 5px solid var(--card-bg-color);
         object-fit: cover;
-        border: 4px solid var(--primary-color);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     .profile-avatar-placeholder {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        background: var(--primary-color);
+        background: linear-gradient(135deg, #ff4500 0%, #ff6347 100%);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 48px;
-        font-weight: 600;
-        margin: 0 auto;
+        font-size: 3rem;
+        font-weight: 700;
     }
 
-    .stat-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 24px;
-        text-align: center;
-        transition: transform 0.2s, box-shadow 0.2s;
+    .profile-details {
+        padding-top: 1rem;
     }
 
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
+    .profile-display-name {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--main-text-color);
+        margin: 0 0 0.5rem 0;
+    }
 
-    .stat-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
+    .profile-full-name {
+        font-size: 1.1rem;
+        color: var(--secondary-text-color);
+        margin: 0 0 1rem 0;
+    }
+
+    .profile-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .profile-meta-item {
         display: flex;
         align-items: center;
-        justify-content: center;
-        margin: 0 auto 16px;
-        font-size: 28px;
-    }
-
-    .stat-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 4px;
-    }
-
-    .stat-label {
-        color: var(--text-secondary);
+        gap: 0.5rem;
+        color: var(--secondary-text-color);
         font-size: 0.95rem;
     }
 
-    .btn-primary {
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 6px;
-        font-weight: 500;
+        .profile-meta-item i {
+            color: var(--primary-color);
+        }
+
+    .profile-bio {
+        color: var(--main-text-color);
+        line-height: 1.6;
+        margin: 1rem 0 0 0;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 1rem;
+        padding-top: 1rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
         text-decoration: none;
-        display: inline-block;
-        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--primary-color, #ff4500);
+        color: white;
     }
 
         .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            color: white;
+            background: var(--primary-hover, #ff5414);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
         }
 
     .btn-outline {
         background: transparent;
-        color: var(--text-primary);
-        border: 1px solid var(--border-color);
-        padding: 10px 24px;
-        border-radius: 6px;
-        font-weight: 500;
-        text-decoration: none;
-        display: inline-block;
-        transition: all 0.2s;
+        border: 2px solid var(--border-color);
+        color: var(--main-text-color);
     }
 
         .btn-outline:hover {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
+            background: var(--hover-bg-color);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
         }
+
+    /* Stats Grid */
+    .profile-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--card-bg-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .stat-icon-posts {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .stat-icon-comments {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .stat-icon-communities {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .stat-icon-karma {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--main-text-color);
+        margin: 0 0 0.25rem 0;
+    }
+
+    .stat-label {
+        color: var(--secondary-text-color);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    /* Content Section */
+    .profile-content-section {
+        background: var(--card-bg-color);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-header {
+        margin-bottom: 1.5rem;
+    }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--main-text-color);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--secondary-text-color);
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--main-text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: var(--secondary-text-color);
+            margin-bottom: 1.5rem;
+        }
+
+    /* Responsive */
+    @@media (max-width: 968px) {
+        .profile-info-section
+
+    {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .profile-avatar-wrapper {
+        margin: -60px auto 0;
+    }
+
+    .profile-meta {
+        justify-content: center;
+    }
+
+    .profile-actions {
+        justify-content: center;
+    }
+
+    .profile-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .profile-cover
+
+    {
+        height: 120px;
+    }
+
+    .profile-avatar-large {
+        width: 90px;
+        height: 90px;
+    }
+
+    .profile-display-name {
+        font-size: 1.5rem;
+    }
+
+    .profile-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    }
 </style>
-
-<div class="main-container" style="padding: 80px 0 40px;">
-    <div class="container" style="max-width: 1200px;">
-
-        <!-- User Navigation Tabs -->
-        <div class="user-nav-tabs">
-            <a asp-area="User" asp-controller="Profile" asp-action="Index" class="user-nav-tab active">
-                <i class="bi bi-person"></i> โปรไฟล์
-            </a>
-            <a asp-area="User" asp-controller="Posts" asp-action="Index" class="user-nav-tab">
-                <i class="bi bi-file-earmark-text"></i> โพสต์ของฉัน
-            </a>
-            <a asp-area="User" asp-controller="Communities" asp-action="Index" class="user-nav-tab">
-                <i class="bi bi-people"></i> ชุมชนของฉัน
-            </a>
-            <a asp-area="User" asp-controller="Profile" asp-action="Edit" class="user-nav-tab">
-                <i class="bi bi-gear"></i> ตั้งค่า
-            </a>
-        </div>
-
-        <!-- Profile Header -->
-        <div class="profile-header-card">
-            <div class="row align-items-center">
-                <div class="col-md-2 text-center mb-3 mb-md-0">
-                    @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
-                    {
-                        <img src="@Model.ProfileImageUrl"
-                             alt="@Model.DisplayName"
-                             class="profile-avatar" />
-                    }
-                    else
-                    {
-                        <div class="profile-avatar-placeholder">
-                            @Model.DisplayName.Substring(0, 1).ToUpper()
-                        </div>
-                    }
-                </div>
-                <div class="col-md-7">
-                    <h2 style="color: var(--text-primary); font-weight: 600; font-size: 1.75rem; margin-bottom: 8px;">
-                        @Model.DisplayName
-                    </h2>
-                    @if (!string.IsNullOrEmpty(Model.FirstName) || !string.IsNullOrEmpty(Model.LastName))
-                    {
-                        <p style="color: var(--text-secondary); margin-bottom: 12px; font-size: 1rem;">
-                            @Model.FirstName @Model.LastName
-                        </p>
-                    }
-                    <p style="color: var(--text-secondary); margin-bottom: 8px;">
-                        <i class="bi bi-envelope"></i> @Model.Email
-                        @if (Model.EmailConfirmed)
-                        {
-                            <span class="badge bg-success ms-2" style="font-size: 0.75rem;">
-                                <i class="bi bi-check-circle"></i> ยืนยันแล้ว
-                            </span>
-                        }
-                    </p>
-                    @if (!string.IsNullOrEmpty(Model.PhoneNumber))
-                    {
-                        <p style="color: var(--text-secondary); margin-bottom: 12px;">
-                            <i class="bi bi-telephone"></i> @Model.PhoneNumber
-                        </p>
-                    }
-                    @if (!string.IsNullOrEmpty(Model.Bio))
-                    {
-                        <p style="color: var(--text-secondary); margin-top: 16px; line-height: 1.6;">
-                            @Model.Bio
-                        </p>
-                    }
-                    <p style="color: var(--text-tertiary); font-size: 0.875rem; margin-top: 12px; margin-bottom: 0;">
-                        <i class="bi bi-calendar"></i> เข้าร่วมเมื่อ @Model.CreatedAt.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("th-TH"))
-                    </p>
-                </div>
-                <div class="col-md-3 text-md-end">
-                    <a asp-action="Edit" class="btn-primary d-block mb-2">
-                        <i class="bi bi-pencil"></i> แก้ไขโปรไฟล์
-                    </a>
-                    <a asp-action="ChangePassword" class="btn-outline d-block">
-                        <i class="bi bi-key"></i> เปลี่ยนรหัสผ่าน
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <div class="col-md-4 mb-3">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: rgba(255, 69, 0, 0.1); color: var(--primary-color);">
-                        <i class="bi bi-file-earmark-text"></i>
-                    </div>
-                    <h3 class="stat-value">@Model.PostCount</h3>
-                    <p class="stat-label">โพสต์</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
-                        <i class="bi bi-chat-dots"></i>
-                    </div>
-                    <h3 class="stat-value">@Model.CommentCount</h3>
-                    <p class="stat-label">ความคิดเห็น</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
-                        <i class="bi bi-people"></i>
-                    </div>
-                    <h3 class="stat-value">@Model.CommunityCount</h3>
-                    <p class="stat-label">ชุมชน</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Activity Section -->
-        <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 32px;">
-            <h4 style="color: var(--text-primary); margin-bottom: 24px; font-size: 1.25rem; font-weight: 600;">
-                <i class="bi bi-activity"></i> กิจกรรมล่าสุด
-            </h4>
-            <div class="text-center py-5">
-                <i class="bi bi-inbox" style="font-size: 64px; color: var(--text-tertiary);"></i>
-                <p style="color: var(--text-secondary); margin-top: 16px; font-size: 1rem;">ยังไม่มีกิจกรรม</p>
-                <p style="color: var(--text-tertiary); font-size: 0.875rem;">เริ่มต้นโพสต์หรือแสดงความคิดเห็นเพื่อดูกิจกรรมของคุณที่นี่</p>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<partial name="_ToastNotification" />
