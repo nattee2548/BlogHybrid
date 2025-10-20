@@ -5,6 +5,7 @@
         public const string SectionName = "CommunitySettings";
 
         public int MaxCommunitiesPerUser { get; set; } = 2;
+        public int MaxCategoriesPerCommunity { get; set; } = 3;
         public int SoftDeleteRetentionDays { get; set; } = 30;
         public int InviteExpiryDays { get; set; } = 7;
         public int MaxMembersPerCommunity { get; set; } = 10000;

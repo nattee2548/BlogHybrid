@@ -167,15 +167,36 @@ namespace BlogHybrid.Application.Handlers.Community
                     TotalMembers = communities.Sum(c => c.MemberCount),
                     TotalPosts = communities.Sum(c => c.PostCount)
                 };
+               
+                var categoryStats = new Dictionary<int, CategoryCommunityStat>();
 
-                // Group by category
-                var categoryGroups = communities.GroupBy(c => new { c.CategoryId, c.Category.Name });
-                stats.CommunitiesByCategory = categoryGroups.Select(g => new CategoryCommunityStat
+                foreach (var community in communities)
                 {
-                    CategoryId = g.Key.CategoryId,
-                    CategoryName = g.Key.Name,
-                    CommunityCount = g.Count()
-                }).ToList();
+                    // ดึง category แรกของ community
+                    var firstCategory = community.CommunityCategories
+                        .OrderBy(cc => cc.AssignedAt)
+                        .FirstOrDefault();
+
+                    if (firstCategory != null)
+                    {
+                        var categoryId = firstCategory.CategoryId;
+                        var categoryName = firstCategory.Category.Name;
+
+                        if (!categoryStats.ContainsKey(categoryId))
+                        {
+                            categoryStats[categoryId] = new CategoryCommunityStat
+                            {
+                                CategoryId = categoryId,
+                                CategoryName = categoryName,
+                                CommunityCount = 0
+                            };
+                        }
+
+                        categoryStats[categoryId].CommunityCount++;
+                    }
+                }
+
+                stats.CommunitiesByCategory = categoryStats.Values.ToList();
 
                 return stats;
             }

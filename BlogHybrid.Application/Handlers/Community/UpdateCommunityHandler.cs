@@ -4,6 +4,7 @@ using BlogHybrid.Application.Common;
 using BlogHybrid.Application.Interfaces.Repositories;
 using BlogHybrid.Application.Configuration;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -87,18 +88,60 @@ namespace BlogHybrid.Application.Handlers.Community
                     };
                 }
 
-                // Check if new category exists (if changing)
-                if (request.CategoryId != community.CategoryId)
+                // ✅ Parse และ validate CategoryIds
+                var categoryIds = new List<int>();
+                if (!string.IsNullOrWhiteSpace(request.CategoryIds))
                 {
-                    var newCategory = await _unitOfWork.Categories.GetByIdAsync(request.CategoryId, cancellationToken);
-                    if (newCategory == null)
+                    try
+                    {
+                        categoryIds = request.CategoryIds
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(id => int.Parse(id.Trim()))
+                            .ToList();
+                    }
+                    catch
                     {
                         return new UpdateCommunityResult
                         {
                             Success = false,
-                            Errors = new List<string> { "New category not found" }
+                            Errors = new List<string> { "Invalid category IDs format" }
                         };
                     }
+                }
+
+                if (categoryIds.Count == 0)
+                {
+                    return new UpdateCommunityResult
+                    {
+                        Success = false,
+                        Errors = new List<string> { "Please select at least one category" }
+                    };
+                }
+
+                var maxCategories = _communitySettings.Value.MaxCategoriesPerCommunity;
+                if (categoryIds.Count > maxCategories)
+                {
+                    return new UpdateCommunityResult
+                    {
+                        Success = false,
+                        Errors = new List<string> { $"You can select maximum {maxCategories} categories" }
+                    };
+                }
+
+                // Validate categories exist
+                var categories = new List<BlogHybrid.Domain.Entities.Category>();
+                foreach (var catId in categoryIds)
+                {
+                    var category = await _unitOfWork.Categories.GetByIdAsync(catId, cancellationToken);
+                    if (category == null)
+                    {
+                        return new UpdateCommunityResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { $"Category ID {catId} not found" }
+                        };
+                    }
+                    categories.Add(category);
                 }
 
                 await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -122,7 +165,6 @@ namespace BlogHybrid.Application.Handlers.Community
                 community.ImageUrl = request.ImageUrl?.Trim();
                 community.CoverImageUrl = request.CoverImageUrl?.Trim();
                 community.Rules = request.Rules?.Trim();
-                community.CategoryId = request.CategoryId;
                 community.IsPrivate = request.IsPrivate;
                 community.RequireApproval = request.RequireApproval;
                 community.IsActive = request.IsActive;
@@ -131,19 +173,44 @@ namespace BlogHybrid.Application.Handlers.Community
                 await _unitOfWork.Communities.UpdateAsync(community, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+                // ✅ อัปเดต CommunityCategories (Many-to-Many)
+                // ลบ categories เก่าทั้งหมด
+                var existingCategories = await _unitOfWork.DbContext
+                    .Set<BlogHybrid.Domain.Entities.CommunityCategory>()
+                    .Where(cc => cc.CommunityId == community.Id)
+                    .ToListAsync(cancellationToken);
+
+                _unitOfWork.DbContext.Set<BlogHybrid.Domain.Entities.CommunityCategory>()
+                    .RemoveRange(existingCategories);
+
+                // เพิ่ม categories ใหม่
+                foreach (var categoryId in categoryIds)
+                {
+                    var communityCategory = new BlogHybrid.Domain.Entities.CommunityCategory
+                    {
+                        CommunityId = community.Id,
+                        CategoryId = categoryId,
+                        AssignedAt = DateTime.UtcNow
+                    };
+
+                    await _unitOfWork.DbContext.Set<BlogHybrid.Domain.Entities.CommunityCategory>()
+                        .AddAsync(communityCategory, cancellationToken);
+                }
+
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-                // Get updated category info for FullSlug
-                var category = await _unitOfWork.Categories.GetByIdAsync(community.CategoryId, cancellationToken);
+                // ✅ ใช้ category แรกสำหรับ FullSlug
+                var firstCategory = categories.First();
 
-                _logger.LogInformation("Community updated: {CommunityId} - {CommunityName} by {UserId}",
-                    community.Id, community.Name, request.CurrentUserId);
+                _logger.LogInformation("Community updated: {CommunityId} - {CommunityName} by {UserId} with {CategoryCount} categories",
+                    community.Id, community.Name, request.CurrentUserId, categoryIds.Count);
 
                 return new UpdateCommunityResult
                 {
                     Success = true,
                     Slug = community.Slug,
-                    FullSlug = $"{category?.Slug}/{community.Slug}",
+                    FullSlug = $"{firstCategory.Slug}/{community.Slug}",
                     Message = "Community updated successfully"
                 };
             }
