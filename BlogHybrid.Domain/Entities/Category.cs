@@ -34,8 +34,8 @@ namespace BlogHybrid.Domain.Entities
 
         // Existing navigation properties
         public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
-        public virtual ICollection<Community> Communities { get; set; } = new List<Community>();
-
+        //public virtual ICollection<Community> Communities { get; set; } = new List<Community>();
+        public virtual ICollection<CommunityCategory> CommunityCategories { get; set; } = new List<CommunityCategory>();
         // ========== Helper Properties ==========
         /// <summary>
         /// เช็คว่าเป็นหมวดหมู่หลักหรือไม่

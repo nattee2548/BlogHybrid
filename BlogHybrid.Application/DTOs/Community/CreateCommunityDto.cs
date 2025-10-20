@@ -7,7 +7,7 @@
         public string? ImageUrl { get; set; }
         public string? CoverImageUrl { get; set; }
         public string? Rules { get; set; }
-        public int CategoryId { get; set; }
+        public List<int> CategoryIds { get; set; } = new List<int>();
         public bool IsPrivate { get; set; } = false;
         public bool RequireApproval { get; set; } = false;
     }
@@ -20,7 +20,7 @@
         public string? ImageUrl { get; set; }
         public string? CoverImageUrl { get; set; }
         public string? Rules { get; set; }
-        public int CategoryId { get; set; } // ⭐ ตาม requirement ให้เปลี่ยนได้
+        public List<int> CategoryIds { get; set; } = new List<int>();
         public bool IsPrivate { get; set; }
         public bool RequireApproval { get; set; }
         public bool IsActive { get; set; }

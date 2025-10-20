@@ -46,20 +46,51 @@
             </div>
 
             <!-- Community Image -->
+            <!-- Community Profile Image -->
             <div class="form-section">
-                <label class="form-label">รูปภาพชุมชน <span class="optional-text">(ไม่บังคับ)</span></label>
+                <label class="form-label">รูปโปรไฟล์ชุมชน <span class="optional-text">(ไม่บังคับ)</span></label>
                 <input type="file"
                        name="ImageFile"
                        class="form-control"
                        accept="image/*"
                        id="imageFileInput" />
                 <span class="text-danger"></span>
-                <small class="form-help">รูปภาพ JPG, PNG, GIF หรือ WebP (สูงสุด 5MB)</small>
+                <small class="form-help">รูปภาพแสดงเป็นไอคอนชุมชน | JPG, PNG, GIF, WebP (สูงสุด 5MB)</small>
 
-                <!-- Image Preview -->
-                <div id="imagePreview" class="mt-3" style="display: none;">
-                    <img id="previewImage" src="#" alt="Preview" class="img-thumbnail" style="max-height: 200px;" />
-                    <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeImage()">
+                <!-- Profile Image Preview -->
+                <div id="imagePreview" class="image-preview-box" style="display: none;">
+                    <div class="preview-header">
+                        <span class="preview-label">
+                            <i class="bi bi-image"></i> ตัวอย่างรูปโปรไฟล์
+                        </span>
+                    </div>
+                    <img id="previewImage" src="#" alt="Profile Preview" />
+                    <button type="button" class="btn-remove-image" onclick="removeImage()">
+                        <i class="bi bi-trash"></i> ลบรูป
+                    </button>
+                </div>
+            </div>
+
+            <!-- Community Cover Image -->
+            <div class="form-section">
+                <label class="form-label">รูปภาพปก <span class="optional-text">(ไม่บังคับ)</span></label>
+                <input type="file"
+                       name="CoverImageFile"
+                       class="form-control"
+                       accept="image/*"
+                       id="coverImageFileInput" />
+                <span class="text-danger"></span>
+                <small class="form-help">รูปภาพแสดงที่ด้านบนของชุมชน | JPG, PNG, GIF, WebP (สูงสุด 5MB)</small>
+
+                <!-- Cover Image Preview -->
+                <div id="coverImagePreview" class="image-preview-box cover-preview" style="display: none;">
+                    <div class="preview-header">
+                        <span class="preview-label">
+                            <i class="bi bi-card-image"></i> ตัวอย่างรูปปก
+                        </span>
+                    </div>
+                    <img id="previewCoverImage" src="#" alt="Cover Preview" />
+                    <button type="button" class="btn-remove-image" onclick="removeCoverImage()">
                         <i class="bi bi-trash"></i> ลบรูป
                     </button>
                 </div>
@@ -369,15 +400,102 @@
         }, 4000);
     }
 
-    // Initialize
+
+        // แทนที่ส่วน DOMContentLoaded เดิมด้วยโค้ดนี้
+
     document.addEventListener('DOMContentLoaded', function() {
-        // ถ้ามี categories ที่เลือกไว้แล้ว (กรณี validation error)
+        // ========================================
+        // 1. Initialize Categories (ถ้ามีการเลือกไว้แล้ว)
+        // ========================================
         const existingValue = document.getElementById('categoryIdsInput').value;
         if (existingValue) {
             selectedCategories = existingValue.split(',').map(id => parseInt(id));
             updateSelectedDisplay();
         }
+
+        // ========================================
+        // 2. Profile Image Preview Handler
+        // ========================================
+        const imageFileInput = document.getElementById('imageFileInput');
+
+        if (imageFileInput) {
+            imageFileInput.addEventListener('change', function(e) {
+                handleImagePreview(e.target.files[0], this, 'previewImage', 'imagePreview', 'รูปโปรไฟล์');
+            });
+        }
+
+        // ========================================
+        // 3. Cover Image Preview Handler
+        // ========================================
+        const coverImageFileInput = document.getElementById('coverImageFileInput');
+
+        if (coverImageFileInput) {
+            coverImageFileInput.addEventListener('change', function(e) {
+                handleImagePreview(e.target.files[0], this, 'previewCoverImage', 'coverImagePreview', 'รูปปก');
+            });
+        }
     });
+
+    // ========================================
+    // Shared Image Preview Function
+    // ========================================
+    function handleImagePreview(file, input, previewImgId, previewBoxId, imageName) {
+        if (!file) return;
+
+        // ตรวจสอบขนาดไฟล์ (สูงสุด 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            showToast(`${imageName}ใหญ่เกินไป (สูงสุด 5MB)`, 'error');
+            input.value = '';
+            return;
+        }
+
+        // ตรวจสอบประเภทไฟล์
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            showToast(`ประเภทไฟล์${imageName}ไม่ถูกต้อง (รองรับเฉพาะ JPG, PNG, GIF, WebP)`, 'error');
+            input.value = '';
+            return;
+        }
+
+        // แสดงตัวอย่างรูปภาพ
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById(previewImgId).src = e.target.result;
+            document.getElementById(previewBoxId).style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ========================================
+    // Remove Profile Image
+    // ========================================
+    function removeImage() {
+        const imageFileInput = document.getElementById('imageFileInput');
+        const imagePreview = document.getElementById('imagePreview');
+
+        imageFileInput.value = '';
+        imagePreview.style.display = 'none';
+        document.getElementById('previewImage').src = '#';
+
+        showToast('ลบรูปโปรไฟล์เรียบร้อยแล้ว', 'success');
+    }
+
+    // ========================================
+    // Remove Cover Image
+    // ========================================
+    function removeCoverImage() {
+        const coverImageFileInput = document.getElementById('coverImageFileInput');
+        const coverImagePreview = document.getElementById('coverImagePreview');
+
+        coverImageFileInput.value = '';
+        coverImagePreview.style.display = 'none';
+        document.getElementById('previewCoverImage').src = '#';
+
+        showToast('ลบรูปปกเรียบร้อยแล้ว', 'success');
+    }
+
+
+
 </script>
 
 <style>
@@ -549,7 +667,6 @@
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: 10000;
         display: none;
         align-items: center;
         justify-content: center;
@@ -1119,94 +1236,92 @@
     .btn-create {
         width: 100%;
     }
+        /* ========================================
+       Toast สำหรับ Community Create Modal
+       ======================================== */
 
-    }
-    /* แทนที่ CSS .community-toast เดิมด้วยโค้ดนี้ */
-
-    /* Toast สำหรับ Community Create Modal - แสดงเหนือทุกอย่าง */
-    .community-toast {
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 16px 20px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
-        z-index: 10002; /* สูงกว่า modal (10000) และ overlay */
-        opacity: 0;
-        transform: translateX(100px);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        min-width: 320px;
-        max-width: 420px;
-        pointer-events: auto; /* สำคัญ! ให้ toast สามารถคลิกได้ */
-    }
-
-    [data-theme="dark"] .community-toast {
-        background: #1f2937;
-        color: #f9fafb;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
-    }
-
-    .community-toast.show {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    .community-toast i {
-        font-size: 20px;
-        flex-shrink: 0;
-    }
-
-    .community-toast span {
-        font-size: 14px;
-        font-weight: 500;
-        flex: 1;
-        color: #1a1a1a;
-    }
-
-    [data-theme="dark"] .community-toast span {
-        color: #f9fafb;
-    }
-
-    /* Toast Types */
-    .community-toast-error {
-        border-left: 4px solid #ef4444;
-    }
-
-        .community-toast-error i {
-            color: #ef4444;
+        .community-toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
+            z-index: 99999 !important; /* สูงกว่า modal */
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 320px;
+            max-width: 420px;
+            pointer-events: auto;
+            isolation: isolate;
         }
 
-    .community-toast-success {
-        border-left: 4px solid #10b981;
-    }
-
-        .community-toast-success i {
-            color: #10b981;
+        [data-theme="dark"] .community-toast {
+            background: #1f2937;
+            color: #f9fafb;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
-    .community-toast-warning {
-        border-left: 4px solid #f59e0b;
-    }
-
-        .community-toast-warning i {
-            color: #f59e0b;
+        .community-toast.show {
+            opacity: 1;
+            transform: translateX(0);
         }
 
-    .community-toast-info {
-        border-left: 4px solid #3b82f6;
-    }
-
-        .community-toast-info i {
-            color: #3b82f6;
+        .community-toast i {
+            font-size: 20px;
+            flex-shrink: 0;
         }
 
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .community-toast
+        .community-toast span {
+            font-size: 14px;
+            font-weight: 500;
+            flex: 1;
+            color: #1a1a1a;
+        }
+
+        [data-theme="dark"] .community-toast span {
+            color: #f9fafb;
+        }
+        /* Toast Types */
+        .community-toast-error {
+            border-left: 4px solid #ef4444;
+        }
+
+            .community-toast-error i {
+                color: #ef4444;
+            }
+
+        .community-toast-success {
+            border-left: 4px solid #10b981;
+        }
+
+            .community-toast-success i {
+                color: #10b981;
+            }
+
+        .community-toast-warning {
+            border-left: 4px solid #f59e0b;
+        }
+
+            .community-toast-warning i {
+                color: #f59e0b;
+            }
+
+        .community-toast-info {
+            border-left: 4px solid #3b82f6;
+        }
+
+            .community-toast-info i {
+                color: #3b82f6;
+            }
+        /* Toast Responsive */
+        @@media (max-width: 768px) {
+            .community-toast
 
     {
         right: 16px;
@@ -1214,5 +1329,165 @@
         max-width: none;
         top: 70px;
     }
+
+    }
+
+    /* ========================================
+       แก้ไข z-index ของ Modal
+       ======================================== */
+
+    /* Modal Container - ต้องต่ำกว่า toast */
+    .category-modal {
+        z-index: 9000 !important;
+    }
+
+    /* Modal Overlay */
+    .category-modal-overlay {
+        z-index: 1;
+        pointer-events: auto;
+    }
+
+    /* Modal Content */
+    .category-modal-content {
+        z-index: 2;
+        position: relative;
+    }
+        /* แทนที่ CSS #imagePreview เดิมด้วยโค้ดนี้ */
+        /* ========================================
+       Image Preview Boxes (ทั้ง Profile และ Cover)
+       ======================================== */
+
+        .image-preview-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary, #f9fafb);
+            border: 1px solid var(--border-primary, #e5e7eb);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        [data-theme="dark"] .image-preview-box {
+            background: var(--bg-secondary, #111827);
+            border-color: var(--border-primary, #374151);
+        }
+        /* Preview Header with Label */
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .preview-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary, #666);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+            .preview-label i {
+                font-size: 0.875rem;
+            }
+        /* Profile Image Preview */
+        .image-preview-box:not(.cover-preview) img {
+            width: 100%;
+            max-width: 300px;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: block;
+            margin: 0 auto;
+        }
+        /* Cover Image Preview - แนวนอน */
+        .image-preview-box.cover-preview img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        /* Remove Image Button */
+        .btn-remove-image {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            margin-top: 0.75rem;
+            background: #ef4444;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+            .btn-remove-image:hover {
+                background: #dc2626;
+                transform: translateY(-1px);
+            }
+
+            .btn-remove-image i {
+                font-size: 1rem;
+            }
+        /* Form Control File Input Styling */
+        .form-control[type="file"] {
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            border: 1px dashed var(--border-primary, #e5e7eb);
+            background: var(--bg-primary, #ffffff);
+            transition: all 0.2s ease;
+        }
+
+            .form-control[type="file"]:hover {
+                border-color: var(--primary, #ff4500);
+                background: rgba(255, 69, 0, 0.02);
+            }
+
+        [data-theme="dark"] .form-control[type="file"] {
+            background: var(--bg-primary, #111827);
+            border-color: var(--border-primary, #374151);
+        }
+
+        .form-control[type="file"]::file-selector-button {
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            background: var(--primary, #ff4500);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+            .form-control[type="file"]::file-selector-button:hover {
+                background: var(--primary-hover, #e03d00);
+            }
+
+        [data-theme="dark"] .form-control[type="file"]::file-selector-button {
+            background: var(--primary, #ff4500);
+        }
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .image-preview-box:not(.cover-preview) img
+
+    {
+        max-width: 100%;
+        max-height: 250px;
+    }
+
+    .image-preview-box.cover-preview img {
+        max-height: 150px;
+    }
+
+    
 
 </style>

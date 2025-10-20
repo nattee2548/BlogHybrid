@@ -23,7 +23,7 @@ namespace BlogHybrid.Infrastructure.Data
         public DbSet<Community> Communities { get; set; }
         public DbSet<CommunityMember> CommunityMembers { get; set; }
         public DbSet<CommunityInvite> CommunityInvites { get; set; }
-
+        public DbSet<CommunityCategory> CommunityCategories { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

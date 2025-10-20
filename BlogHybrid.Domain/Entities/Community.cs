@@ -37,11 +37,10 @@ namespace BlogHybrid.Domain.Entities
         // For ordering
         public int SortOrder { get; set; } = 0;
 
-        // Navigation properties
-        public virtual Category Category { get; set; } = null!;
         public virtual ApplicationUser Creator { get; set; } = null!;
         public virtual ICollection<CommunityMember> CommunityMembers { get; set; } = new List<CommunityMember>();
         public virtual ICollection<CommunityInvite> CommunityInvites { get; set; } = new List<CommunityInvite>();
         public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+        public virtual ICollection<CommunityCategory> CommunityCategories { get; set; } = new List<CommunityCategory>();
     }
 }

@@ -9,7 +9,7 @@ namespace BlogHybrid.Application.Commands.Community
         public string? ImageUrl { get; set; }
         public string? CoverImageUrl { get; set; }
         public string? Rules { get; set; }
-        public int CategoryId { get; set; }
+        public string CategoryIds { get; set; } = string.Empty;
         public bool IsPrivate { get; set; } = false;
         public bool RequireApproval { get; set; } = false;
 

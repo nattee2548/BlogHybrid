@@ -43,49 +43,62 @@ namespace BlogHybrid.Application.Handlers.Community
                     };
                 }
 
-                if (string.IsNullOrWhiteSpace(request.Name))
+                // ✅ Parse CategoryIds from comma-separated string
+                var categoryIds = new List<int>();
+                if (!string.IsNullOrWhiteSpace(request.CategoryIds))
+                {
+                    try
+                    {
+                        categoryIds = request.CategoryIds
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(id => int.Parse(id.Trim()))
+                            .ToList();
+                    }
+                    catch
+                    {
+                        return new CreateCommunityResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { "Invalid category IDs format" }
+                        };
+                    }
+                }
+
+                // ✅ Validate: ต้องเลือกอย่างน้อย 1 category
+                if (categoryIds.Count == 0)
                 {
                     return new CreateCommunityResult
                     {
                         Success = false,
-                        Errors = new List<string> { "Community name is required" }
+                        Errors = new List<string> { "Please select at least one category" }
                     };
                 }
 
-                var settings = _communitySettings.Value;
-
-                // Check name length
-                if (request.Name.Length < settings.MinNameLength || request.Name.Length > settings.MaxNameLength)
+                // ✅ Validate: ไม่เกินจำนวนที่กำหนด (config)
+                var maxCategories = _communitySettings.Value.MaxCategoriesPerCommunity;
+                if (categoryIds.Count > maxCategories)
                 {
                     return new CreateCommunityResult
                     {
                         Success = false,
-                        Errors = new List<string> { $"Community name must be between {settings.MinNameLength} and {settings.MaxNameLength} characters" }
+                        Errors = new List<string> { $"You can select maximum {maxCategories} categories" }
                     };
                 }
 
-                // Check user community limit (ไม่นับ soft deleted)
-                var userCommunityCount = await _unitOfWork.Communities
-                    .GetUserCommunityCountAsync(request.CreatorId, includeDeleted: false, cancellationToken);
-
-                if (userCommunityCount >= settings.MaxCommunitiesPerUser)
+                // ✅ Validate: ตรวจสอบว่า categories ทั้งหมดมีอยู่จริง
+                var categories = new List<BlogHybrid.Domain.Entities.Category>();
+                foreach (var catId in categoryIds)
                 {
-                    return new CreateCommunityResult
+                    var category = await _unitOfWork.Categories.GetByIdAsync(catId, cancellationToken);
+                    if (category == null)
                     {
-                        Success = false,
-                        Errors = new List<string> { $"You can only create up to {settings.MaxCommunitiesPerUser} communities" }
-                    };
-                }
-
-                // Check if category exists
-                var category = await _unitOfWork.Categories.GetByIdAsync(request.CategoryId, cancellationToken);
-                if (category == null)
-                {
-                    return new CreateCommunityResult
-                    {
-                        Success = false,
-                        Errors = new List<string> { "Category not found" }
-                    };
+                        return new CreateCommunityResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { $"Category ID {catId} not found" }
+                        };
+                    }
+                    categories.Add(category);
                 }
 
                 await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -111,6 +124,24 @@ namespace BlogHybrid.Application.Handlers.Community
                 await _unitOfWork.Communities.AddAsync(community, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+                // ✅ เพิ่ม Categories ลงตาราง CommunityCategory
+                foreach (var categoryId in categoryIds)
+                {
+                    var communityCategory = new BlogHybrid.Domain.Entities.CommunityCategory
+                    {
+                        CommunityId = community.Id,
+                        CategoryId = categoryId,
+                        AssignedAt = DateTime.UtcNow
+                    };
+
+                    // ใช้ DbContext.Set<CommunityCategory>().Add() หรือ Repository (ถ้ามี)
+                    // สมมุติว่าใช้ DbContext โดยตรง:
+                    await _unitOfWork.DbContext.Set<BlogHybrid.Domain.Entities.CommunityCategory>()
+                        .AddAsync(communityCategory, cancellationToken);
+                }
+
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
                 // Add creator as Admin member
                 var creatorMember = new BlogHybrid.Domain.Entities.CommunityMember
                 {
@@ -127,15 +158,18 @@ namespace BlogHybrid.Application.Handlers.Community
 
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-                _logger.LogInformation("Community created: {CommunityId} - {CommunityName} by {CreatorId}",
-                    community.Id, community.Name, request.CreatorId);
+                // ✅ ใช้ Category แรกสำหรับ FullSlug
+                var firstCategory = categories.First();
+
+                _logger.LogInformation("Community created: {CommunityId} - {CommunityName} by {CreatorId} with {CategoryCount} categories",
+                    community.Id, community.Name, request.CreatorId, categoryIds.Count);
 
                 return new CreateCommunityResult
                 {
                     Success = true,
                     CommunityId = community.Id,
                     Slug = community.Slug,
-                    FullSlug = $"{category.Slug}/{community.Slug}",
+                    FullSlug = $"{firstCategory.Slug}/{community.Slug}",
                     Message = "Community created successfully"
                 };
             }
