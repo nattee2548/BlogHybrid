@@ -1,0 +1,1417 @@
+﻿@model BlogHybrid.Application.Commands.Community.UpdateCommunityCommand
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "แก้ไขชุมชน";
+    var maxCategories = Configuration.GetValue<int>("CommunitySettings:MaxCategoriesPerCommunity", 3);
+}
+
+<div class="edit-community-container">
+    <div class="edit-community-content">
+        <!-- Header -->
+        <div class="edit-header">
+            <h1>แก้ไขชุมชน</h1>
+            <button onclick="window.history.back()" class="btn-close-page">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form method="post" enctype="multipart/form-data" class="edit-community-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <!-- Community Name (Read-only) -->
+            <div class="form-section">
+                <label class="form-label">ชื่อชุมชน</label>
+                <input type="text"
+                       asp-for="Name"
+                       class="form-control"
+                       readonly />
+                <p class="form-help">
+                    <i class="bi bi-info-circle"></i> ชื่อชุมชนไม่สามารถเปลี่ยนแปลงได้
+                </p>
+            </div>
+
+            <!-- Category Selection -->
+            <div class="form-section">
+                <label class="form-label required">หมวดหมู่ (เลือกได้สูงสุด @maxCategories หมวดหมู่)</label>
+                <button type="button" class="category-selector-btn" onclick="openCategoryModal()">
+                    <i class="bi bi-tag"></i>
+                    <span id="selectedCategoryText">เลือกหมวดหมู่</span>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+                <div id="selectedCategories" class="selected-categories"></div>
+                <input type="hidden" asp-for="CategoryIds" id="categoryIdsInput" required />
+            </div>
+
+            <!-- Community Profile Image -->
+            <div class="form-section">
+                <label class="form-label">รูปโปรไฟล์ชุมชน <span class="optional-text">(ไม่บังคับ)</span></label>
+
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <div class="current-image-preview">
+                        <p class="form-help"><i class="bi bi-image"></i> รูปปัจจุบัน:</p>
+                        <img src="@Model.ImageUrl" alt="Current Image" class="current-image" id="currentImage" />
+                    </div>
+                }
+
+                <input type="file"
+                       name="ImageFile"
+                       id="imageFileInput"
+                       class="form-control"
+                       accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" />
+
+                <div id="imagePreview" class="image-preview" style="display: none;">
+                    <img id="previewImage" src="#" alt="Preview" />
+                    <button type="button" class="btn-remove-image" onclick="removeImage()">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <p class="form-help">
+                    รูปแนะนำ: สี่เหลี่ยมจัตุรัส, ขนาดไม่เกิน 5MB (JPG, PNG, GIF, WebP)
+                </p>
+            </div>
+
+            <!-- Community Cover Image -->
+            <div class="form-section">
+                <label class="form-label">รูปปกชุมชน <span class="optional-text">(ไม่บังคับ)</span></label>
+
+                @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+                {
+                    <div class="current-image-preview">
+                        <p class="form-help"><i class="bi bi-image"></i> รูปปกปัจจุบัน:</p>
+                        <img src="@Model.CoverImageUrl" alt="Current Cover" class="current-cover-image" id="currentCoverImage" />
+                    </div>
+                }
+
+                <input type="file"
+                       name="CoverImageFile"
+                       id="coverImageFileInput"
+                       class="form-control"
+                       accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" />
+
+                <div id="coverImagePreview" class="image-preview" style="display: none;">
+                    <img id="previewCoverImage" src="#" alt="Preview Cover" />
+                    <button type="button" class="btn-remove-image" onclick="removeCoverImage()">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <p class="form-help">
+                    รูปแนะนำ: 16:9, ขนาดไม่เกิน 5MB (JPG, PNG, GIF, WebP)
+                </p>
+            </div>
+
+            <!-- Description -->
+            <div class="form-section">
+                <label class="form-label required">คำอธิบาย</label>
+                <textarea asp-for="Description"
+                          class="form-control"
+                          rows="4"
+                          placeholder="บอกเล่าเกี่ยวกับชุมชนของคุณ"
+                          maxlength="500"
+                          required></textarea>
+                <p class="form-help">@(Model.Description?.Length ?? 0)/500 ตัวอักษร</p>
+            </div>
+
+            <!-- Rules -->
+            <div class="form-section">
+                <label class="form-label">กฎชุมชน <span class="optional-text">(ไม่บังคับ)</span></label>
+                <textarea asp-for="Rules"
+                          class="form-control"
+                          rows="6"
+                          placeholder="กำหนดกฎและข้อตกลงสำหรับสมาชิก"
+                          maxlength="2000"></textarea>
+                <p class="form-help">@(Model.Rules?.Length ?? 0)/2000 ตัวอักษร</p>
+            </div>
+
+            <!-- Community Type (ประเภทชุมชน) -->
+            <div class="form-section">
+                <label class="form-label required">ประเภทชุมชน</label>
+
+                <div class="community-type-options">
+                    <!-- สาธารณะ -->
+                    <label class="type-option @(!Model.IsPrivate && !Model.RequireApproval ? "selected" : "")">
+                        <input type="radio"
+                               name="CommunityTypeOption"
+                               value="public"
+                               @(!Model.IsPrivate && !Model.RequireApproval ? "checked" : "")
+                               onchange="setCommunityType('public')" />
+                        <div class="type-content">
+                            <div class="type-icon">🌐</div>
+                            <div class="type-info">
+                                <div class="type-title">สาธารณะ</div>
+                                <div class="type-description">
+                                    ทุกคนสามารถดู โพสต์ และแสดงความคิดเห็นในชุมชนนี้ได้
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- จำกัด -->
+                    <label class="type-option @(!Model.IsPrivate && Model.RequireApproval ? "selected" : "")">
+                        <input type="radio"
+                               name="CommunityTypeOption"
+                               value="restricted"
+                               @(!Model.IsPrivate && Model.RequireApproval ? "checked" : "")
+                               onchange="setCommunityType('restricted')" />
+                        <div class="type-content">
+                            <div class="type-icon">👁️</div>
+                            <div class="type-info">
+                                <div class="type-title">จำกัด</div>
+                                <div class="type-description">
+                                    ทุกคนสามารถดูชุมชนนี้ได้ แต่เฉพาะผู้ที่อนุมัติแล้วเท่านั้นที่สามารถโพสต์ได้
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- ส่วนตัว -->
+                    <label class="type-option @(Model.IsPrivate ? "selected" : "")">
+                        <input type="radio"
+                               name="CommunityTypeOption"
+                               value="private"
+                               @(Model.IsPrivate ? "checked" : "")
+                               onchange="setCommunityType('private')" />
+                        <div class="type-content">
+                            <div class="type-icon">🔒</div>
+                            <div class="type-info">
+                                <div class="type-title">ส่วนตัว</div>
+                                <div class="type-description">
+                                    เฉพาะผู้ที่อนุมัติเท่านั้นที่สามารถดูและแสดงความคิดเห็นในชุมชนนี้
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Hidden fields for actual values -->
+                <input type="hidden" asp-for="IsPrivate" id="isPrivateInput" />
+                <input type="hidden" asp-for="RequireApproval" id="requireApprovalInput" />
+            </div>
+
+            <!-- Active Status -->
+            <div class="form-section">
+                <label class="form-label">สถานะชุมชน</label>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">
+                            <i class="bi bi-power"></i> เปิดใช้งานชุมชน
+                        </div>
+                        <div class="setting-description">
+                            ปิดการใช้งานชุมชนชั่วคราว สมาชิกจะไม่สามารถเข้าถึงได้
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" asp-for="IsActive" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="window.history.back()">
+                    ยกเลิก
+                </button>
+                <button type="button" class="btn-save" onclick="showChangesConfirmation()">
+                    <i class="bi bi-check-lg"></i> บันทึกการเปลี่ยนแปลง
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sidebar Guide (same as Create) -->
+    <div class="edit-community-sidebar">
+        <div class="sidebar-card">
+            <h3 class="sidebar-title">คำแนะนำ</h3>
+            <ul class="sidebar-rules">
+                <li>ชื่อชุมชนไม่สามารถเปลี่ยนได้หลังจากสร้างแล้ว</li>
+                <li>รูปภาพใหม่จะแทนที่รูปเก่าทันที</li>
+                <li>การเปลี่ยนแปลงจะมีผลทันทีที่บันทึก</li>
+                <li>สมาชิกทั้งหมดจะเห็นการเปลี่ยนแปลง</li>
+            </ul>
+        </div>
+
+        <div class="sidebar-card sidebar-danger">
+            <h3 class="sidebar-title">โซนอันตราย</h3>
+            <p class="sidebar-text">
+                ต้องการลบชุมชนนี้? การลบชุมชนจะทำให้ข้อมูลทั้งหมดหายไป
+            </p>
+            <button type="button" class="btn-danger-action" onclick="confirmDelete(@Model.Id)">
+                <i class="bi bi-trash"></i> ลบชุมชน
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Category Selection Modal (same as Create) -->
+<div class="category-modal" id="categoryModal">
+    <div class="category-modal-overlay" onclick="closeCategoryModal()"></div>
+    <div class="category-modal-content">
+        <div class="category-modal-header">
+            <h3>เลือกหมวดหมู่</h3>
+            <button type="button" class="category-modal-close" onclick="closeCategoryModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="category-modal-body">
+            <p class="category-modal-desc">เลือกได้สูงสุด @maxCategories หมวดหมู่ที่เหมาะสมกับชุมชนของคุณ</p>
+            <div class="category-grid" id="categoryGrid">
+                <!-- Categories will be loaded here -->
+            </div>
+        </div>
+        <div class="category-modal-footer">
+            <button type="button" class="btn-modal-cancel" onclick="closeCategoryModal()">ยกเลิก</button>
+            <button type="button" class="btn-modal-done" onclick="confirmCategories()">เสร็จสิ้น</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/community-edit.js"></script>
+}
+
+<style>
+    /* Container */
+    .edit-community-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 2rem;
+    }
+
+    /* Header */
+    .edit-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-primary, #e5e7eb);
+    }
+
+        .edit-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary, #1a1a1a);
+            margin: 0;
+        }
+
+    .btn-close-page {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        color: var(--text-secondary, #666);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .btn-close-page:hover {
+            background: var(--bg-hover, #f3f4f6);
+            color: var(--text-primary, #1a1a1a);
+        }
+
+    /* Form */
+    .edit-community-form {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-primary, #e5e7eb);
+        border-radius: 12px;
+        padding: 2rem;
+    }
+
+    [data-theme="dark"] .edit-community-form {
+        background: var(--card-bg, #1f2937);
+        border-color: var(--border-primary, #374151);
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary, #1a1a1a);
+        margin-bottom: 0.5rem;
+    }
+
+        .form-label.required::after {
+            content: '*';
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+    .optional-text {
+        font-weight: 400;
+        color: var(--text-secondary, #666);
+    }
+
+    .form-help {
+        font-size: 0.75rem;
+        color: var(--text-secondary, #666);
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-primary, #e5e7eb);
+        border-radius: 8px;
+        font-size: 0.875rem;
+        background: var(--bg-primary, #ffffff);
+        color: var(--text-primary, #1a1a1a);
+        transition: all 0.2s ease;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary, #ff4500);
+            box-shadow: 0 0 0 3px rgba(255, 69, 0, 0.1);
+        }
+
+        .form-control:read-only {
+            background: var(--bg-secondary, #f3f4f6);
+            cursor: not-allowed;
+        }
+
+    /* Category Selector */
+    .category-selector-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-primary, #e5e7eb);
+        border-radius: 8px;
+        background: var(--bg-primary, #ffffff);
+        color: var(--text-primary, #1a1a1a);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .category-selector-btn:hover {
+            border-color: var(--primary, #ff4500);
+            background: var(--bg-secondary, #f3f4f6);
+        }
+
+    .selected-categories {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .selected-category-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        background: var(--bg-secondary, #f3f4f6);
+        border-radius: 9999px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    .category-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .btn-remove-tag {
+        background: none;
+        border: none;
+        padding: 0;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-secondary, #666);
+        transition: color 0.2s;
+    }
+
+        .btn-remove-tag:hover {
+            color: var(--text-primary, #1a1a1a);
+        }
+
+    /* Images */
+    .current-image-preview {
+        margin-bottom: 1rem;
+    }
+
+    .current-image, .current-cover-image {
+        max-width: 200px;
+        border-radius: 8px;
+        border: 2px solid var(--border-primary, #e5e7eb);
+        display: block;
+        margin-top: 0.5rem;
+    }
+
+    .current-cover-image {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .image-preview {
+        position: relative;
+        margin-top: 1rem;
+        max-width: 200px;
+    }
+
+        .image-preview img {
+            width: 100%;
+            border-radius: 8px;
+            border: 2px solid var(--border-primary, #e5e7eb);
+        }
+
+    .btn-remove-image {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 28px;
+        height: 28px;
+        background: rgba(0, 0, 0, 0.6);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+        .btn-remove-image:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+    /* Community Type Options */
+    .community-type-options {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .type-option {
+        display: block;
+        border: 2px solid var(--border-primary, #e5e7eb);
+        border-radius: 12px;
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--bg-primary, #ffffff);
+    }
+
+        .type-option:hover {
+            border-color: var(--primary, #ff4500);
+            background: rgba(255, 69, 0, 0.02);
+        }
+
+        .type-option.selected {
+            border-color: var(--primary, #ff4500);
+            background: rgba(255, 69, 0, 0.05);
+        }
+
+        .type-option input[type="radio"] {
+            display: none;
+        }
+
+    .type-content {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .type-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .type-info {
+        flex: 1;
+    }
+
+    .type-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-primary, #1a1a1a);
+        margin-bottom: 0.25rem;
+    }
+
+    .type-description {
+        font-size: 0.8125rem;
+        color: var(--text-secondary, #666);
+        line-height: 1.5;
+    }
+
+    /* Checkbox Card (NSFW) */
+    .checkbox-card {
+        border: 2px solid #ef4444;
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: all 0.2s;
+        background: var(--bg-primary, #ffffff);
+    }
+
+        .checkbox-card:has(input:checked) {
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+    .checkbox-label {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .checkbox-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .checkbox-content {
+        flex: 1;
+    }
+
+    .checkbox-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-primary, #1a1a1a);
+        margin-bottom: 0.25rem;
+    }
+
+    .checkbox-desc {
+        font-size: 0.8125rem;
+        color: var(--text-secondary, #666);
+        line-height: 1.5;
+    }
+
+    .checkbox-card input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        margin-top: 2px;
+    }
+
+    /* Privacy Settings */
+    .setting-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background: var(--bg-secondary, #f3f4f6);
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+    }
+
+    .setting-info {
+        flex: 1;
+    }
+
+    .setting-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary, #1a1a1a);
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .setting-description {
+        font-size: 0.75rem;
+        color: var(--text-secondary, #666);
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 26px;
+    }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #cbd5e1;
+        border-radius: 34px;
+        transition: 0.3s;
+    }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+    input:checked + .toggle-slider {
+        background: var(--primary, #ff4500);
+    }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+    /* Actions */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border-primary, #e5e7eb);
+    }
+
+    .btn-cancel, .btn-save {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: var(--text-primary, #1a1a1a);
+        border: 1px solid var(--border-primary, #e5e7eb);
+    }
+
+        .btn-cancel:hover {
+            background: var(--bg-hover, #f3f4f6);
+        }
+
+    .btn-save {
+        background: var(--primary, #ff4500);
+        color: white;
+    }
+
+        .btn-save:hover {
+            background: var(--primary-hover, #e03d00);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
+        }
+
+    /* Sidebar */
+    .edit-community-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .sidebar-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-primary, #e5e7eb);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    [data-theme="dark"] .sidebar-card {
+        background: var(--card-bg, #1f2937);
+        border-color: var(--border-primary, #374151);
+    }
+
+    .sidebar-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-secondary, #666);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 1rem 0;
+    }
+
+    .sidebar-rules {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .sidebar-rules li {
+            font-size: 0.8125rem;
+            color: var(--text-primary, #1a1a1a);
+            padding-left: 1.25rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            line-height: 1.5;
+        }
+
+            .sidebar-rules li::before {
+                content: '•';
+                position: absolute;
+                left: 0;
+                color: var(--primary, #ff4500);
+                font-weight: bold;
+            }
+
+            .sidebar-rules li:last-child {
+                margin-bottom: 0;
+            }
+
+    .sidebar-text {
+        font-size: 0.8125rem;
+        color: var(--text-primary, #1a1a1a);
+        line-height: 1.5;
+        margin: 0 0 1rem 0;
+    }
+
+    .sidebar-danger {
+        border-left: 4px solid #ef4444;
+    }
+
+    .btn-danger-action {
+        width: 100%;
+        padding: 0.75rem;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+        .btn-danger-action:hover {
+            background: #dc2626;
+        }
+
+    /* Category Modal */
+    .category-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10000;
+        display: none;
+    }
+
+        .category-modal.active {
+            display: block;
+        }
+
+    .category-modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+    }
+
+    .category-modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        background: var(--card-bg, #ffffff);
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .category-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-primary, #e5e7eb);
+    }
+
+        .category-modal-header h3 {
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+
+    .category-modal-close {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .category-modal-close:hover {
+            background: var(--bg-hover, #f3f4f6);
+        }
+
+    .category-modal-body {
+        padding: 1.5rem;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .category-modal-desc {
+        font-size: 0.875rem;
+        color: var(--text-secondary, #666);
+        margin-bottom: 1.5rem;
+    }
+
+    .category-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .category-parent-section {
+        border: 1px solid var(--border-primary, #e5e7eb);
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    .category-parent-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-secondary, #666);
+        margin: 0 0 0.75rem 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .category-item {
+        padding: 0.75rem;
+        border-radius: 8px;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+        .category-item:hover {
+            background: var(--bg-secondary, #f3f4f6);
+        }
+
+        .category-item.selected {
+            background: rgba(255, 69, 0, 0.1);
+            border: 1px solid var(--primary, #ff4500);
+        }
+
+    .category-checkbox {
+        display: flex;
+        align-items: center;
+    }
+
+        .category-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 0.75rem;
+            cursor: pointer;
+        }
+
+        .category-checkbox label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            flex: 1;
+            margin: 0;
+        }
+
+    .category-sub-container {
+        margin-top: 0.5rem;
+        padding-left: 1rem;
+        border-left: 2px solid var(--border-primary, #e5e7eb);
+    }
+
+    .category-sub-item {
+        font-size: 0.875rem;
+    }
+
+    .category-modal-footer {
+        display: flex;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-top: 1px solid var(--border-primary, #e5e7eb);
+    }
+
+    .btn-modal-cancel, .btn-modal-done {
+        flex: 1;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-modal-cancel {
+        background: var(--bg-secondary, #f3f4f6);
+        color: var(--text-primary, #1a1a1a);
+    }
+
+        .btn-modal-cancel:hover {
+            background: var(--bg-hover, #e5e7eb);
+        }
+
+    .btn-modal-done {
+        background: var(--primary, #ff4500);
+        color: white;
+    }
+
+        .btn-modal-done:hover {
+            background: var(--primary-hover, #e03d00);
+        }
+
+    /* Toast */
+    .community-toast {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        z-index: 99999;
+        min-width: 320px;
+        max-width: 420px;
+        transition: all 0.3s;
+    }
+
+        .community-toast.show {
+            animation: slideIn 0.3s ease-out;
+        }
+
+    @@keyframes slideIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    }
+
+    .community-toast-error {
+        border-left: 4px solid #ef4444;
+    }
+
+    .community-toast-success {
+        border-left: 4px solid #10b981;
+    }
+
+    /* Responsive */
+    @@media (max-width: 991px) {
+        .edit-community-container
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .edit-community-sidebar {
+        order: -1;
+    }
+
+    }
+
+    @@media (max-width: 767px) {
+        .edit-community-container
+
+    {
+        padding: 1rem;
+    }
+
+    .edit-community-form {
+        padding: 1.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .btn-cancel, .btn-save {
+        width: 100%;
+    }
+
+    }
+</style>
+
+<script>
+    const MAX_CATEGORIES = @maxCategories;
+    let selectedCategories = [];
+
+    // Load categories from ViewBag
+    const categoryTree = @Html.Raw(Json.Serialize(ViewBag.Categories ?? new List<object>()));
+
+    // Load pre-selected categories
+    const preSelectedIds = '@Model.CategoryIds'.split(',').filter(id => id).map(id => parseInt(id));
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCategories();
+        loadPreSelectedCategories();
+        updateDescriptionCounter();
+        updateRulesCounter();
+        setupImagePreviews();
+    });
+
+    function loadPreSelectedCategories() {
+        // Find and select pre-selected categories
+        preSelectedIds.forEach(categoryId => {
+            const category = findCategoryById(categoryId, categoryTree);
+            if (category) {
+                selectedCategories.push(category);
+            }
+        });
+        updateSelectedCategoriesDisplay();
+    }
+
+    function findCategoryById(id, categories) {
+        for (const category of categories) {
+            if (category.id === id) {
+                return category;
+            }
+            if (category.subCategories && category.subCategories.length > 0) {
+                const found = findCategoryById(id, category.subCategories);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    function loadCategories() {
+        const categoryGrid = document.getElementById('categoryGrid');
+        categoryGrid.innerHTML = '';
+
+        categoryTree.forEach(parentCategory => {
+            // Parent category section
+            const parentSection = document.createElement('div');
+            parentSection.className = 'category-parent-section';
+
+            const parentHeader = document.createElement('h4');
+            parentHeader.className = 'category-parent-name';
+            parentHeader.textContent = parentCategory.name;
+            parentSection.appendChild(parentHeader);
+
+            // Parent category checkbox
+            const parentItem = createCategoryItem(parentCategory, false);
+            parentSection.appendChild(parentItem);
+
+            // Subcategories
+            if (parentCategory.subCategories && parentCategory.subCategories.length > 0) {
+                const subContainer = document.createElement('div');
+                subContainer.className = 'category-sub-container';
+
+                parentCategory.subCategories.forEach(subCategory => {
+                    const subItem = createCategoryItem(subCategory, true);
+                    subContainer.appendChild(subItem);
+                });
+
+                parentSection.appendChild(subContainer);
+            }
+
+            categoryGrid.appendChild(parentSection);
+        });
+    }
+
+    function createCategoryItem(category, isSubCategory) {
+        const div = document.createElement('div');
+        div.className = isSubCategory ? 'category-item category-sub-item' : 'category-item category-parent-item';
+
+        const isSelected = selectedCategories.some(c => c.id === category.id);
+        if (isSelected) {
+            div.classList.add('selected');
+        }
+
+        div.innerHTML = `
+            <div class="category-checkbox">
+                <input type="checkbox"
+                       id="cat_${category.id}"
+                       ${isSelected ? 'checked' : ''}
+                       onchange="toggleCategory(${category.id})">
+                <label for="cat_${category.id}">
+                    <span class="category-color" style="background: ${category.color}"></span>
+                    <span class="category-name">${category.name}</span>
+                </label>
+            </div>
+        `;
+
+        return div;
+    }
+
+    function toggleCategory(categoryId) {
+        const category = findCategoryById(categoryId, categoryTree);
+        if (!category) return;
+
+        const index = selectedCategories.findIndex(c => c.id === categoryId);
+
+        if (index > -1) {
+            selectedCategories.splice(index, 1);
+        } else {
+            if (selectedCategories.length >= MAX_CATEGORIES) {
+                showToast(`เลือกได้สูงสุด ${MAX_CATEGORIES} หมวดหมู่`, 'error');
+                document.getElementById(`cat_${categoryId}`).checked = false;
+                return;
+            }
+            selectedCategories.push(category);
+        }
+
+        updateSelectedCategoriesDisplay();
+        loadCategories();
+    }
+
+    function updateSelectedCategoriesDisplay() {
+        const container = document.getElementById('selectedCategories');
+        const input = document.getElementById('categoryIdsInput');
+        const text = document.getElementById('selectedCategoryText');
+
+        if (selectedCategories.length === 0) {
+            container.innerHTML = '';
+            input.value = '';
+            text.textContent = 'เลือกหมวดหมู่';
+            return;
+        }
+
+        text.textContent = `เลือกแล้ว ${selectedCategories.length} หมวดหมู่`;
+        input.value = selectedCategories.map(c => c.id).join(',');
+
+        container.innerHTML = selectedCategories.map(cat => `
+            <span class="selected-category-tag">
+                <span class="category-color" style="background: ${cat.color}"></span>
+                ${cat.name}
+                <button type="button" onclick="removeCategory(${cat.id})" class="btn-remove-tag">
+                    <i class="bi bi-x"></i>
+                </button>
+            </span>
+        `).join('');
+    }
+
+    function removeCategory(categoryId) {
+        const index = selectedCategories.findIndex(c => c.id === categoryId);
+        if (index > -1) {
+            selectedCategories.splice(index, 1);
+            updateSelectedCategoriesDisplay();
+            loadCategories();
+        }
+    }
+
+    function openCategoryModal() {
+        document.getElementById('categoryModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCategoryModal() {
+        document.getElementById('categoryModal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function confirmCategories() {
+        if (selectedCategories.length === 0) {
+            showToast('กรุณาเลือกอย่างน้อย 1 หมวดหมู่', 'error');
+            return;
+        }
+        closeCategoryModal();
+    }
+
+    function showToast(message, type) {
+        // Reuse toast function from Create page
+        const toast = document.createElement('div');
+        toast.className = `community-toast community-toast-${type} show`;
+        toast.innerHTML = `
+            <i class="bi bi-${type === 'error' ? 'exclamation-circle-fill' : 'check-circle-fill'}"></i>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function updateDescriptionCounter() {
+        const textarea = document.querySelector('textarea[name="Description"]');
+        const counter = textarea.nextElementSibling;
+
+        textarea.addEventListener('input', function() {
+            const length = this.value.length;
+            counter.textContent = `${length}/500 ตัวอักษร`;
+        });
+    }
+
+    function updateRulesCounter() {
+        const textarea = document.querySelector('textarea[name="Rules"]');
+        const counter = textarea.nextElementSibling;
+
+        textarea.addEventListener('input', function() {
+            const length = this.value.length;
+            counter.textContent = `${length}/2000 ตัวอักษร`;
+        });
+    }
+
+    function setupImagePreviews() {
+        // Profile image preview
+        document.getElementById('imageFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('ไฟล์ใหญ่เกินไป (สูงสุด 5MB)', 'error');
+                    this.value = '';
+                    return;
+                }
+
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    showToast('ประเภทไฟล์ไม่ถูกต้อง', 'error');
+                    this.value = '';
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    // Hide current image
+                    const currentImage = document.getElementById('currentImage');
+                    if (currentImage) currentImage.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Cover image preview
+        document.getElementById('coverImageFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('ไฟล์ใหญ่เกินไป (สูงสุด 5MB)', 'error');
+                    this.value = '';
+                    return;
+                }
+
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    showToast('ประเภทไฟล์ไม่ถูกต้อง', 'error');
+                    this.value = '';
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewCoverImage').src = e.target.result;
+                    document.getElementById('coverImagePreview').style.display = 'block';
+                    // Hide current cover
+                    const currentCover = document.getElementById('currentCoverImage');
+                    if (currentCover) currentCover.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    function removeImage() {
+        document.getElementById('imageFileInput').value = '';
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('previewImage').src = '#';
+        // Show current image again
+        const currentImage = document.getElementById('currentImage');
+        if (currentImage) currentImage.style.display = 'block';
+        showToast('ลบรูปภาพแล้ว', 'success');
+    }
+
+    function removeCoverImage() {
+        document.getElementById('coverImageFileInput').value = '';
+        document.getElementById('coverImagePreview').style.display = 'none';
+        document.getElementById('previewCoverImage').src = '#';
+        // Show current cover again
+        const currentCover = document.getElementById('currentCoverImage');
+        if (currentCover) currentCover.style.display = 'block';
+        showToast('ลบรูปปกแล้ว', 'success');
+    }
+
+    function confirmDelete(communityId) {
+        if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบชุมชนนี้?\n\nการลบจะทำให้ชุมชนถูกปิดใช้งาน และสามารถกู้คืนได้ภายใน 30 วัน')) {
+            // TODO: Implement delete functionality
+            alert('ฟีเจอร์ลบชุมชนจะพัฒนาในอนาคต');
+        }
+    }
+
+    // Handle Community Type selection
+    function setCommunityType(type) {
+        const isPrivateInput = document.getElementById('isPrivateInput');
+        const requireApprovalInput = document.getElementById('requireApprovalInput');
+
+        // Reset
+        isPrivateInput.value = 'false';
+        requireApprovalInput.value = 'false';
+
+        // Set based on type
+        switch(type) {
+            case 'public':
+                // All false (default)
+                break;
+            case 'restricted':
+                requireApprovalInput.value = 'true';
+                break;
+            case 'private':
+                isPrivateInput.value = 'true';
+                requireApprovalInput.value = 'true';
+                break;
+        }
+
+        // Update UI
+        document.querySelectorAll('.type-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+        event.target.closest('.type-option').classList.add('selected');
+    }
+</script>

@@ -26,7 +26,8 @@ namespace BlogHybrid.Infrastructure.Repositories
         public async Task<Community?> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.Communities
-                .Include(c => c.Category)
+                .Include(c => c.CommunityCategories)
+                    .ThenInclude(cc => cc.Category)
                 .Include(c => c.Creator)
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
@@ -40,7 +41,8 @@ namespace BlogHybrid.Infrastructure.Repositories
         public async Task<Community?> GetBySlugWithDetailsAsync(string slug, CancellationToken cancellationToken = default)
         {
             return await _context.Communities
-                .Include(c => c.Category)
+                .Include(c => c.CommunityCategories)
+                    .ThenInclude(cc => cc.Category)
                 .Include(c => c.Creator)
                 .FirstOrDefaultAsync(c => c.Slug == slug, cancellationToken);
         }
@@ -55,7 +57,8 @@ namespace BlogHybrid.Infrastructure.Repositories
             }
 
             return await query
-                .Include(c => c.Category)
+                .Include(c => c.CommunityCategories)
+                    .ThenInclude(cc => cc.Category)
                 .OrderBy(c => c.SortOrder)
                 .ThenByDescending(c => c.CreatedAt)
                 .ToListAsync(cancellationToken);
@@ -64,8 +67,9 @@ namespace BlogHybrid.Infrastructure.Repositories
         public async Task<List<Community>> GetByCategoryIdAsync(int categoryId, CancellationToken cancellationToken = default)
         {
             return await _context.Communities
-                .Where(c => c.CategoryId == categoryId && c.IsActive)
-                .Include(c => c.Category)
+                .Where(c => c.CommunityCategories.Any(cc => cc.CategoryId == categoryId) && c.IsActive)
+                .Include(c => c.CommunityCategories)
+                    .ThenInclude(cc => cc.Category)
                 .OrderBy(c => c.SortOrder)
                 .ThenByDescending(c => c.MemberCount)
                 .ToListAsync(cancellationToken);
@@ -83,14 +87,15 @@ namespace BlogHybrid.Infrastructure.Repositories
             CancellationToken cancellationToken = default)
         {
             var query = _context.Communities
-                .Include(c => c.Category)
+                .Include(c => c.CommunityCategories)
+                    .ThenInclude(cc => cc.Category)
                 .Include(c => c.Creator)
                 .AsQueryable();
 
             // Apply filters
             if (categoryId.HasValue)
             {
-                query = query.Where(c => c.CategoryId == categoryId.Value);
+                query = query.Where(c => c.CommunityCategories.Any(cc => cc.CategoryId == categoryId.Value));
             }
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -287,6 +292,7 @@ namespace BlogHybrid.Infrastructure.Repositories
         }
 
         #endregion
+
         #region Invite Management
 
         public async Task<CommunityInvite?> GetInviteByTokenAsync(string token, CancellationToken cancellationToken = default)
@@ -363,7 +369,8 @@ namespace BlogHybrid.Infrastructure.Repositories
         {
             return await _context.Communities
                 .Where(c => c.CreatorId == userId)
-                .Include(c => c.Category)
+                .Include(c => c.CommunityCategories)
+                    .ThenInclude(cc => cc.Category)
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync(cancellationToken);
         }

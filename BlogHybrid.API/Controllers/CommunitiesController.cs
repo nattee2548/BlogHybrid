@@ -1,311 +1,174 @@
 ﻿using BlogHybrid.Application.Commands.Community;
-using BlogHybrid.Application.DTOs.Community;
 using BlogHybrid.Application.Queries.Community;
+using BlogHybrid.Application.Queries.Category;
+using BlogHybrid.Application.Interfaces.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace BlogHybrid.API.Controllers
+namespace BlogHybrid.Web.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class CommunitiesController : ControllerBase
+    public class CommunityController : Controller
     {
         private readonly IMediator _mediator;
-        private readonly ILogger<CommunitiesController> _logger;
+        private readonly IImageService _imageService;
+        private readonly ILogger<CommunityController> _logger;
 
-        public CommunitiesController(IMediator mediator, ILogger<CommunitiesController> logger)
+        public CommunityController(
+            IMediator mediator,
+            IImageService imageService,
+            ILogger<CommunityController> logger)
         {
             _mediator = mediator;
+            _imageService = imageService;
             _logger = logger;
         }
 
-        private string? GetCurrentUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        #region Query Endpoints
-
-        // GET: api/communities
-        [HttpGet]
-        public async Task<IActionResult> GetCommunities([FromQuery] GetCommunitiesQuery query)
-        {
-            query.CurrentUserId = GetCurrentUserId();
-            var result = await _mediator.Send(query);
-            return Ok(result);
-        }
-
-        // GET: api/communities/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCommunity(int id)
-        {
-            var query = new GetCommunityByIdQuery
-            {
-                Id = id,
-                CurrentUserId = GetCurrentUserId()
-            };
-
-            var result = await _mediator.Send(query);
-
-            if (result == null)
-                return NotFound(new { message = "Community not found or you don't have access" });
-
-            return Ok(result);
-        }
-
-        // GET: api/communities/slug/{slug}
-        [HttpGet("slug/{slug}")]
-        public async Task<IActionResult> GetCommunityBySlug(string slug)
-        {
-            var query = new GetCommunityBySlugQuery
-            {
-                Slug = slug,
-                CurrentUserId = GetCurrentUserId()
-            };
-
-            var result = await _mediator.Send(query);
-
-            if (result == null)
-                return NotFound(new { message = "Community not found or you don't have access" });
-
-            return Ok(result);
-        }
-
-        // GET: api/communities/category/{categoryId}
-        [HttpGet("category/{categoryId}")]
-        public async Task<IActionResult> GetCommunitiesByCategory(int categoryId, [FromQuery] bool includePrivate = false, [FromQuery] bool onlyActive = true)
-        {
-            var query = new GetCommunitiesByCategoryQuery
-            {
-                CategoryId = categoryId,
-                IncludePrivate = includePrivate,
-                OnlyActive = onlyActive,
-                CurrentUserId = GetCurrentUserId()
-            };
-
-            var result = await _mediator.Send(query);
-            return Ok(result);
-        }
-
-        // GET: api/communities/user/{userId}
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetUserCommunities(string userId, [FromQuery] bool includeDeleted = false)
-        {
-            var query = new GetUserCommunitiesQuery
-            {
-                UserId = userId,
-                IncludeDeleted = includeDeleted
-            };
-
-            var result = await _mediator.Send(query);
-            return Ok(result);
-        }
-
-        // GET: api/communities/popular
-        [HttpGet("popular")]
-        public async Task<IActionResult> GetPopularCommunities([FromQuery] int top = 10, [FromQuery] int? categoryId = null)
-        {
-            var query = new GetPopularCommunitiesQuery
-            {
-                Top = top,
-                CategoryId = categoryId,
-                OnlyPublic = true
-            };
-
-            var result = await _mediator.Send(query);
-            return Ok(result);
-        }
-
-        // GET: api/communities/check-limit
-        [HttpGet("check-limit")]
+        // GET: /create-community
         [Authorize]
-        public async Task<IActionResult> CheckCommunityLimit()
+        [HttpGet("create-community")]
+        public async Task<IActionResult> Create()
         {
-            var userId = GetCurrentUserId();
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var query = new CheckUserCommunityLimitQuery { UserId = userId };
-            var result = await _mediator.Send(query);
-            return Ok(result);
-        }
-
-        // GET: api/communities/check-slug/{slug}
-        [HttpGet("check-slug/{slug}")]
-        public async Task<IActionResult> CheckSlugExists(string slug, [FromQuery] int? excludeId = null)
-        {
-            var query = new CheckCommunitySlugExistsQuery
+            try
             {
-                Slug = slug,
-                ExcludeId = excludeId
-            };
+                // Get category tree (parent + subcategories)
+                var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                var categories = await _mediator.Send(categoriesQuery);
 
-            var exists = await _mediator.Send(query);
-            return Ok(new { exists });
-        }
-
-        // GET: api/communities/stats
-        [HttpGet("stats")]
-        public async Task<IActionResult> GetCommunityStats([FromQuery] int? categoryId = null)
-        {
-            var query = new GetCommunityStatsQuery { CategoryId = categoryId };
-            var result = await _mediator.Send(query);
-            return Ok(result);
-        }
-
-        #endregion
-
-        #region Command Endpoints
-
-        // POST: api/communities
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> CreateCommunity([FromBody] CreateCommunityDto dto)
-        {
-            var userId = GetCurrentUserId();
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            // Check limit first
-            var limitQuery = new CheckUserCommunityLimitQuery { UserId = userId };
-            var limitResult = await _mediator.Send(limitQuery);
-
-            if (!limitResult.CanCreateMore)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = $"You can only create up to {limitResult.MaxAllowed} communities",
-                    errors = new[] { $"Community limit reached ({limitResult.CurrentCount}/{limitResult.MaxAllowed})" }
-                });
+                ViewBag.Categories = categories;
+                return View();
             }
-
-            var command = new CreateCommunityCommand
+            catch (Exception ex)
             {
-                Name = dto.Name,
-                Description = dto.Description,
-                ImageUrl = dto.ImageUrl,
-                CoverImageUrl = dto.CoverImageUrl,
-                Rules = dto.Rules,
-                CategoryId = dto.CategoryId,
-                IsPrivate = dto.IsPrivate,
-                RequireApproval = dto.RequireApproval,
-                CreatorId = userId
-            };
-
-            var result = await _mediator.Send(command);
-
-            if (!result.Success)
-                return BadRequest(result);
-
-            return CreatedAtAction(
-                nameof(GetCommunity),
-                new { id = result.CommunityId },
-                result);
+                _logger.LogError(ex, "Error loading create community page");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการโหลดหน้า";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
-        // PUT: api/communities/{id}
-        [HttpPut("{id}")]
+        // POST: /create-community
         [Authorize]
-        public async Task<IActionResult> UpdateCommunity(int id, [FromBody] UpdateCommunityDto dto)
+        [HttpPost("create-community")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(
+            CreateCommunityCommand command,
+            IFormFile? ImageFile,
+            IFormFile? CoverImageFile)
         {
-            var userId = GetCurrentUserId();
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var command = new UpdateCommunityCommand
+            try
             {
-                Id = id,
-                Name = dto.Name,
-                Description = dto.Description,
-                ImageUrl = dto.ImageUrl,
-                CoverImageUrl = dto.CoverImageUrl,
-                Rules = dto.Rules,
-                CategoryId = dto.CategoryId,
-                IsPrivate = dto.IsPrivate,
-                RequireApproval = dto.RequireApproval,
-                IsActive = dto.IsActive,
-                CurrentUserId = userId
-            };
+                // Get current user ID
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Index", "Home");
+                }
 
-            var result = await _mediator.Send(command);
+                command.CreatorId = userId;
 
-            if (!result.Success)
-                return BadRequest(result);
+                // Upload profile image if provided
+                if (ImageFile != null && ImageFile.Length > 0)
+                {
+                    try
+                    {
+                        var imagePath = await _imageService.UploadAsync(ImageFile, "communities");
+                        command.ImageUrl = _imageService.GetImageUrl(imagePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error uploading community profile image");
+                        ModelState.AddModelError("ImageFile", "ไม่สามารถอัปโหลดรูปโปรไฟล์ได้");
+                        return await ReloadCreateView(command);
+                    }
+                }
 
-            return Ok(result);
+                // Upload cover image if provided
+                if (CoverImageFile != null && CoverImageFile.Length > 0)
+                {
+                    try
+                    {
+                        var coverPath = await _imageService.UploadAsync(CoverImageFile, "communities/covers");
+                        command.CoverImageUrl = _imageService.GetImageUrl(coverPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error uploading community cover image");
+
+                        // Delete profile image if already uploaded
+                        if (!string.IsNullOrEmpty(command.ImageUrl))
+                        {
+                            await _imageService.DeleteAsync(command.ImageUrl);
+                        }
+
+                        ModelState.AddModelError("CoverImageFile", "ไม่สามารถอัปโหลดรูปปกได้");
+                        return await ReloadCreateView(command);
+                    }
+                }
+
+                // Validate model state
+                if (!ModelState.IsValid)
+                {
+                    return await ReloadCreateView(command);
+                }
+
+                // Send command to create community
+                var result = await _mediator.Send(command);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = result.Message;
+                    // Redirect to community detail page: /{category-slug}/{community-slug}
+                    return Redirect($"/{result.FullSlug}");
+                }
+                else
+                {
+                    // Delete uploaded images if community creation failed
+                    if (!string.IsNullOrEmpty(command.ImageUrl))
+                    {
+                        await _imageService.DeleteAsync(command.ImageUrl);
+                    }
+                    if (!string.IsNullOrEmpty(command.CoverImageUrl))
+                    {
+                        await _imageService.DeleteAsync(command.CoverImageUrl);
+                    }
+
+                    // Show errors
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error);
+                    }
+
+                    return await ReloadCreateView(command);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating community");
+
+                // Clean up uploaded images on error
+                if (!string.IsNullOrEmpty(command.ImageUrl))
+                {
+                    await _imageService.DeleteAsync(command.ImageUrl);
+                }
+                if (!string.IsNullOrEmpty(command.CoverImageUrl))
+                {
+                    await _imageService.DeleteAsync(command.CoverImageUrl);
+                }
+
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการสร้างชุมชน";
+                return await ReloadCreateView(command);
+            }
         }
 
-        // DELETE: api/communities/{id}
-        [HttpDelete("{id}")]
-        [Authorize]
-        public async Task<IActionResult> DeleteCommunity(int id, [FromQuery] bool permanent = false)
+        // Helper method to reload view with categories
+        private async Task<IActionResult> ReloadCreateView(CreateCommunityCommand command)
         {
-            var userId = GetCurrentUserId();
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var command = new DeleteCommunityCommand
-            {
-                Id = id,
-                CurrentUserId = userId,
-                PermanentDelete = permanent
-            };
-
-            var result = await _mediator.Send(command);
-
-            if (!result.Success)
-                return BadRequest(result);
-
-            return Ok(result);
+            var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+            var categories = await _mediator.Send(categoriesQuery);
+            ViewBag.Categories = categories;
+            return View(command);
         }
-
-        // POST: api/communities/{id}/restore
-        [HttpPost("{id}/restore")]
-        [Authorize]
-        public async Task<IActionResult> RestoreCommunity(int id)
-        {
-            var userId = GetCurrentUserId();
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var command = new RestoreCommunityCommand
-            {
-                Id = id,
-                CurrentUserId = userId
-            };
-
-            var result = await _mediator.Send(command);
-
-            if (!result.Success)
-                return BadRequest(result);
-
-            return Ok(result);
-        }
-
-        // PUT: api/communities/{id}/toggle-status
-        [HttpPut("{id}/toggle-status")]
-        [Authorize]
-        public async Task<IActionResult> ToggleCommunityStatus(int id, [FromBody] bool isActive)
-        {
-            var userId = GetCurrentUserId();
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var command = new ToggleCommunityStatusCommand
-            {
-                Id = id,
-                IsActive = isActive,
-                CurrentUserId = userId
-            };
-
-            var result = await _mediator.Send(command);
-
-            if (!result.Success)
-                return BadRequest(result);
-
-            return Ok(result);
-        }
-
-        #endregion
     }
 }
