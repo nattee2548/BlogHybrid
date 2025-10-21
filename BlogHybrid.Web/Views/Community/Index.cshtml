@@ -1,0 +1,1112 @@
+﻿@model BlogHybrid.Application.DTOs.Community.CommunityListDto
+
+@{
+    ViewData["Title"] = "ชุมชนทั้งหมด";
+}
+
+<div class="communities-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="bi bi-people-fill"></i> ค้นพบชุมชน</h1>
+                <p class="header-subtitle">เข้าร่วมชุมชนที่คุณสนใจและเชื่อมต่อกับผู้คนที่มีความสนใจเดียวกัน</p>
+            </div>
+            <a asp-controller="Community" asp-action="Create" class="btn-create-community">
+                <i class="bi bi-plus-lg"></i> สร้างชุมชน
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="filter-section">
+        <div class="search-bar">
+            <i class="bi bi-search"></i>
+            <input type="text" id="searchInput" placeholder="ค้นหาชุมชน..." value="@ViewBag.SearchTerm">
+        </div>
+
+        <div class="filters">
+            <select id="categoryFilter" class="filter-select">
+                <option value="">ทุกหมวดหมู่</option>
+                @if (ViewBag.Categories != null)
+                {
+                    @foreach (var category in ViewBag.Categories)
+                    {
+                        <option value="@category.Id" selected="@(ViewBag.SelectedCategoryId == category.Id)">
+                            @category.Name
+                        </option>
+                    }
+                }
+            </select>
+
+            <select id="privacyFilter" class="filter-select">
+                <option value="">ทั้งหมด</option>
+                <option value="false" selected="@(ViewBag.IsPrivate == false)">สาธารณะ</option>
+                <option value="true" selected="@(ViewBag.IsPrivate == true)">ส่วนตัว</option>
+            </select>
+
+            <select id="sortFilter" class="filter-select">
+                <option value="CreatedAt-desc">ใหม่ล่าสุด</option>
+                <option value="MemberCount-desc" selected="@(ViewBag.SortBy == "MemberCount")">สมาชิกมากที่สุด</option>
+                <option value="PostCount-desc">โพสต์มากที่สุด</option>
+                <option value="Name-asc">ชื่อ A-Z</option>
+            </select>
+
+            <button id="clearFilters" class="btn-clear-filters">
+                <i class="bi bi-x-circle"></i> ล้างตัวกรอง
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    @if (Model.TotalCount > 0)
+    {
+        <div class="stats-banner">
+            <div class="stat-item">
+                <i class="bi bi-collection-fill"></i>
+                <span>พบ <strong>@Model.TotalCount</strong> ชุมชน</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <i class="bi bi-people-fill"></i>
+                <span><strong>@Model.Communities.Sum(c => c.MemberCount).ToString("N0")</strong> สมาชิกทั้งหมด</span>
+            </div>
+        </div>
+    }
+
+    <!-- Communities Grid -->
+    <div class="communities-container">
+        @if (Model == null || !Model.Communities.Any())
+        {
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h3>ไม่พบชุมชนที่ตรงกับเงื่อนไข</h3>
+                <p>ลองเปลี่ยนคำค้นหาหรือตัวกรองใหม่ หรือสร้างชุมชนใหม่ของคุณเอง</p>
+                <a asp-controller="Community" asp-action="Create" class="btn-create-first">
+                    <i class="bi bi-plus-circle"></i> สร้างชุมชนแรก
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="communities-grid">
+                @foreach (var community in Model.Communities)
+                {
+                    <div class="community-card @(!community.IsActive ? "inactive" : "")">
+                        <!-- Cover Image -->
+                        <div class="card-cover">
+                            @if (!string.IsNullOrEmpty(community.CoverImageUrl))
+                            {
+                                <img src="@community.CoverImageUrl" alt="@community.Name Cover">
+                            }
+                            else
+                            {
+                                <div class="cover-placeholder"></div>
+                            }
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <!-- Community Avatar & Info -->
+                            <div class="community-header">
+                                <div class="community-avatar-wrapper">
+                                    @if (!string.IsNullOrEmpty(community.ImageUrl))
+                                    {
+                                        <img src="@community.ImageUrl" alt="@community.Name" class="community-avatar">
+                                    }
+                                    else
+                                    {
+                                        <div class="avatar-placeholder">
+                                            <i class="bi bi-people-fill"></i>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="community-info">
+                                    <h3 class="community-name">
+                                        <a asp-controller="Community"
+                                           asp-action="Details"
+                                           asp-route-communitySlug="@community.Slug">
+                                            @community.Name
+                                        </a>
+                                    </h3>
+                                    <p class="community-category">
+                                        <i class="bi bi-tag-fill"></i> @community.CategoryName
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            @if (!string.IsNullOrEmpty(community.Description))
+                            {
+                                <p class="community-description">@community.Description</p>
+                            }
+
+                            <!-- Stats -->
+                            <div class="community-stats">
+                                <div class="stat">
+                                    <i class="bi bi-people"></i>
+                                    <span>@community.MemberCount.ToString("N0") สมาชิก</span>
+                                </div>
+                                <div class="stat">
+                                    <i class="bi bi-file-text"></i>
+                                    <span>@community.PostCount.ToString("N0") โพสต์</span>
+                                </div>
+                            </div>
+
+                            <!-- Badges -->
+                            <div class="community-badges">
+                                @if (community.IsPrivate)
+                                {
+                                    <span class="badge badge-private">
+                                        <i class="bi bi-lock-fill"></i> ส่วนตัว
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-public">
+                                        <i class="bi bi-globe"></i> สาธารณะ
+                                    </span>
+                                }
+
+                                @if (!community.IsActive)
+                                {
+                                    <span class="badge badge-inactive">
+                                        <i class="bi bi-pause-circle"></i> ไม่ active
+                                    </span>
+                                }
+
+                                @if (community.IsCurrentUserMember == true)
+                                {
+                                    <span class="badge badge-joined">
+                                        <i class="bi bi-check-circle-fill"></i> เข้าร่วมแล้ว
+                                    </span>
+                                }
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="card-actions">
+                                <a asp-controller="Community"
+                                   asp-action="Details"
+                                   asp-route-communitySlug="@community.Slug"
+                                   class="btn-action btn-view">
+                                    <i class="bi bi-eye"></i> ดูชุมชน
+                                </a>
+
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    @if (community.IsCurrentUserMember == true)
+                                    {
+                                        <button type="button"
+                                                class="btn-action btn-leave"
+                                                onclick="leaveCommunity(@community.Id, '@community.Name')">
+                                            <i class="bi bi-box-arrow-right"></i> ออกจากชุมชน
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button"
+                                                class="btn-action btn-join"
+                                                onclick="joinCommunity(@community.Id, '@community.Name', @community.IsPrivate.ToString().ToLower(), @community.RequireApproval.ToString().ToLower())">
+                                            <i class="bi bi-person-plus"></i> เข้าร่วม
+                                        </button>
+                                    }
+                                }
+                                else
+                                {
+                                    <a asp-controller="Account" asp-action="Login" class="btn-action btn-join">
+                                        <i class="bi bi-person-plus"></i> เข้าสู่ระบบเพื่อเข้าร่วม
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="pagination-container">
+                    <nav aria-label="Community pagination">
+                        <ul class="pagination">
+                            @if (Model.PageNumber > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?pageNumber=@(Model.PageNumber - 1)&pageSize=@Model.PageSize">
+                                        <i class="bi bi-chevron-left"></i> ก่อนหน้า
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                    <a class="page-link" href="?pageNumber=@i&pageSize=@Model.PageSize">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.PageNumber < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?pageNumber=@(Model.PageNumber + 1)&pageSize=@Model.PageSize">
+                                        ถัดไป <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .communities-page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .header-left h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+        .header-left h1 i {
+            color: var(--primary, #ff4500);
+        }
+
+    .header-subtitle {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .btn-create-community {
+        padding: 0.75rem 1.5rem;
+        background: var(--primary, #ff4500);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+        .btn-create-community:hover {
+            background: var(--primary-hover, #e03d00);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
+            color: white;
+        }
+
+    /* Filter Section */
+    .filter-section {
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .search-bar {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+            .search-bar input:focus {
+                outline: none;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(255, 69, 0, 0.1);
+            }
+
+    .filters {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-select {
+        padding: 0.625rem 1rem;
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        font-size: 0.875rem;
+        background: var(--card-bg);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 150px;
+    }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 69, 0, 0.1);
+        }
+
+        .filter-select option {
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+    .btn-clear-filters {
+        padding: 0.625rem 1rem;
+        background: transparent;
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .btn-clear-filters:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+    /* Stats Banner */
+    .stats-banner {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.25rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1a1a1a !important;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0.875rem 1.25rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+        .stat-item i {
+            font-size: 1.5rem;
+            color: #667eea !important;
+        }
+
+        .stat-item span {
+            color: #1a1a1a !important;
+        }
+
+        .stat-item strong {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #667eea !important;
+        }
+
+    .stat-divider {
+        width: 1px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Communities Grid */
+    .communities-container {
+        min-height: 400px;
+    }
+
+    .communities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .community-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+
+        .community-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .community-card.inactive {
+            opacity: 0.7;
+        }
+
+    /* Card Cover */
+    .card-cover {
+        width: 100%;
+        height: 120px;
+        overflow: hidden;
+    }
+
+        .card-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .cover-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    /* Card Body */
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .community-header {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .community-avatar-wrapper {
+        flex-shrink: 0;
+        margin-top: -40px;
+    }
+
+    .community-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 3px solid var(--card-bg);
+    }
+
+    .avatar-placeholder {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        background: var(--primary, #ff4500);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid var(--card-bg);
+    }
+
+        .avatar-placeholder i {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+    .community-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .community-name {
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin: 0 0 0.25rem 0;
+    }
+
+        .community-name a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+            .community-name a:hover {
+                color: var(--primary);
+            }
+
+    .community-category {
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .community-description {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Stats */
+    .community-stats {
+        display: flex;
+        gap: 1.5rem;
+        padding: 0.75rem 0;
+        margin-bottom: 0.75rem;
+        border-top: 1px solid var(--border-primary);
+        border-bottom: 1px solid var(--border-primary);
+    }
+
+    .stat {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+    }
+
+        .stat i {
+            color: var(--text-secondary);
+        }
+
+    /* Badges */
+    .community-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .badge-public {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-private {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-joined {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    /* Action Buttons */
+    .card-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .btn-action {
+        padding: 0.625rem 1rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.8125rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-view {
+        background: var(--primary);
+        color: white;
+    }
+
+        .btn-view:hover {
+            background: var(--primary-hover, #e03d00);
+            color: white;
+        }
+
+    .btn-join {
+        background: #22c55e;
+        color: white;
+    }
+
+        .btn-join:hover {
+            background: #16a34a;
+            color: white;
+        }
+
+    .btn-leave {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+
+        .btn-leave:hover {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        color: var(--text-secondary);
+        opacity: 0.3;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 0.75rem 0;
+    }
+
+    .empty-state p {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .btn-create-first {
+        padding: 0.875rem 2rem;
+        background: var(--primary);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.2s;
+    }
+
+        .btn-create-first:hover {
+            background: var(--primary-hover, #e03d00);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 69, 0, 0.3);
+            color: white;
+        }
+
+    /* Pagination */
+    .pagination-container {
+        margin-top: 3rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 0.5rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-item {
+        display: flex;
+    }
+
+    .page-link {
+        padding: 0.5rem 1rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+        .page-link:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+        }
+
+    .page-item.active .page-link {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    /* Responsive */
+    @@media (max-width: 991px) {
+        .communities-grid
+
+    {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+
+    }
+
+    @@media (max-width: 767px) {
+        .communities-page
+
+    {
+        padding: 1rem;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-create-community {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .filters {
+        flex-direction: column;
+    }
+
+    .filter-select,
+    .btn-clear-filters {
+        width: 100%;
+    }
+
+    .communities-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .stat-divider {
+        display: none;
+    }
+
+    }
+</style>
+
+<script>
+    // Initialize toast on page load from TempData
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto show toast from TempData
+        if (typeof initToastFromTempData === 'function') {
+            initToastFromTempData();
+        }
+    });
+
+    // Search functionality
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            applyFilters();
+        }, 500);
+    });
+
+    // Filter changes
+    document.getElementById('categoryFilter').addEventListener('change', applyFilters);
+    document.getElementById('privacyFilter').addEventListener('change', applyFilters);
+    document.getElementById('sortFilter').addEventListener('change', applyFilters);
+
+    // Clear filters
+    document.getElementById('clearFilters').addEventListener('click', function() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('categoryFilter').value = '';
+        document.getElementById('privacyFilter').value = '';
+        document.getElementById('sortFilter').value = 'CreatedAt-desc';
+        applyFilters();
+    });
+
+    function applyFilters() {
+        const searchTerm = document.getElementById('searchInput').value;
+        const categoryId = document.getElementById('categoryFilter').value;
+        const isPrivate = document.getElementById('privacyFilter').value;
+        const sort = document.getElementById('sortFilter').value.split('-');
+
+        const params = new URLSearchParams();
+        if (searchTerm) params.append('searchTerm', searchTerm);
+        if (categoryId) params.append('categoryId', categoryId);
+        if (isPrivate) params.append('isPrivate', isPrivate);
+        params.append('sortBy', sort[0]);
+        params.append('sortDirection', sort[1]);
+        params.append('pageNumber', '1');
+
+        window.location.href = '/communities?' + params.toString();
+    }
+
+    // Join Community - พร้อม Confirmation Modal สวยๆ
+    function joinCommunity(communityId, communityName, isPrivate, requireApproval) {
+        // สร้าง Custom Confirmation Modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            animation: fadeIn 0.2s ease;
+        `;
+
+        const requireApprovalText = requireApproval
+            ? '<p style="margin-top: 8px; font-size: 0.875rem; color: #f59e0b;"><i class="bi bi-info-circle"></i> ชุมชนนี้ต้องรอการอนุมัติจากผู้ดูแล</p>'
+            : '';
+
+        modal.innerHTML = `
+            <div style="
+                background: var(--card-bg, white);
+                padding: 2rem;
+                border-radius: 16px;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: slideUp 0.3s ease;
+            ">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="
+                        width: 64px;
+                        height: 64px;
+                        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 1rem;
+                    ">
+                        <i class="bi bi-person-plus" style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <h3 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">เข้าร่วมชุมชน</h3>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.9375rem;">
+                        คุณต้องการเข้าร่วมชุมชน<br><strong>"${communityName}"</strong> หรือไม่?
+                    </p>
+                    ${requireApprovalText}
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button onclick="this.closest('[style*=fixed]').remove()" style="
+                        flex: 1;
+                        padding: 0.75rem;
+                        background: var(--bg-secondary);
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    ">ยกเลิก</button>
+                    <button onclick="confirmJoin(${communityId})" style="
+                        flex: 1;
+                        padding: 0.75rem;
+                        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    ">เข้าร่วม</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    function confirmJoin(communityId) {
+        // ปิด modal
+        const modal = document.querySelector('[style*="fixed"][style*="rgba(0, 0, 0, 0.5)"]');
+        if (modal) modal.remove();
+
+        // Submit form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/community/join/${communityId}`;
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+        if (token) {
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '__RequestVerificationToken';
+            tokenInput.value = token.value;
+            form.appendChild(tokenInput);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // Leave Community - พร้อม Confirmation Modal สวยๆ
+    function leaveCommunity(communityId, communityName) {
+        // สร้าง Custom Confirmation Modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            animation: fadeIn 0.2s ease;
+        `;
+
+        modal.innerHTML = `
+            <div style="
+                background: var(--card-bg, white);
+                padding: 2rem;
+                border-radius: 16px;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: slideUp 0.3s ease;
+            ">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="
+                        width: 64px;
+                        height: 64px;
+                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 1rem;
+                    ">
+                        <i class="bi bi-box-arrow-right" style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <h3 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">ออกจากชุมชน</h3>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.9375rem;">
+                        คุณแน่ใจหรือไม่ที่จะออกจากชุมชน<br><strong>"${communityName}"</strong>?
+                    </p>
+                    <p style="margin-top: 8px; font-size: 0.875rem; color: #ef4444;">
+                        <i class="bi bi-exclamation-triangle"></i> คุณจะไม่สามารถเห็นโพสต์ในชุมชนนี้อีกต่อไป
+                    </p>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button onclick="this.closest('[style*=fixed]').remove()" style="
+                        flex: 1;
+                        padding: 0.75rem;
+                        background: var(--bg-secondary);
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    ">ยกเลิก</button>
+                    <button onclick="confirmLeave(${communityId})" style="
+                        flex: 1;
+                        padding: 0.75rem;
+                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    ">ออกจากชุมชน</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    function confirmLeave(communityId) {
+        // ปิด modal
+        const modal = document.querySelector('[style*="fixed"][style*="rgba(0, 0, 0, 0.5)"]');
+        if (modal) modal.remove();
+
+        // Submit form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/community/leave/${communityId}`;
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+        if (token) {
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '__RequestVerificationToken';
+            tokenInput.value = token.value;
+            form.appendChild(tokenInput);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // Add animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @@keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @@keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+
+@* Anti-forgery token for AJAX requests *@
+@Html.AntiForgeryToken()

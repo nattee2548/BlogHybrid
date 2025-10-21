@@ -3,6 +3,7 @@ using BlogHybrid.Application.Interfaces.Repositories;
 using BlogHybrid.Application.Interfaces.Services;
 using BlogHybrid.Application.Queries.Category;
 using BlogHybrid.Application.Queries.Community;
+using BlogHybrid.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -600,6 +601,311 @@ namespace BlogHybrid.Web.Controllers
                 return RedirectToAction("Index");
             }
         }
+
+
+
+        #region Member Management
+
+        // GET: /community/manage-members/{id}
+        [Authorize]
+        [HttpGet("community/manage-members/{id}")]
+        public async Task<IActionResult> ManageMembers(
+            int id,
+            int pageNumber = 1,
+            int pageSize = 20,
+            string? searchTerm = null,
+            CommunityRole? roleFilter = null,
+            bool showPending = false)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Get community
+                var community = await _unitOfWork.Communities.GetByIdWithDetailsAsync(id);
+                if (community == null)
+                {
+                    TempData["ErrorMessage"] = "ไม่พบชุมชนที่ต้องการ";
+                    return RedirectToAction("Index");
+                }
+
+                // Check permission - only Admin/Moderator can manage members
+                var isAuthorized = await _unitOfWork.Communities.IsModeratorOrAdminAsync(id, userId);
+                if (!isAuthorized)
+                {
+                    TempData["ErrorMessage"] = "คุณไม่มีสิทธิ์เข้าถึงหน้านี้";
+                    return RedirectToAction("Details", new { communitySlug = community.Slug });
+                }
+
+                // Get members
+                var (members, totalCount) = await _unitOfWork.Communities.GetMembersPagedAsync(
+                    id,
+                    pageNumber,
+                    pageSize,
+                    roleFilter);
+
+                // Filter by search term if provided
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    members = members.Where(m =>
+                        m.User.DisplayName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                        m.User.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                    ).ToList();
+                    totalCount = members.Count;
+                }
+
+                // Filter pending members if requested
+                if (showPending)
+                {
+                    members = members.Where(m => !m.IsApproved && !m.IsBanned).ToList();
+                    totalCount = members.Count;
+                }
+
+                // Pass data to view
+                ViewBag.Community = community;
+                ViewBag.IsCreator = community.CreatorId == userId;
+                ViewBag.CurrentUserId = userId;
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.RoleFilter = roleFilter;
+                ViewBag.ShowPending = showPending;
+                ViewBag.PageNumber = pageNumber;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalCount = totalCount;
+                ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                return View(members);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading manage members page for community {CommunityId}", id);
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการโหลดหน้า";
+                return RedirectToAction("Index");
+            }
+        }
+
+        // POST: /community/approve-member
+        [Authorize]
+        [HttpPost("community/approve-member")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveMember(int communityId, string memberUserId)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var command = new ApproveMemberCommand
+                {
+                    CommunityId = communityId,
+                    MemberUserId = memberUserId,
+                    CurrentUserId = userId
+                };
+
+                var result = await _mediator.Send(command);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = "อนุมัติสมาชิกเรียบร้อยแล้ว";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = string.Join(", ", result.Errors);
+                }
+
+                return RedirectToAction("ManageMembers", new { id = communityId, showPending = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error approving member");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการอนุมัติสมาชิก";
+                return RedirectToAction("ManageMembers", new { id = communityId });
+            }
+        }
+
+        // POST: /community/reject-member
+        [Authorize]
+        [HttpPost("community/reject-member")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectMember(int communityId, string memberUserId)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var command = new RejectMemberCommand
+                {
+                    CommunityId = communityId,
+                    MemberUserId = memberUserId,
+                    CurrentUserId = userId
+                };
+
+                var result = await _mediator.Send(command);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = "ปฏิเสธคำขอเข้าร่วมเรียบร้อยแล้ว";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = string.Join(", ", result.Errors);
+                }
+
+                return RedirectToAction("ManageMembers", new { id = communityId, showPending = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rejecting member");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการปฏิเสธคำขอ";
+                return RedirectToAction("ManageMembers", new { id = communityId });
+            }
+        }
+
+        // POST: /community/change-member-role
+        [Authorize]
+        [HttpPost("community/change-member-role")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeMemberRole(int communityId, string memberUserId, CommunityRole newRole)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var command = new ChangeMemberRoleCommand
+                {
+                    CommunityId = communityId,
+                    MemberUserId = memberUserId,
+                    NewRole = newRole,
+                    CurrentUserId = userId
+                };
+
+                var result = await _mediator.Send(command);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = $"เปลี่ยนบทบาทเป็น {newRole} เรียบร้อยแล้ว";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = string.Join(", ", result.Errors);
+                }
+
+                return RedirectToAction("ManageMembers", new { id = communityId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error changing member role");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการเปลี่ยนบทบาท";
+                return RedirectToAction("ManageMembers", new { id = communityId });
+            }
+        }
+
+        // POST: /community/ban-member
+        [Authorize]
+        [HttpPost("community/ban-member")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BanMember(int communityId, string memberUserId, bool isBanned = true)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var command = new BanMemberCommand
+                {
+                    CommunityId = communityId,
+                    MemberUserId = memberUserId,
+                    IsBanned = isBanned,
+                    CurrentUserId = userId
+                };
+
+                var result = await _mediator.Send(command);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = isBanned ? "แบนสมาชิกเรียบร้อยแล้ว" : "ปลดแบนสมาชิกเรียบร้อยแล้ว";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = string.Join(", ", result.Errors);
+                }
+
+                return RedirectToAction("ManageMembers", new { id = communityId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error banning member");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการแบนสมาชิก";
+                return RedirectToAction("ManageMembers", new { id = communityId });
+            }
+        }
+
+        // POST: /community/remove-member
+        [Authorize]
+        [HttpPost("community/remove-member")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveMember(int communityId, string memberUserId)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var command = new RemoveMemberCommand
+                {
+                    CommunityId = communityId,
+                    MemberUserId = memberUserId,
+                    CurrentUserId = userId
+                };
+
+                var result = await _mediator.Send(command);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = "ลบสมาชิกออกจากชุมชนเรียบร้อยแล้ว";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = string.Join(", ", result.Errors);
+                }
+
+                return RedirectToAction("ManageMembers", new { id = communityId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing member");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการลบสมาชิก";
+                return RedirectToAction("ManageMembers", new { id = communityId });
+            }
+        }
+
+        #endregion
 
     }
 }

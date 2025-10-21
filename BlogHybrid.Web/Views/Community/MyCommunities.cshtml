@@ -161,9 +161,31 @@
                                    class="btn-action btn-view">
                                     <i class="bi bi-eye"></i> ดูชุมชน
                                 </a>
-                                <a href="/community/edit/@community.Id" class="btn-action btn-manage">
-                                    <i class="bi bi-gear"></i> จัดการ
-                                </a>
+                                <!-- Dropdown Menu -->
+                                <div class="dropdown-wrapper">
+                                    <button class="btn-action btn-manage dropdown-toggle" onclick="toggleDropdown(@community.Id)">
+                                        <i class="bi bi-gear"></i> จัดการ
+                                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                                    </button>
+                                    <div class="dropdown-menu" id="dropdown-@community.Id">
+                                        <a asp-controller="Community"
+                                           asp-action="Edit"
+                                           asp-route-id="@community.Id"
+                                           class="dropdown-item">
+                                            <i class="bi bi-pencil"></i> แก้ไขชุมชน
+                                        </a>
+                                        <a asp-controller="Community"
+                                           asp-action="ManageMembers"
+                                           asp-route-id="@community.Id"
+                                           class="dropdown-item">
+                                            <i class="bi bi-people"></i> จัดการสมาชิก
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                        <a href="#" class="dropdown-item text-danger">
+                                            <i class="bi bi-trash"></i> ลบชุมชน
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Created Date -->
@@ -347,8 +369,10 @@
         background: var(--card-bg, #ffffff);
         border: 1px solid var(--border-primary, #e5e7eb);
         border-radius: 12px;
-        overflow: hidden;
+        overflow: visible;
         transition: all 0.3s;
+        position: relative;
+        z-index: 1;
     }
 
         .community-card:hover {
@@ -356,12 +380,16 @@
             transform: translateY(-4px);
         }
 
+        .community-card:has(.dropdown-menu.show) {
+            z-index: 1001;
+        }
         .community-card.inactive {
             opacity: 0.7;
         }
 
     /* Cover Image */
     .community-cover {
+        border-radius: 12px 12px 0 0;
         width: 100%;
         height: 120px;
         overflow: hidden;
@@ -375,6 +403,7 @@
         }
 
     .community-cover-placeholder {
+        border-radius: 12px 12px 0 0;
         width: 100%;
         height: 120px;
         display: flex;
@@ -611,6 +640,89 @@
     }
 
     }
+
+    /* Dropdown Wrapper */
+    .dropdown-wrapper {
+        position: relative;
+    }
+
+    .dropdown-toggle {
+        position: relative;
+    }
+
+    .dropdown-icon {
+        font-size: 0.75rem;
+        margin-left: 0.25rem;
+        transition: transform 0.2s;
+    }
+
+    .dropdown-toggle.active .dropdown-icon {
+        transform: rotate(180deg);
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 0;
+        min-width: 200px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        z-index: 1002; /* เพิ่มจาก 100 เป็น 1000 */
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s;
+        overflow: hidden;
+    }
+
+    [data-theme="dark"] .dropdown-menu {
+        background: var(--card-bg);
+        border-color: var(--border-primary);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .dropdown-menu.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.2s;
+        font-size: 0.875rem;
+    }
+
+        .dropdown-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .dropdown-item i {
+            font-size: 1rem;
+            width: 20px;
+        }
+
+        .dropdown-item.text-danger {
+            color: #ef4444;
+        }
+
+            .dropdown-item.text-danger:hover {
+                background: #fee2e2;
+            }
+
+    .dropdown-divider {
+        height: 1px;
+        background: var(--border-primary);
+        margin: 0.5rem 0;
+    }
+
 </style>
 
 <script>
@@ -618,4 +730,40 @@
         // TODO: Implement manage community modal or redirect
         alert('จัดการชุมชน ID: ' + communityId + '\n(ฟีเจอร์นี้จะพัฒนาในอนาคต)');
     }
+    function toggleDropdown(communityId) {
+        const dropdown = document.getElementById(`dropdown-${communityId}`);
+        const button = dropdown.previousElementSibling;
+        const card = dropdown.closest('.community-card');
+
+        // Close all other dropdowns
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            if (menu !== dropdown) {
+                menu.classList.remove('show');
+                menu.previousElementSibling.classList.remove('active');
+                menu.closest('.community-card').style.zIndex = '1';
+            }
+        });
+
+       // Toggle current dropdown
+    const isShowing = dropdown.classList.toggle('show'); // เปลี่ยนบรรทัดนี้
+    button.classList.toggle('active');
+
+    // เพิ่มส่วนนี้
+    if (isShowing) {
+        card.style.zIndex = '1001';
+    } else {
+        card.style.zIndex = '1';
+    }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.dropdown-wrapper')) {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.classList.remove('show');
+                menu.previousElementSibling.classList.remove('active');
+                menu.closest('.community-card').style.zIndex = '1';
+            });
+        }
+    });
 </script>

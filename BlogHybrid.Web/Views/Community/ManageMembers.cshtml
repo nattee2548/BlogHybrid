@@ -1,0 +1,916 @@
+﻿@model List<BlogHybrid.Domain.Entities.CommunityMember>
+@using BlogHybrid.Domain.Enums
+
+@{
+    ViewData["Title"] = "จัดการสมาชิก";
+    var community = ViewBag.Community as BlogHybrid.Domain.Entities.Community;
+    var isCreator = (bool)ViewBag.IsCreator;
+    var currentUserId = ViewBag.CurrentUserId as string;
+    var searchTerm = ViewBag.SearchTerm as string;
+    var roleFilter = ViewBag.RoleFilter as CommunityRole?;
+    var showPending = (bool)ViewBag.ShowPending;
+    var pageNumber = (int)ViewBag.PageNumber;
+    var pageSize = (int)ViewBag.PageSize;
+    var totalCount = (int)ViewBag.TotalCount;
+    var totalPages = (int)ViewBag.TotalPages;
+}
+
+<div class="manage-members-page">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-left">
+            <a asp-controller="Community" asp-action="Details" asp-route-communitySlug="@community.Slug" class="btn-back">
+                <i class="bi bi-arrow-left"></i> กลับ
+            </a>
+            <div>
+                <h1><i class="bi bi-people-fill"></i> จัดการสมาชิก</h1>
+                <p class="community-name">@community.Name</p>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="stat-box">
+                <span class="stat-value">@totalCount</span>
+                <span class="stat-label">สมาชิกทั้งหมด</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Actions Bar -->
+    <div class="filter-bar">
+        <div class="filter-left">
+            <!-- Search -->
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" id="searchInput" placeholder="ค้นหาสมาชิก..." value="@searchTerm">
+            </div>
+
+            <!-- Role Filter -->
+            <select id="roleFilter" class="filter-select">
+                <option value="">ทุกบทบาท</option>
+                <option value="@((int)CommunityRole.Member)" selected="@(roleFilter == CommunityRole.Member)">Member</option>
+                <option value="@((int)CommunityRole.Moderator)" selected="@(roleFilter == CommunityRole.Moderator)">Moderator</option>
+                <option value="@((int)CommunityRole.Admin)" selected="@(roleFilter == CommunityRole.Admin)">Admin</option>
+            </select>
+
+            <!-- Show Pending Toggle -->
+            <label class="toggle-switch">
+                <input type="checkbox" id="showPending" @(showPending ? "checked" : "")>
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">รอการอนุมัติ</span>
+            </label>
+        </div>
+
+        <button id="clearFilters" class="btn-clear">
+            <i class="bi bi-x-circle"></i> ล้างตัวกรอง
+        </button>
+    </div>
+
+    <!-- Members Table -->
+    <div class="members-container">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-state">
+                <i class="bi bi-people"></i>
+                <h3>ไม่พบสมาชิก</h3>
+                <p>ลองเปลี่ยนตัวกรองหรือค้นหาใหม่</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-container">
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th>สมาชิก</th>
+                            <th>บทบาท</th>
+                            <th>วันที่เข้าร่วม</th>
+                            <th>สถานะ</th>
+                            <th class="text-center">การจัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var member in Model)
+                        {
+                            var isCurrentUser = member.UserId == currentUserId;
+                            var isCommunityCreator = member.UserId == community.CreatorId;
+
+                            <tr class="@(!member.IsApproved ? "pending" : "") @(member.IsBanned ? "banned" : "")">
+                                <!-- Member Info -->
+                                <td>
+                                    <div class="member-info">
+                                        @if (!string.IsNullOrEmpty(member.User.ProfileImageUrl))
+                                        {
+                                            <img src="@member.User.ProfileImageUrl" alt="@member.User.DisplayName" class="member-avatar">
+                                        }
+                                        else
+                                        {
+                                            <div class="member-avatar-placeholder">
+                                                @member.User.DisplayName.Substring(0, 1).ToUpper()
+                                            </div>
+                                        }
+                                        <div class="member-details">
+                                            <span class="member-name">
+                                                @member.User.DisplayName
+                                                @if (isCommunityCreator)
+                                                {
+                                                    <span class="badge badge-creator">
+                                                        <i class="bi bi-star-fill"></i> เจ้าของ
+                                                    </span>
+                                                }
+                                                @if (isCurrentUser)
+                                                {
+                                                    <span class="badge badge-you">(คุณ)</span>
+                                                }
+                                            </span>
+                                            <span class="member-email">@member.User.Email</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Role -->
+                                <td>
+                                    @if (!isCommunityCreator && isCreator && member.IsApproved && !member.IsBanned)
+                                    {
+                                        <form method="post" asp-action="ChangeMemberRole" style="display: inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="communityId" value="@community.Id" />
+                                            <input type="hidden" name="memberUserId" value="@member.UserId" />
+                                            <select name="newRole" class="role-select" onchange="confirmRoleChange(this.form, this.value, '@member.User.DisplayName')">
+                                                <option value="@((int)CommunityRole.Member)" selected="@(member.Role == CommunityRole.Member)">Member</option>
+                                                <option value="@((int)CommunityRole.Moderator)" selected="@(member.Role == CommunityRole.Moderator)">Moderator</option>
+                                                <option value="@((int)CommunityRole.Admin)" selected="@(member.Role == CommunityRole.Admin)">Admin</option>
+                                            </select>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="role-badge role-@member.Role.ToString().ToLower()">
+                                            @member.Role
+                                        </span>
+                                    }
+                                </td>
+
+                                <!-- Joined Date -->
+                                <td>
+                                    <span class="date-text">
+                                        @member.JoinedAt.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("th-TH"))
+                                    </span>
+                                </td>
+
+                                <!-- Status -->
+                                <td>
+                                    @if (member.IsBanned)
+                                    {
+                                        <span class="status-badge status-banned">
+                                            <i class="bi bi-slash-circle"></i> ถูกแบน
+                                        </span>
+                                    }
+                                    else if (!member.IsApproved)
+                                    {
+                                        <span class="status-badge status-pending">
+                                            <i class="bi bi-clock"></i> รออนุมัติ
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-active">
+                                            <i class="bi bi-check-circle"></i> ใช้งานอยู่
+                                        </span>
+                                    }
+                                </td>
+
+                                <!-- Actions -->
+                                <td class="text-center">
+                                    @if (!isCommunityCreator && !isCurrentUser)
+                                    {
+                                        <div class="action-buttons">
+                                            @if (!member.IsApproved && !member.IsBanned)
+                                            {
+                                                <!-- Approve/Reject -->
+                                                <form method="post" asp-action="ApproveMember" style="display: inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="communityId" value="@community.Id" />
+                                                    <input type="hidden" name="memberUserId" value="@member.UserId" />
+                                                    <button type="submit" class="btn-action btn-approve" title="อนุมัติ">
+                                                        <i class="bi bi-check-lg"></i>
+                                                    </button>
+                                                </form>
+                                                <form method="post" asp-action="RejectMember" style="display: inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="communityId" value="@community.Id" />
+                                                    <input type="hidden" name="memberUserId" value="@member.UserId" />
+                                                    <button type="button" class="btn-action btn-reject"
+                                                            onclick="confirmReject(this.form, '@member.User.DisplayName')" title="ปฏิเสธ">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else if (member.IsApproved)
+                                            {
+                                                <!-- Ban/Unban -->
+                                                <form method="post" asp-action="BanMember" style="display: inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="communityId" value="@community.Id" />
+                                                    <input type="hidden" name="memberUserId" value="@member.UserId" />
+                                                    <input type="hidden" name="isBanned" value="@(!member.IsBanned)" />
+                                                    <button type="button" class="btn-action @(member.IsBanned ? "btn-unban" : "btn-ban")"
+                                                            onclick="confirmBan(this.form, '@member.User.DisplayName', @member.IsBanned.ToString().ToLower())"
+                                                            title="@(member.IsBanned ? "ปลดแบน" : "แบน")">
+                                                        <i class="bi bi-@(member.IsBanned ? "shield-check" : "slash-circle")"></i>
+                                                    </button>
+                                                </form>
+
+                                                <!-- Remove -->
+                                                <form method="post" asp-action="RemoveMember" style="display: inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="communityId" value="@community.Id" />
+                                                    <input type="hidden" name="memberUserId" value="@member.UserId" />
+                                                    <button type="button" class="btn-action btn-remove"
+                                                            onclick="confirmRemove(this.form, '@member.User.DisplayName')" title="ลบออก">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    }
+                                    else if (isCommunityCreator)
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                    else if (isCurrentUser)
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1)
+            {
+                <div class="pagination-container">
+                    <nav>
+                        <ul class="pagination">
+                            @if (pageNumber > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?pageNumber=@(pageNumber - 1)&pageSize=@pageSize&searchTerm=@searchTerm&showPending=@showPending">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, pageNumber - 2); i <= Math.Min(totalPages, pageNumber + 2); i++)
+                            {
+                                <li class="page-item @(i == pageNumber ? "active" : "")">
+                                    <a class="page-link" href="?pageNumber=@i&pageSize=@pageSize&searchTerm=@searchTerm&showPending=@showPending">@i</a>
+                                </li>
+                            }
+
+                            @if (pageNumber < totalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?pageNumber=@(pageNumber + 1)&pageSize=@pageSize&searchTerm=@searchTerm&showPending=@showPending">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .manage-members-page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid var(--border-primary);
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .btn-back {
+        padding: 0.5rem 1rem;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+
+        .btn-back:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+    .page-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .page-header h1 i {
+            color: var(--primary);
+        }
+
+    .community-name {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin: 0.25rem 0 0 0;
+    }
+
+    .header-stats {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .stat-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-left {
+        display: flex;
+        gap: 1rem;
+        flex: 1;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        position: relative;
+        flex: 1;
+        min-width: 250px;
+    }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.625rem 1rem 0.625rem 2.5rem;
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+            .search-box input:focus {
+                outline: none;
+                border-color: var(--primary);
+            }
+
+    .filter-select {
+        padding: 0.625rem 1rem;
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        cursor: pointer;
+    }
+
+    .toggle-switch {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        user-select: none;
+    }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+    .toggle-slider {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        background: var(--bg-secondary);
+        border-radius: 24px;
+        border: 2px solid var(--border-primary);
+        transition: all 0.3s;
+    }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+
+    .toggle-switch input:checked + .toggle-slider {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(20px);
+        }
+
+    .toggle-label {
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .btn-clear {
+        padding: 0.625rem 1rem;
+        background: transparent;
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+
+        .btn-clear:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+    /* Table */
+    .members-container {
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .members-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .members-table thead {
+            background: var(--bg-secondary);
+        }
+
+        .members-table th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .members-table td {
+            padding: 1rem;
+            border-top: 1px solid var(--border-primary);
+        }
+
+        .members-table tr.pending {
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .members-table tr.banned {
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+    /* Member Info */
+    .member-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .member-avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .member-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .member-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .member-email {
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+    }
+
+    /* Badges */
+    .badge {
+        padding: 0.125rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .badge-creator {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-you {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .role-select {
+        padding: 0.375rem 0.75rem;
+        border: 1px solid var(--border-primary);
+        border-radius: 6px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        font-size: 0.8125rem;
+        cursor: pointer;
+    }
+
+    .role-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .role-member {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .role-moderator {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .role-admin {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .status-active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-banned {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .btn-approve {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+        .btn-approve:hover {
+            background: #10b981;
+            color: white;
+        }
+
+    .btn-reject {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+        .btn-reject:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+    .btn-ban {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+        .btn-ban:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+    .btn-unban {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+        .btn-unban:hover {
+            background: #3b82f6;
+            color: white;
+        }
+
+    .btn-remove {
+        background: #e5e7eb;
+        color: #6b7280;
+    }
+
+        .btn-remove:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+    /* Empty State */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--text-secondary);
+            opacity: 0.3;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+    /* Pagination */
+    .pagination-container {
+        padding: 1.5rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 0.5rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-link {
+        padding: 0.5rem 0.75rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-primary);
+        border-radius: 6px;
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+        .page-link:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+        }
+
+    .page-item.active .page-link {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-muted {
+        color: var(--text-secondary);
+    }
+
+    .date-text {
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+    }
+
+    /* Responsive */
+    @@media (max-width: 991px) {
+        .manage-members-page
+
+    {
+        padding: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+    }
+
+    .filter-left {
+        width: 100%;
+    }
+
+    .btn-clear {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .members-table {
+        font-size: 0.875rem;
+    }
+
+        .members-table th,
+        .members-table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+    }
+</style>
+
+<script>
+    // Search functionality
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            applyFilters();
+        }, 500);
+    });
+
+    // Role filter
+    document.getElementById('roleFilter').addEventListener('change', applyFilters);
+
+    // Show pending toggle
+    document.getElementById('showPending').addEventListener('change', applyFilters);
+
+    // Clear filters
+    document.getElementById('clearFilters').addEventListener('click', function() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('roleFilter').value = '';
+        document.getElementById('showPending').checked = false;
+        applyFilters();
+    });
+
+    function applyFilters() {
+        const searchTerm = document.getElementById('searchInput').value;
+        const roleFilter = document.getElementById('roleFilter').value;
+        const showPending = document.getElementById('showPending').checked;
+
+        const params = new URLSearchParams();
+        if (searchTerm) params.append('searchTerm', searchTerm);
+        if (roleFilter) params.append('roleFilter', roleFilter);
+        if (showPending) params.append('showPending', 'true');
+        params.append('pageNumber', '1');
+
+        window.location.href = window.location.pathname + '?' + params.toString();
+    }
+
+    // Confirmation dialogs
+    function confirmRoleChange(form, newRole, memberName) {
+        const roleNames = { '0': 'Member', '1': 'Moderator', '2': 'Admin' };
+        if (confirm(`คุณต้องการเปลี่ยนบทบาทของ "${memberName}" เป็น ${roleNames[newRole]} หรือไม่?`)) {
+            form.submit();
+        }
+    }
+
+    function confirmReject(form, memberName) {
+        if (confirm(`คุณต้องการปฏิเสธคำขอเข้าร่วมของ "${memberName}" หรือไม่?`)) {
+            form.submit();
+        }
+    }
+
+    function confirmBan(form, memberName, isBanned) {
+        const action = isBanned ? 'ปลดแบน' : 'แบน';
+        if (confirm(`คุณต้องการ${action} "${memberName}" หรือไม่?`)) {
+            form.submit();
+        }
+    }
+
+    function confirmRemove(form, memberName) {
+        if (confirm(`คุณแน่ใจหรือไม่ที่จะลบ "${memberName}" ออกจากชุมชน?\n\nการกระทำนี้ไม่สามารถยกเลิกได้`)) {
+            form.submit();
+        }
+    }
+</script>
+
+@Html.AntiForgeryToken()
