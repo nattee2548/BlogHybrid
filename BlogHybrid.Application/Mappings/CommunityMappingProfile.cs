@@ -107,6 +107,28 @@ namespace BlogHybrid.Application.Mappings
                 .ForMember(dest => dest.UserDisplayName, opt => opt.MapFrom(src => src.User.DisplayName))
                 .ForMember(dest => dest.UserProfileImageUrl, opt => opt.MapFrom(src => src.User.ProfileImageUrl))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()));
+
+            // Map Community -> CommunityDetailsDto
+            CreateMap<Domain.Entities.Community, CommunityDetailsDto>()
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src =>
+                    src.CommunityCategories.FirstOrDefault() != null
+                        ? src.CommunityCategories.FirstOrDefault()!.Category.Name
+                        : string.Empty))
+                .ForMember(dest => dest.CategorySlug, opt => opt.MapFrom(src =>
+                    src.CommunityCategories.FirstOrDefault() != null
+                        ? src.CommunityCategories.FirstOrDefault()!.Category.Slug
+                        : string.Empty))
+                .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src =>
+                    src.CommunityCategories.FirstOrDefault() != null
+                        ? src.CommunityCategories.FirstOrDefault()!.CategoryId
+                        : 0))
+                .ForMember(dest => dest.CreatorDisplayName, opt => opt.MapFrom(src => src.Creator.DisplayName ?? src.Creator.UserName))
+                .ForMember(dest => dest.IsCurrentUserMember, opt => opt.Ignore())
+                .ForMember(dest => dest.CurrentUserRole, opt => opt.Ignore())
+                .ForMember(dest => dest.IsCreator, opt => opt.Ignore())
+                .ForMember(dest => dest.IsAdmin, opt => opt.Ignore())
+                .ForMember(dest => dest.IsModerator, opt => opt.Ignore())
+                .ForMember(dest => dest.PendingMembersCount, opt => opt.Ignore());
         }
     }
 }

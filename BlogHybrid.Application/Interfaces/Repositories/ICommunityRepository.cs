@@ -66,5 +66,11 @@ namespace BlogHybrid.Application.Interfaces.Repositories
 
         // Soft delete cleanup
         Task<List<Community>> GetCommunitiesForPermanentDeleteAsync(int retentionDays, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// นับจำนวนสมาชิกที่รออนุมัติ (IsApproved = false และ IsBanned = false)
+        /// </summary>
+        Task<int> GetPendingMembersCountAsync(int communityId, CancellationToken cancellationToken = default);
+
     }
 }

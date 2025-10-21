@@ -7,6 +7,7 @@ using BlogHybrid.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace BlogHybrid.Web.Controllers
@@ -187,10 +188,26 @@ namespace BlogHybrid.Web.Controllers
         {
             try
             {
-                var query = new GetCommunityBySlugQuery
+                //var query = new GetCommunityBySlugQuery
+                //{
+                //    Slug = communitySlug,
+                //    CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                //};
+
+                //var community = await _mediator.Send(query);
+
+                //if (community == null)
+                //{
+                //    return NotFound();
+                //}
+
+                //return View(community);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var query = new GetCommunityDetailsQuery
                 {
                     Slug = communitySlug,
-                    CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    CurrentUserId = userId
                 };
 
                 var community = await _mediator.Send(query);
@@ -200,6 +217,7 @@ namespace BlogHybrid.Web.Controllers
                     return NotFound();
                 }
 
+                // ส่งข้อมูลไปที่ View ผ่าน Model โดยตรง ไม่ต้องใช้ ViewBag
                 return View(community);
             }
             catch (Exception ex)

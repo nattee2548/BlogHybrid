@@ -1,4 +1,4 @@
-﻿@model BlogHybrid.Application.DTOs.Community.CommunityDto
+﻿@model BlogHybrid.Application.DTOs.Community.CommunityDetailsDto
 
 @{
     ViewData["Title"] = Model.Name;
@@ -42,6 +42,23 @@
             </div>
 
             <div class="community-actions">
+                @* ปุ่มจัดการสมาชิก - แสดงเฉพาะ Admin/Moderator/Creator *@
+                @if (Model.CanManageMembers)
+                {
+                    <a asp-controller="Community"
+                       asp-action="ManageMembers"
+                       asp-route-id="@Model.Id"
+                       class="btn-manage-members">
+                        <i class="bi bi-people-fill"></i>
+                        จัดการสมาชิก
+                        @if (Model.PendingMembersCount > 0)
+                        {
+                            <span class="notification-badge">@Model.PendingMembersCount</span>
+                        }
+                    </a>
+                }
+
+                @* ปุ่มเข้าร่วม/เข้าร่วมแล้ว *@
                 @if (Model.IsCurrentUserMember == true)
                 {
                     <button class="btn-joined" disabled>
@@ -50,9 +67,12 @@
                 }
                 else
                 {
-                    <button class="btn-join">
-                        <i class="bi bi-plus-lg"></i> เข้าร่วม
-                    </button>
+                    <form asp-controller="Community" asp-action="Join" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-join">
+                            <i class="bi bi-plus-lg"></i> เข้าร่วม
+                        </button>
+                    </form>
                 }
             </div>
         </div>
@@ -61,21 +81,42 @@
     <!-- Community Content -->
     <div class="community-body">
         <!-- Sidebar -->
-        <div class="community-sidebar">
+        <aside class="community-sidebar">
             <div class="sidebar-card">
                 <h3>เกี่ยวกับชุมชน</h3>
-                <p class="community-description">@Model.Description</p>
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <p class="community-description">@Model.Description</p>
+                }
+                else
+                {
+                    <p class="community-description text-muted">ไม่มีคำอธิบาย</p>
+                }
 
                 <div class="community-stats">
                     <div class="stat-item">
-                        <i class="bi bi-calendar-plus"></i>
+                        <i class="bi bi-people-fill"></i>
+                        <div>
+                            <div class="stat-label">สมาชิก</div>
+                            <div class="stat-value">@Model.MemberCount คน</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="bi bi-file-text-fill"></i>
+                        <div>
+                            <div class="stat-label">โพสต์</div>
+                            <div class="stat-value">@Model.PostCount โพสต์</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="bi bi-calendar-fill"></i>
                         <div>
                             <div class="stat-label">สร้างเมื่อ</div>
                             <div class="stat-value">@Model.CreatedAt.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("th-TH"))</div>
                         </div>
                     </div>
                     <div class="stat-item">
-                        <i class="bi bi-person"></i>
+                        <i class="bi bi-person-fill"></i>
                         <div>
                             <div class="stat-label">ผู้สร้าง</div>
                             <div class="stat-value">@Model.CreatorDisplayName</div>
@@ -86,38 +127,41 @@
                 @if (!string.IsNullOrEmpty(Model.Rules))
                 {
                     <div class="community-rules">
-                        <h4>กฎชุมชน</h4>
+                        <h4>กฎของชุมชน</h4>
                         <p>@Model.Rules</p>
                     </div>
                 }
             </div>
-        </div>
+        </aside>
 
         <!-- Main Content -->
-        <div class="community-main">
+        <main class="community-main">
             <div class="empty-state">
-                <i class="bi bi-chat-dots"></i>
-                <h3>ยังไม่มีโพสต์ในชุมชนนี้</h3>
-                <p>เป็นคนแรกที่โพสต์ในชุมชนนี้!</p>
-                <button class="btn-create-post">
-                    <i class="bi bi-plus-lg"></i> สร้างโพสต์
-                </button>
+                <i class="bi bi-inbox"></i>
+                <h3>ยังไม่มีโพสต์</h3>
+                <p>เป็นคนแรกที่สร้างโพสต์ในชุมชนนี้!</p>
+                @if (Model.IsCurrentUserMember == true)
+                {
+                    <button class="btn-create-post">
+                        <i class="bi bi-plus-lg"></i> สร้างโพสต์
+                    </button>
+                }
             </div>
-        </div>
+        </main>
     </div>
 </div>
 
 <style>
     .community-details-container {
-        max-width: 1200px;
-        margin: 0 auto;
+        min-height: 100vh;
+        background: var(--bg-primary, #f8f9fa);
     }
 
     .community-cover {
         width: 100%;
         height: 200px;
-        overflow: hidden;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        overflow: hidden;
     }
 
         .community-cover img {
@@ -145,6 +189,7 @@
         display: flex;
         gap: 1.5rem;
         align-items: center;
+        flex: 1;
     }
 
     .community-avatar {
@@ -154,6 +199,7 @@
         object-fit: cover;
         border: 4px solid var(--bg-primary, #f8f9fa);
         margin-top: -40px;
+        flex-shrink: 0;
     }
 
     .community-avatar-placeholder {
@@ -166,12 +212,18 @@
         justify-content: center;
         margin-top: -40px;
         border: 4px solid var(--bg-primary, #f8f9fa);
+        flex-shrink: 0;
     }
 
         .community-avatar-placeholder i {
             font-size: 2rem;
             color: white;
         }
+
+    .community-title-section {
+        flex: 1;
+        min-width: 0;
+    }
 
     .community-name {
         font-size: 1.75rem;
@@ -187,6 +239,7 @@
         color: var(--text-secondary, #666);
         font-size: 0.875rem;
         margin: 0;
+        flex-wrap: wrap;
     }
 
         .community-meta span {
@@ -202,6 +255,74 @@
         font-weight: 600;
     }
 
+    /* Community Actions */
+    .community-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    /* ปุ่มจัดการสมาชิก */
+    .btn-manage-members {
+        padding: 0.75rem 1.5rem;
+        background: var(--bg-secondary, #f3f4f6);
+        color: var(--text-primary, #1a1a1a);
+        border: 1px solid var(--border-primary, #e5e7eb);
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        position: relative;
+        white-space: nowrap;
+    }
+
+        .btn-manage-members:hover {
+            background: var(--bg-hover, #e5e7eb);
+            color: var(--text-primary, #1a1a1a);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Notification Badge */
+    .notification-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        min-width: 20px;
+        height: 20px;
+        background: #ef4444;
+        color: white;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6px;
+        border: 2px solid var(--card-bg, #ffffff);
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100%
+
+    {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+
+    }
+
     .btn-join, .btn-joined {
         padding: 0.75rem 2rem;
         border-radius: 9999px;
@@ -213,6 +334,7 @@
         border: none;
         cursor: pointer;
         transition: all 0.2s;
+        white-space: nowrap;
     }
 
     .btn-join {
@@ -223,6 +345,7 @@
         .btn-join:hover {
             background: var(--primary-hover, #e03d00);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
         }
 
     .btn-joined {
@@ -262,6 +385,11 @@
         line-height: 1.6;
         margin-bottom: 1.5rem;
     }
+
+        .community-description.text-muted {
+            color: var(--text-secondary, #666);
+            font-style: italic;
+        }
 
     .community-stats {
         display: flex;
@@ -303,12 +431,14 @@
             font-size: 0.875rem;
             font-weight: 600;
             margin: 0 0 0.5rem 0;
+            color: var(--text-primary, #1a1a1a);
         }
 
         .community-rules p {
             font-size: 0.8125rem;
             color: var(--text-secondary, #666);
             line-height: 1.6;
+            margin: 0;
         }
 
     .community-main {
@@ -316,6 +446,7 @@
         border: 1px solid var(--border-primary, #e5e7eb);
         border-radius: 12px;
         padding: 3rem 2rem;
+        min-height: 400px;
     }
 
     .empty-state {
@@ -360,36 +491,50 @@
         .btn-create-post:hover {
             background: var(--primary-hover, #e03d00);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
         }
 
+    /* Responsive */
     @@media (max-width: 991px) {
-        .community-body {
-            grid-template-columns: 1fr;
-        }
+        .community-body
 
-        .community-sidebar {
-            order: 2;
-        }
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .community-sidebar {
+        order: 2;
+    }
+
     }
 
     @@media (max-width: 767px) {
-        .community-header-content {
-            flex-direction: column;
-            align-items: flex-start;
-        }
+        .community-header-content
 
-        .community-info {
-            flex-direction: column;
-            align-items: flex-start;
-        }
+    {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-        .community-actions {
-            width: 100%;
-        }
+    .community-info {
+        width: 100%;
+    }
 
-        .btn-join, .btn-joined {
-            width: 100%;
-            justify-content: center;
-        }
+    .community-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .btn-manage-members,
+    .btn-join,
+    .btn-joined {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .community-body {
+        padding: 0 1rem;
+    }
+
     }
 </style>

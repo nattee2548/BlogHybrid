@@ -441,7 +441,15 @@ namespace BlogHybrid.Infrastructure.Repositories
                            c.DeletedAt.Value <= cutoffDate)
                 .ToListAsync(cancellationToken);
         }
-
+        public async Task<int> GetPendingMembersCountAsync(int communityId, CancellationToken cancellationToken = default)
+        {
+            return await _context.CommunityMembers
+                .CountAsync(cm =>
+                    cm.CommunityId == communityId &&
+                    !cm.IsApproved &&
+                    !cm.IsBanned,
+                    cancellationToken);
+        }
         #endregion
     }
 }
