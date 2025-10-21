@@ -456,5 +456,150 @@ namespace BlogHybrid.Web.Controllers
                 return View(command);
             }
         }
+
+        // GET: /communities
+        [HttpGet("communities")]
+        public async Task<IActionResult> Index(
+            int pageNumber = 1,
+            int pageSize = 12,
+            int? categoryId = null,
+            string? searchTerm = null,
+            bool? isPrivate = null,
+            string sortBy = "CreatedAt",
+            string sortDirection = "desc")
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var query = new GetCommunitiesQuery
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    CategoryId = categoryId,
+                    SearchTerm = searchTerm,
+                    IsPrivate = isPrivate,
+                    IsActive = true, // แสดงเฉพาะชุมชนที่ active
+                    SortBy = sortBy,
+                    SortDirection = sortDirection,
+                    CurrentUserId = userId
+                };
+
+                var result = await _mediator.Send(query);
+
+                // Get categories for filter dropdown
+                var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                var categories = await _mediator.Send(categoriesQuery);
+                ViewBag.Categories = categories;
+
+                // Pass filter values back to view
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.SelectedCategoryId = categoryId;
+                ViewBag.IsPrivate = isPrivate;
+                ViewBag.SortBy = sortBy;
+
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading communities page");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการโหลดหน้า";
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        // POST: /community/join/{id}
+        [Authorize]
+        [HttpPost("community/join/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Join(int id)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var command = new JoinCommunityCommand
+                {
+                    CommunityId = id,
+                    UserId = userId
+                };
+
+                var result = await _mediator.Send(command);
+
+                if (result.Success)
+                {
+                    if (result.RequiresApproval)
+                    {
+                        TempData["SuccessMessage"] = "ส่งคำขอเข้าร่วมชุมชนเรียบร้อย! กรุณารอการอนุมัติจากผู้ดูแล";
+                    }
+                    else
+                    {
+                        TempData["SuccessMessage"] = "เข้าร่วมชุมชนสำเร็จ!";
+                    }
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = string.Join(", ", result.Errors);
+                }
+
+                // Redirect back to the community or communities list
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error joining community {CommunityId}", id);
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการเข้าร่วมชุมชน";
+                return RedirectToAction("Index");
+            }
+        }
+
+        // POST: /community/leave/{id}
+        [Authorize]
+        [HttpPost("community/leave/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Leave(int id)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var command = new LeaveCommunityCommand
+                {
+                    CommunityId = id,
+                    UserId = userId
+                };
+
+                var result = await _mediator.Send(command);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = "ออกจากชุมชนสำเร็จ!";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = string.Join(", ", result.Errors);
+                }
+
+                // Redirect back to communities list
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error leaving community {CommunityId}", id);
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการออกจากชุมชน";
+                return RedirectToAction("Index");
+            }
+        }
+
     }
 }
