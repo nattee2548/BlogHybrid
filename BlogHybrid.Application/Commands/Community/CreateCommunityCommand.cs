@@ -5,7 +5,7 @@ namespace BlogHybrid.Application.Commands.Community
     public class CreateCommunityCommand : IRequest<CreateCommunityResult>
     {
         public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; } = string.Empty;
         public string? ImageUrl { get; set; }
         public string? CoverImageUrl { get; set; }
         public string? Rules { get; set; }

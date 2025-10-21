@@ -16,6 +16,7 @@ namespace BlogHybrid.Web.Controllers
         private readonly IImageService _imageService;
         private readonly ILogger<CommunityController> _logger;
         private readonly IUnitOfWork _unitOfWork;
+
         public CommunityController(
             IMediator mediator,
             IImageService imageService,
@@ -35,10 +36,8 @@ namespace BlogHybrid.Web.Controllers
         {
             try
             {
-                // Get category tree (parent + subcategories)
                 var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                 var categories = await _mediator.Send(categoriesQuery);
-
                 ViewBag.Categories = categories;
                 return View();
             }
@@ -49,6 +48,7 @@ namespace BlogHybrid.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
         }
+
         // POST: /create-community
         [Authorize]
         [HttpPost("create-community")]
@@ -70,6 +70,19 @@ namespace BlogHybrid.Web.Controllers
 
                 command.CreatorId = userId;
 
+                // ✅ ถ้า ModelState ไม่ valid ให้โหลด categories และคืนค่า form
+                if (!ModelState.IsValid)
+                {
+                    var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                    var categories = await _mediator.Send(categoriesQuery);
+                    ViewBag.Categories = categories;
+
+                    // ✅ เพิ่มส่วนนี้: เก็บค่าเดิมเพื่อแสดงใน form
+                    ViewBag.SelectedCategoryIds = command.CategoryIds;
+
+                    return View(command);
+                }
+
                 // Upload profile image if provided
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
@@ -82,7 +95,13 @@ namespace BlogHybrid.Web.Controllers
                     {
                         _logger.LogError(ex, "Error uploading community profile image");
                         ModelState.AddModelError("ImageFile", "ไม่สามารถอัปโหลดรูปโปรไฟล์ได้");
-                        return await ReloadCreateView(command);
+
+                        var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                        var categories = await _mediator.Send(categoriesQuery);
+                        ViewBag.Categories = categories;
+                        ViewBag.SelectedCategoryIds = command.CategoryIds;
+
+                        return View(command);
                     }
                 }
 
@@ -105,14 +124,14 @@ namespace BlogHybrid.Web.Controllers
                         }
 
                         ModelState.AddModelError("CoverImageFile", "ไม่สามารถอัปโหลดรูปปกได้");
-                        return await ReloadCreateView(command);
-                    }
-                }
 
-                // Validate model state
-                if (!ModelState.IsValid)
-                {
-                    return await ReloadCreateView(command);
+                        var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                        var categories = await _mediator.Send(categoriesQuery);
+                        ViewBag.Categories = categories;
+                        ViewBag.SelectedCategoryIds = command.CategoryIds;
+
+                        return View(command);
+                    }
                 }
 
                 // Send command to create community
@@ -120,14 +139,14 @@ namespace BlogHybrid.Web.Controllers
 
                 if (result.Success)
                 {
-                    // แสดง Toast สวยงามก่อน redirect
-                    TempData["ToastType"] = "success";
-                    TempData["ToastMessage"] = "สร้างชุมชนสำเร็จ! กำลังนำคุณไปยังชุมชนของคุณ...";
-                    TempData["ToastIcon"] = "bi-check-circle-fill";
-                    TempData["RedirectUrl"] = $"/{result.FullSlug}";
-                    TempData["RedirectDelay"] = 2000; // 2 วินาที
+                    TempData["SuccessMessage"] = "สร้างชุมชนสำเร็จ!";
 
-                    return View("CreateSuccess", result);
+                    // Redirect to community detail page
+                    return RedirectToAction("Details", new
+                    {
+                        categorySlug = result.FullSlug?.Split('/')[0] ?? "community",
+                        communitySlug = result.Slug
+                    });
                 }
                 else
                 {
@@ -144,10 +163,15 @@ namespace BlogHybrid.Web.Controllers
                     // Show errors
                     foreach (var error in result.Errors)
                     {
-                        ModelState.AddModelError("", error);
+                        ModelState.AddModelError("เกิดข้อผิดพลาด กรุณารอซักครู่ หรือติดต่อผู้ดูและระบบ", error);
                     }
 
-                    return await ReloadCreateView(command);
+                    var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                    var categories = await _mediator.Send(categoriesQuery);
+                    ViewBag.Categories = categories;
+                    ViewBag.SelectedCategoryIds = command.CategoryIds;
+
+                    return View(command);
                 }
             }
             catch (Exception ex)
@@ -164,17 +188,17 @@ namespace BlogHybrid.Web.Controllers
                     await _imageService.DeleteAsync(command.CoverImageUrl);
                 }
 
-                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการสร้างชุมชน";
-                return await ReloadCreateView(command);
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการสร้างชุมชน: " + ex.Message;
+
+                var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                var categories = await _mediator.Send(categoriesQuery);
+                ViewBag.Categories = categories;
+                ViewBag.SelectedCategoryIds = command.CategoryIds;
+
+                return View(command);
             }
         }
-        private async Task<IActionResult> ReloadCreateView(CreateCommunityCommand command)
-        {
-            var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
-            var categories = await _mediator.Send(categoriesQuery);
-            ViewBag.Categories = categories;
-            return View(command);
-        }
+
         // GET: /{category-slug}/{community-slug}
         [AllowAnonymous]
         [HttpGet("{categorySlug}/{communitySlug}")]
@@ -182,7 +206,6 @@ namespace BlogHybrid.Web.Controllers
         {
             try
             {
-                // ใช้ community slug เพื่อดึงข้อมูล (slug ของ community เป็น unique)
                 var query = new GetCommunityBySlugQuery
                 {
                     Slug = communitySlug,
@@ -196,10 +219,8 @@ namespace BlogHybrid.Web.Controllers
                     return NotFound();
                 }
 
-                // ตรวจสอบว่า category slug ตรงกันไหม (เพื่อ SEO และ URL correctness)
                 if (community.CategorySlug != categorySlug)
                 {
-                    // Redirect ไปยัง URL ที่ถูกต้อง
                     return RedirectPermanent($"/{community.CategorySlug}/{community.Slug}");
                 }
 
@@ -211,7 +232,6 @@ namespace BlogHybrid.Web.Controllers
                 return NotFound();
             }
         }
-
 
         [Authorize]
         [HttpGet("my-communities")]
@@ -226,7 +246,6 @@ namespace BlogHybrid.Web.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // Get user's communities using the existing query
                 var query = new GetUserCommunitiesQuery { UserId = userId };
                 var communities = await _mediator.Send(query);
 
@@ -240,7 +259,7 @@ namespace BlogHybrid.Web.Controllers
             }
         }
 
-        // GET: /community/edit/{id}
+        // Edit methods remain the same...
         [Authorize]
         [HttpGet("community/edit/{id}")]
         public async Task<IActionResult> Edit(int id)
@@ -254,7 +273,6 @@ namespace BlogHybrid.Web.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // Get community by ID
                 var community = await _unitOfWork.Communities.GetByIdWithDetailsAsync(id);
                 if (community == null)
                 {
@@ -262,24 +280,20 @@ namespace BlogHybrid.Web.Controllers
                     return RedirectToAction("MyCommunities");
                 }
 
-                // Check permission (only creator can edit)
                 if (community.CreatorId != userId)
                 {
                     TempData["ErrorMessage"] = "คุณไม่มีสิทธิ์แก้ไขชุมชนนี้";
                     return RedirectToAction("MyCommunities");
                 }
 
-                // Get categories for dropdown
                 var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                 var categories = await _mediator.Send(categoriesQuery);
                 ViewBag.Categories = categories;
 
-                // Get selected category IDs
                 var selectedCategoryIds = community.CommunityCategories
                     .Select(cc => cc.CategoryId)
                     .ToList();
 
-                // Create command for view
                 var command = new UpdateCommunityCommand
                 {
                     Id = community.Id,
@@ -304,7 +318,6 @@ namespace BlogHybrid.Web.Controllers
             }
         }
 
-        // POST: /community/edit/{id}
         [Authorize]
         [HttpPost("community/edit/{id}")]
         [ValidateAntiForgeryToken]
@@ -326,7 +339,6 @@ namespace BlogHybrid.Web.Controllers
                 command.Id = id;
                 command.CurrentUserId = userId;
 
-                // Get existing community to check old images
                 var existingCommunity = await _unitOfWork.Communities.GetByIdAsync(id);
                 if (existingCommunity == null)
                 {
@@ -337,7 +349,6 @@ namespace BlogHybrid.Web.Controllers
                 var oldImageUrl = existingCommunity.ImageUrl;
                 var oldCoverImageUrl = existingCommunity.CoverImageUrl;
 
-                // Upload new profile image if provided
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
                     try
@@ -345,7 +356,6 @@ namespace BlogHybrid.Web.Controllers
                         var imagePath = await _imageService.UploadAsync(ImageFile, "communities");
                         command.ImageUrl = _imageService.GetImageUrl(imagePath);
 
-                        // Delete old image
                         if (!string.IsNullOrEmpty(oldImageUrl))
                         {
                             await _imageService.DeleteAsync(oldImageUrl);
@@ -355,16 +365,18 @@ namespace BlogHybrid.Web.Controllers
                     {
                         _logger.LogError(ex, "Error uploading community profile image");
                         ModelState.AddModelError("ImageFile", "ไม่สามารถอัปโหลดรูปโปรไฟล์ได้");
-                        return await ReloadEditView(command);
+
+                        var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                        var categories = await _mediator.Send(categoriesQuery);
+                        ViewBag.Categories = categories;
+                        return View("Edit", command);
                     }
                 }
                 else
                 {
-                    // Keep existing image
                     command.ImageUrl = oldImageUrl;
                 }
 
-                // Upload new cover image if provided
                 if (CoverImageFile != null && CoverImageFile.Length > 0)
                 {
                     try
@@ -372,7 +384,6 @@ namespace BlogHybrid.Web.Controllers
                         var coverPath = await _imageService.UploadAsync(CoverImageFile, "communities/covers");
                         command.CoverImageUrl = _imageService.GetImageUrl(coverPath);
 
-                        // Delete old cover image
                         if (!string.IsNullOrEmpty(oldCoverImageUrl))
                         {
                             await _imageService.DeleteAsync(oldCoverImageUrl);
@@ -382,29 +393,32 @@ namespace BlogHybrid.Web.Controllers
                     {
                         _logger.LogError(ex, "Error uploading community cover image");
 
-                        // Delete new profile image if already uploaded
                         if (ImageFile != null && !string.IsNullOrEmpty(command.ImageUrl) && command.ImageUrl != oldImageUrl)
                         {
                             await _imageService.DeleteAsync(command.ImageUrl);
                         }
 
                         ModelState.AddModelError("CoverImageFile", "ไม่สามารถอัปโหลดรูปปกได้");
-                        return await ReloadEditView(command);
+
+                        var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                        var categories = await _mediator.Send(categoriesQuery);
+                        ViewBag.Categories = categories;
+                        return View("Edit", command);
                     }
                 }
                 else
                 {
-                    // Keep existing cover image
                     command.CoverImageUrl = oldCoverImageUrl;
                 }
 
-                // Validate model state
                 if (!ModelState.IsValid)
                 {
-                    return await ReloadEditView(command);
+                    var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                    var categories = await _mediator.Send(categoriesQuery);
+                    ViewBag.Categories = categories;
+                    return View("Edit", command);
                 }
 
-                // Send command to update community
                 var result = await _mediator.Send(command);
 
                 if (result.Success)
@@ -414,29 +428,27 @@ namespace BlogHybrid.Web.Controllers
                 }
                 else
                 {
-                    // Show errors
                     foreach (var error in result.Errors)
                     {
                         ModelState.AddModelError("", error);
                     }
 
-                    return await ReloadEditView(command);
+                    var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                    var categories = await _mediator.Send(categoriesQuery);
+                    ViewBag.Categories = categories;
+                    return View("Edit", command);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating community");
                 TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการอัปเดตชุมชน";
-                return await ReloadEditView(command);
+
+                var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                var categories = await _mediator.Send(categoriesQuery);
+                ViewBag.Categories = categories;
+                return View("Edit", command);
             }
         }
-        private async Task<IActionResult> ReloadEditView(UpdateCommunityCommand command)
-        {
-            var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
-            var categories = await _mediator.Send(categoriesQuery);
-            ViewBag.Categories = categories;
-            return View("Edit", command);
-        }
-
     }
 }

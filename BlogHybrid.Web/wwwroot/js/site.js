@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initialize components
     initMobileMenu();
     initUserDropdown();
+    initToastFromTempData(); // Auto show toast from TempData
 });
 
 // ========== Mobile Menu Toggle ==========
@@ -44,131 +45,130 @@ function getAntiForgeryToken() {
     return token ? token.value : '';
 }
 
-// ========== Helper: Show Toast Message (with close button) ==========
+// ========== 🎯 UNIVERSAL TOAST SYSTEM (แก้ไขแล้ว) ==========
 function showToast(message, type = 'info') {
-    // Create toast element
+    // ลบ toast เก่าทั้งหมด
+    const oldToasts = document.querySelectorAll('.toast-notification');
+    oldToasts.forEach(toast => toast.remove());
+
+    // เลือกสีตาม type
+    const colors = {
+        success: { bg: '#10b981', icon: 'bi-check-circle-fill' },
+        error: { bg: '#ef4444', icon: 'bi-exclamation-triangle-fill' },
+        warning: { bg: '#f59e0b', icon: 'bi-exclamation-circle-fill' },
+        info: { bg: '#3b82f6', icon: 'bi-info-circle-fill' }
+    };
+
+    const config = colors[type] || colors.info;
+
+    // สร้าง toast
     const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-
-    // เลือกสี
-    const bgColor = type === 'success' ? '#10b981' :
-        type === 'error' ? '#ef4444' :
-            '#3b82f6';
-
+    toast.className = `toast-notification toast-${type}`;
     toast.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        padding: 1rem 1.5rem;
-        padding-right: 2.5rem;
-        background: ${bgColor};
+        min-width: 300px;
+        max-width: 450px;
+        padding: 1rem 1.25rem;
+        background: ${config.bg};
         color: white;
-        border-radius: 8px;
-        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-        z-index: 9999;
-        animation: slideIn 0.3s ease;
-        max-width: 400px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        line-height: 1.4;
     `;
 
-    // สร้าง HTML
     toast.innerHTML = `
-        ${message}
+        <i class="bi ${config.icon}" style="font-size: 1.5rem; flex-shrink: 0;"></i>
+        <span style="flex: 1;">${message}</span>
         <button onclick="this.parentElement.remove()" style="
-            position: absolute;
-            top: 8px;
-            right: 8px;
             background: transparent;
             border: none;
             color: white;
-            font-size: 18px;
-            line-height: 1;
+            font-size: 1.25rem;
             cursor: pointer;
-            opacity: 0.7;
-            padding: 4px 8px;
-        ">✕</button>
+            opacity: 0.8;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: opacity 0.2s, background 0.2s;
+        " onmouseover="this.style.background='rgba(255,255,255,0.2)'" 
+           onmouseout="this.style.background='transparent'">✕</button>
     `;
 
     document.body.appendChild(toast);
 
-    // Auto remove after 5 seconds
+    // Slide in animation
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(0)';
+    }, 50);
+
+    // Auto remove
+    const duration = type === 'error' ? 6000 : 4000;
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100px)';
         setTimeout(() => toast.remove(), 300);
-    }, 5000);
+    }, duration);
 }
 
-// ========== Helper: Debounce Function ==========
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+// ========== 🎯 Init Toast จาก TempData (Auto show on page load) ==========
+function initToastFromTempData() {
+    const successToast = document.getElementById('successToast');
+    const errorToast = document.getElementById('errorToast');
+    const infoToast = document.getElementById('infoToast');
+
+    if (successToast) {
+        const message = successToast.querySelector('span')?.textContent;
+        if (message) showToast(message, 'success');
+        successToast.remove();
+    }
+
+    if (errorToast) {
+        const message = errorToast.querySelector('span')?.textContent;
+        if (message) showToast(message, 'error');
+        errorToast.remove();
+    }
+
+    if (infoToast) {
+        const message = infoToast.querySelector('span')?.textContent;
+        if (message) showToast(message, 'info');
+        infoToast.remove();
+    }
 }
 
-// ========== Helper: Format Date ==========
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 1) return 'เมื่อสักครู่';
-    if (diffMins < 60) return `${diffMins} นาทีที่แล้ว`;
-
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours} ชั่วโมงที่แล้ว`;
-
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 7) return `${diffDays} วันที่แล้ว`;
-
-    return date.toLocaleDateString('th-TH', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-}
-
-// ========== Add CSS Animations ==========
-if (!document.querySelector('#toast-animations')) {
-    const style = document.createElement('style');
-    style.id = 'toast-animations';
-    style.textContent = `
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(100%);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+// ========== Mobile Responsive Styles ==========
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(100px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideOut {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(100px); }
+    }
+    @media (max-width: 640px) {
+        .toast-notification {
+            right: 10px !important;
+            left: 10px !important;
+            top: 10px !important;
+            min-width: auto !important;
+            max-width: none !important;
         }
-        
-        @keyframes slideOut {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(100%);
-            }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// ========== Export for module usage ==========
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        getAntiForgeryToken,
-        showToast,
-        debounce,
-        formatDate
-    };
-}
+    }
+`;
+document.head.appendChild(style);

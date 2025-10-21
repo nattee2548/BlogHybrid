@@ -16,7 +16,7 @@
         </div>
 
         <!-- Form -->
-      <form method="post" enctype="multipart/form-data" class="create-community-form">
+        <form method="post" enctype="multipart/form-data" class="create-community-form">
             @Html.AntiForgeryToken()
 
             <!-- Community Name -->
@@ -24,10 +24,18 @@
                 <label class="form-label required">ชื่อชุมชน</label>
                 <input type="text"
                        name="Name"
+                       id="Name"
                        class="form-control"
                        placeholder="เช่น เทคโนโลยี AI, ชุมชนนักพัฒนา, เกมเมอร์ไทย"
                        maxlength="50"
+                       value="@Model?.Name"
                        required />
+                @if (ViewData.ModelState["Name"]?.Errors.Count > 0)
+                {
+                    <span class="text-danger field-validation-error" data-valmsg-for="Name">
+                        @ViewData.ModelState["Name"].Errors[0].ErrorMessage
+                    </span>
+                }
                 <p class="form-help">
                     ชื่อชุมชนต้องมีความยาว 3-50 ตัวอักษร ไม่สามารถเปลี่ยนแปลงได้ในภายหลัง
                 </p>
@@ -43,18 +51,43 @@
                 </button>
                 <div id="selectedCategories" class="selected-categories"></div>
                 <input type="hidden" name="CategoryIds" id="categoryIdsInput" required />
+                @if (ViewData.ModelState["CategoryIds"]?.Errors.Count > 0)
+                {
+                    <span class="text-danger field-validation-error" data-valmsg-for="CategoryIds">
+                        @ViewData.ModelState["CategoryIds"].Errors[0].ErrorMessage
+                    </span>
+                }
             </div>
 
-            <!-- Community Image -->
             <!-- Community Profile Image -->
             <div class="form-section">
                 <label class="form-label">รูปโปรไฟล์ชุมชน <span class="optional-text">(ไม่บังคับ)</span></label>
-                <input type="file"
-                       name="ImageFile"
-                       class="form-control"
-                       accept="image/*"
-                       id="imageFileInput" />
-                <span class="text-danger"></span>
+
+                <!-- Custom Upload Button -->
+                <div class="custom-file-upload">
+                    <input type="file"
+                           name="ImageFile"
+                           class="file-input-hidden"
+                           accept="image/*"
+                           id="imageFileInput" />
+
+                    <label for="imageFileInput" class="file-upload-label">
+                        <div class="file-upload-icon">
+                            <i class="bi bi-cloud-upload"></i>
+                        </div>
+                        <div class="file-upload-text">
+                            <span class="upload-title">คลิกเพื่ออัปโหลดรูปภาพ</span>
+                            <span class="upload-subtitle">หรือลากไฟล์มาวางที่นี่</span>
+                        </div>
+                    </label>
+                </div>
+
+                @if (ViewData.ModelState["ImageFile"]?.Errors.Count > 0)
+                {
+                    <span class="text-danger field-validation-error" data-valmsg-for="ImageFile">
+                        @ViewData.ModelState["ImageFile"].Errors[0].ErrorMessage
+                    </span>
+                }
                 <small class="form-help">รูปภาพแสดงเป็นไอคอนชุมชน | JPG, PNG, GIF, WebP (สูงสุด 5MB)</small>
 
                 <!-- Profile Image Preview -->
@@ -74,12 +107,32 @@
             <!-- Community Cover Image -->
             <div class="form-section">
                 <label class="form-label">รูปภาพปก <span class="optional-text">(ไม่บังคับ)</span></label>
-                <input type="file"
-                       name="CoverImageFile"
-                       class="form-control"
-                       accept="image/*"
-                       id="coverImageFileInput" />
-                <span class="text-danger"></span>
+
+                <!-- Custom Upload Button -->
+                <div class="custom-file-upload">
+                    <input type="file"
+                           name="CoverImageFile"
+                           class="file-input-hidden"
+                           accept="image/*"
+                           id="coverImageFileInput" />
+
+                    <label for="coverImageFileInput" class="file-upload-label">
+                        <div class="file-upload-icon">
+                            <i class="bi bi-card-image"></i>
+                        </div>
+                        <div class="file-upload-text">
+                            <span class="upload-title">คลิกเพื่ออัปโหลดรูปปก</span>
+                            <span class="upload-subtitle">หรือลากไฟล์มาวางที่นี่</span>
+                        </div>
+                    </label>
+                </div>
+
+                @if (ViewData.ModelState["CoverImageFile"]?.Errors.Count > 0)
+                {
+                    <span class="text-danger field-validation-error" data-valmsg-for="CoverImageFile">
+                        @ViewData.ModelState["CoverImageFile"].Errors[0].ErrorMessage
+                    </span>
+                }
                 <small class="form-help">รูปภาพแสดงที่ด้านบนของชุมชน | JPG, PNG, GIF, WebP (สูงสุด 5MB)</small>
 
                 <!-- Cover Image Preview -->
@@ -103,7 +156,13 @@
                           class="form-textarea"
                           placeholder="บอกเล่าเกี่ยวกับชุมชนของคุณ"
                           rows="4"
-                          maxlength="500"></textarea>
+                          maxlength="500">@Model?.Description</textarea>
+                @if (ViewData.ModelState["Description"]?.Errors.Count > 0)
+                {
+                    <span class="text-danger field-validation-error" data-valmsg-for="Description">
+                        @ViewData.ModelState["Description"].Errors[0].ErrorMessage
+                    </span>
+                }
                 <p class="form-help">สูงสุด 500 ตัวอักษร</p>
             </div>
 
@@ -212,6 +271,25 @@
         </div>
         <div class="category-modal-body">
             <p class="category-modal-desc">เลือกได้สูงสุด @maxCategories หมวดหมู่ที่เหมาะสมกับชุมชนของคุณ</p>
+
+            <!-- Search Box -->
+            <div class="category-search">
+                <i class="bi bi-search category-search-icon"></i>
+                <input type="text"
+                       id="categorySearchInput"
+                       class="category-search-input"
+                       placeholder="ค้นหาหมวดหมู่..."
+                       oninput="searchCategories(this.value)"
+                       autocomplete="off" />
+                <button type="button"
+                        class="category-search-clear"
+                        onclick="clearCategorySearch()"
+                        title="ล้างการค้นหา">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+
+            <!-- Categories Grid -->
             <div class="category-grid" id="categoryGrid">
                 <!-- Categories will be loaded here -->
             </div>
@@ -224,38 +302,79 @@
 </div>
 
 <script>
+    // ========================================
+    // Configuration
+    // ========================================
     const MAX_CATEGORIES = @maxCategories;
     let selectedCategories = [];
+    let allCategoriesData = [];
 
-    // โหลด categories จาก ViewBag
+    // Load categories from server
     const categoryTree = @Html.Raw(Json.Serialize(ViewBag.Categories ?? new List<object>()));
 
-    // Load categories into modal with hierarchical structure
+    // ========================================
+    // Modal Functions
+    // ========================================
+    function openCategoryModal() {
+        const modal = document.getElementById('categoryModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Load categories if not loaded
+        if (allCategoriesData.length === 0) {
+            loadCategories();
+        }
+    }
+
+    function closeCategoryModal() {
+        const modal = document.getElementById('categoryModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // ========================================
+    // Category Loading & Rendering
+    // ========================================
     function loadCategories() {
+        allCategoriesData = categoryTree;
+        renderCategories(categoryTree);
+    }
+
+    function renderCategories(categories) {
         const grid = document.getElementById('categoryGrid');
 
+        if (categories.length === 0) {
+            grid.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">ไม่พบหมวดหมู่</p>';
+            return;
+        }
+
         let html = '';
-        categoryTree.forEach(parent => {
-            // Parent category
+        categories.forEach(parent => {
+            html += `<div class="category-group">`;
+
+            // Parent category header (คลิกได้)
             html += `
-                <div class="category-group">
-                    <div class="category-item parent-category" data-id="${parent.id}" onclick="toggleCategory(${parent.id})">
-                        <i class="bi bi-folder"></i>
-                        <span>${parent.name}</span>
-                        <i class="bi bi-check-circle category-check"></i>
-                    </div>
+                <button type="button"
+                        class="category-parent-header"
+                        data-id="${parent.id}"
+                        onclick="toggleCategory(${parent.id})">
+                    <i class="bi bi-laptop"></i>
+                    <span>${parent.name}</span>
+                    <i class="bi bi-check-circle category-parent-check"></i>
+                </button>
             `;
 
-            // Subcategories
+            // Subcategories เป็น tags
             if (parent.subCategories && parent.subCategories.length > 0) {
-                html += '<div class="subcategory-list">';
+                html += '<div class="category-tags-wrapper">';
                 parent.subCategories.forEach(sub => {
                     html += `
-                        <div class="category-item subcategory-item" data-id="${sub.id}" onclick="toggleCategory(${sub.id})">
-                            <i class="bi bi-arrow-return-right"></i>
-                            <span>${sub.name}</span>
-                            <i class="bi bi-check-circle category-check"></i>
-                        </div>
+                        <button type="button"
+                                class="category-tag-btn"
+                                data-id="${sub.id}"
+                                onclick="toggleCategory(${sub.id})">
+                            ${sub.name}
+                        </button>
                     `;
                 });
                 html += '</div>';
@@ -265,23 +384,12 @@
         });
 
         grid.innerHTML = html;
-    }
-
-    // Open modal
-    function openCategoryModal() {
-        loadCategories();
         updateModalUI();
-        document.getElementById('categoryModal').classList.add('active');
-        document.body.style.overflow = 'hidden';
     }
 
-    // Close modal
-    function closeCategoryModal() {
-        document.getElementById('categoryModal').classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    // Toggle category selection
+    // ========================================
+    // Category Selection
+    // ========================================
     function toggleCategory(id) {
         const index = selectedCategories.indexOf(id);
 
@@ -298,19 +406,71 @@
         updateModalUI();
     }
 
-    // Update modal UI
     function updateModalUI() {
-        document.querySelectorAll('.category-item').forEach(item => {
-            const id = parseInt(item.dataset.id);
+        // Update parent headers
+        document.querySelectorAll('.category-parent-header').forEach(btn => {
+            const id = parseInt(btn.dataset.id);
             if (selectedCategories.includes(id)) {
-                item.classList.add('selected');
+                btn.classList.add('selected');
             } else {
-                item.classList.remove('selected');
+                btn.classList.remove('selected');
+            }
+        });
+
+        // Update tag buttons
+        document.querySelectorAll('.category-tag-btn').forEach(btn => {
+            const id = parseInt(btn.dataset.id);
+            if (selectedCategories.includes(id)) {
+                btn.classList.add('selected');
+            } else {
+                btn.classList.remove('selected');
             }
         });
     }
 
-    // Confirm selection
+    // ========================================
+    // Search Functions
+    // ========================================
+    function searchCategories(query) {
+        const searchTerm = query.toLowerCase().trim();
+
+        if (!searchTerm) {
+            renderCategories(allCategoriesData);
+            return;
+        }
+
+        const filtered = allCategoriesData
+            .map(parent => {
+                const parentMatches = parent.name.toLowerCase().includes(searchTerm);
+                const matchedSubs = parent.subCategories?.filter(sub =>
+                    sub.name.toLowerCase().includes(searchTerm)
+                ) || [];
+
+                if (parentMatches || matchedSubs.length > 0) {
+                    return {
+                        ...parent,
+                        subCategories: parentMatches ? parent.subCategories : matchedSubs
+                    };
+                }
+                return null;
+            })
+            .filter(item => item !== null);
+
+        renderCategories(filtered);
+    }
+
+    function clearCategorySearch() {
+        const searchInput = document.getElementById('categorySearchInput');
+        if (searchInput) {
+            searchInput.value = '';
+            searchCategories('');
+            searchInput.focus();
+        }
+    }
+
+    // ========================================
+    // Confirm & Display
+    // ========================================
     function confirmCategories() {
         if (selectedCategories.length === 0) {
             showToast('กรุณาเลือกหมวดหมู่อย่างน้อย 1 หมวดหมู่', 'error');
@@ -321,7 +481,6 @@
         closeCategoryModal();
     }
 
-    // Update selected display
     function updateSelectedDisplay() {
         const container = document.getElementById('selectedCategories');
         const input = document.getElementById('categoryIdsInput');
@@ -337,7 +496,7 @@
         input.value = selectedCategories.join(',');
         text.textContent = `เลือกแล้ว ${selectedCategories.length} หมวดหมู่`;
 
-        // Find category names from tree
+        // Find category names
         const allCategories = [];
         categoryTree.forEach(parent => {
             allCategories.push(parent);
@@ -362,16 +521,16 @@
         }).join('');
     }
 
-    // Remove category
     function removeCategory(id) {
         selectedCategories = selectedCategories.filter(catId => catId !== id);
         updateSelectedDisplay();
         updateModalUI();
     }
 
-    // Toast notification
+    // ========================================
+    // Toast Notification
+    // ========================================
     function showToast(message, type = 'info') {
-        // ลบ toast เก่า
         const oldToast = document.querySelector('.community-toast');
         if (oldToast) oldToast.remove();
 
@@ -390,66 +549,52 @@
 
         document.body.appendChild(toast);
 
-        // แสดง toast
         setTimeout(() => toast.classList.add('show'), 10);
-
-        // ซ่อนและลบ toast
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
         }, 4000);
     }
 
+    // ========================================
+    // Scroll to Error Field
+    // ========================================
+    function scrollToErrorField(fieldName) {
+        let element;
 
-        // แทนที่ส่วน DOMContentLoaded เดิมด้วยโค้ดนี้
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // ========================================
-        // 1. Initialize Categories (ถ้ามีการเลือกไว้แล้ว)
-        // ========================================
-        const existingValue = document.getElementById('categoryIdsInput').value;
-        if (existingValue) {
-            selectedCategories = existingValue.split(',').map(id => parseInt(id));
-            updateSelectedDisplay();
+        if (fieldName === 'ชื่อชุมชน') {
+            element = document.querySelector('input[name="Name"]');
+        } else if (fieldName === 'หมวดหมู่') {
+            element = document.querySelector('.category-selector-btn');
         }
 
-        // ========================================
-        // 2. Profile Image Preview Handler
-        // ========================================
-        const imageFileInput = document.getElementById('imageFileInput');
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-        if (imageFileInput) {
-            imageFileInput.addEventListener('change', function(e) {
-                handleImagePreview(e.target.files[0], this, 'previewImage', 'imagePreview', 'รูปโปรไฟล์');
-            });
+            // Highlight effect
+            element.style.transition = 'all 0.3s ease';
+            element.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.3)';
+
+            setTimeout(() => {
+                element.style.boxShadow = '';
+            }, 2000);
         }
-
-        // ========================================
-        // 3. Cover Image Preview Handler
-        // ========================================
-        const coverImageFileInput = document.getElementById('coverImageFileInput');
-
-        if (coverImageFileInput) {
-            coverImageFileInput.addEventListener('change', function(e) {
-                handleImagePreview(e.target.files[0], this, 'previewCoverImage', 'coverImagePreview', 'รูปปก');
-            });
-        }
-    });
+    }
 
     // ========================================
-    // Shared Image Preview Function
+    // Image Preview Functions
     // ========================================
     function handleImagePreview(file, input, previewImgId, previewBoxId, imageName) {
         if (!file) return;
 
-        // ตรวจสอบขนาดไฟล์ (สูงสุด 5MB)
+        // Check file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             showToast(`${imageName}ใหญ่เกินไป (สูงสุด 5MB)`, 'error');
             input.value = '';
             return;
         }
 
-        // ตรวจสอบประเภทไฟล์
+        // Check file type
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
         if (!validTypes.includes(file.type)) {
             showToast(`ประเภทไฟล์${imageName}ไม่ถูกต้อง (รองรับเฉพาะ JPG, PNG, GIF, WebP)`, 'error');
@@ -457,7 +602,7 @@
             return;
         }
 
-        // แสดงตัวอย่างรูปภาพ
+        // Show preview
         const reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById(previewImgId).src = e.target.result;
@@ -466,9 +611,6 @@
         reader.readAsDataURL(file);
     }
 
-    // ========================================
-    // Remove Profile Image
-    // ========================================
     function removeImage() {
         const imageFileInput = document.getElementById('imageFileInput');
         const imagePreview = document.getElementById('imagePreview');
@@ -480,9 +622,6 @@
         showToast('ลบรูปโปรไฟล์เรียบร้อยแล้ว', 'success');
     }
 
-    // ========================================
-    // Remove Cover Image
-    // ========================================
     function removeCoverImage() {
         const coverImageFileInput = document.getElementById('coverImageFileInput');
         const coverImagePreview = document.getElementById('coverImagePreview');
@@ -494,10 +633,185 @@
         showToast('ลบรูปปกเรียบร้อยแล้ว', 'success');
     }
 
+    // ========================================
+    // Drag & Drop Enhancement
+    // ========================================
+    function setupDragDrop(inputId, labelSelector) {
+        const input = document.getElementById(inputId);
+        const label = document.querySelector(`label[for="${inputId}"]`);
 
+        if (!input || !label) return;
 
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            label.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            label.addEventListener(eventName, () => {
+                label.classList.add('drag-over');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            label.addEventListener(eventName, () => {
+                label.classList.remove('drag-over');
+            }, false);
+        });
+
+        label.addEventListener('drop', function(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                input.files = files;
+
+                // Trigger change event
+                const event = new Event('change', { bubbles: true });
+                input.dispatchEvent(event);
+            }
+        }, false);
+    }
+
+        // ========================================
+    // Initialize on Page Load
+    // ========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // ========================================
+        // แสดง Toast ถ้ามี Validation Errors
+        // ========================================
+        const errorElements = document.querySelectorAll('.field-validation-error');
+        const missingFields = [];
+
+        errorElements.forEach(el => {
+            const errorText = el.textContent.trim();
+            if (errorText) {
+                const fieldName = el.getAttribute('data-valmsg-for');
+                if (fieldName === 'Name') {
+                    missingFields.push('ชื่อชุมชน');
+                } else if (fieldName === 'CategoryIds') {
+                    missingFields.push('หมวดหมู่');
+                }
+            }
+        });
+
+        if (missingFields.length > 0) {
+            showToast(`กรุณากรอกข้อมูล: ${missingFields.join(', ')}`, 'error');
+        }
+
+        // โหลดค่าเดิมจาก ViewBag (เมื่อ validation fail)
+        const serverSelectedIds = '@ViewBag.SelectedCategoryIds';
+        if (serverSelectedIds && serverSelectedIds.trim() !== '') {
+            selectedCategories = serverSelectedIds.split(',').map(id => parseInt(id.trim()));
+            updateSelectedDisplay();
+        }
+
+        // Initialize existing category selection
+        const existingValue = document.getElementById('categoryIdsInput').value;
+        if (existingValue && selectedCategories.length === 0) {
+            selectedCategories = existingValue.split(',').map(id => parseInt(id));
+            updateSelectedDisplay();
+        }
+
+        // Profile image preview
+        const imageFileInput = document.getElementById('imageFileInput');
+        if (imageFileInput) {
+            imageFileInput.addEventListener('change', function(e) {
+                handleImagePreview(e.target.files[0], this, 'previewImage', 'imagePreview', 'รูปโปรไฟล์');
+            });
+        }
+
+        // Cover image preview
+        const coverImageFileInput = document.getElementById('coverImageFileInput');
+        if (coverImageFileInput) {
+            coverImageFileInput.addEventListener('change', function(e) {
+                handleImagePreview(e.target.files[0], this, 'previewCoverImage', 'coverImagePreview', 'รูปปก');
+            });
+        }
+
+        // Drag & Drop
+        setupDragDrop('imageFileInput', 'label[for="imageFileInput"]');
+        setupDragDrop('coverImageFileInput', 'label[for="coverImageFileInput"]');
+
+        // Close modal on overlay click
+        const overlay = document.querySelector('.category-modal-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', closeCategoryModal);
+        }
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('categoryModal');
+                if (modal && modal.classList.contains('active')) {
+                    closeCategoryModal();
+                }
+            }
+        });
+
+        // ========================================
+        // Validate ก่อน Submit
+        // ========================================
+        const form = document.querySelector('.create-community-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const nameInput = document.querySelector('input[name="Name"]');
+                const categoryInput = document.getElementById('categoryIdsInput');
+
+                // ตรวจสอบชื่อชุมชน
+                if (!nameInput.value.trim()) {
+                    e.preventDefault();
+                    showToast('กรุณากรอกข้อมูล: ชื่อชุมชน', 'error');
+                    scrollToErrorField('ชื่อชุมชน');
+                    setTimeout(() => nameInput.focus(), 500);
+                    return;
+                }
+
+                if (nameInput.value.trim().length < 3) {
+                    e.preventDefault();
+                    showToast('ชื่อชุมชนต้องมีความยาวอย่างน้อย 3 ตัวอักษร', 'error');
+                    scrollToErrorField('ชื่อชุมชน');
+                    setTimeout(() => nameInput.focus(), 500);
+                    return;
+                }
+
+                // ตรวจสอบหมวดหมู่
+                if (!categoryInput.value.trim()) {
+                    e.preventDefault();
+                    showToast('กรุณากรอกข้อมูล: หมวดหมู่', 'error');
+                    scrollToErrorField('หมวดหมู่');
+                    setTimeout(() => openCategoryModal(), 500);
+                    return;
+                }
+
+                // ✅ ถ้าผ่านทุกเงื่อนไข form จะ submit ไปที่ server
+            });
+        }
+
+        // ========================================
+        // แสดง Toast จาก TempData
+        // ========================================
+        const tempErrorMessage = '@TempData["ErrorMessage"]';
+        if (tempErrorMessage && tempErrorMessage.trim() !== '') {
+            setTimeout(() => {
+                showToast(tempErrorMessage, 'error');
+            }, 100);
+        }
+
+        const tempSuccessMessage = '@TempData["SuccessMessage"]';
+        if (tempSuccessMessage && tempSuccessMessage.trim() !== '') {
+            setTimeout(() => {
+                showToast(tempSuccessMessage, 'success');
+            }, 100);
+        }
+
+    });
 </script>
-
+ 
 <style>
     /* Container */
     .create-community-container {
@@ -841,32 +1155,30 @@
 
     /* Responsive */
     @@media (max-width: 768px) {
-        .subcategory-list
-
-    {
-        margin-left: 1rem;
-    }
-
-    .category-item {
-        padding: 0.625rem 0.875rem;
-    }
-
-    }
-        .category-item > i:first-child {
-            font-size: 1.75rem;
-            color: var(--text-secondary, #666);
+        .subcategory-list {
+            margin-left: 1rem;
         }
 
-        .category-item.selected > i:first-child {
-            color: var(--primary, #ff4500);
+        .category-item {
+            padding: 0.625rem 0.875rem;
         }
+    }
 
-        .category-item > span {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-primary, #1a1a1a);
-            text-align: center;
-        }
+    .category-item > i:first-child {
+        font-size: 1.75rem;
+        color: var(--text-secondary, #666);
+    }
+
+    .category-item.selected > i:first-child {
+        color: var(--primary, #ff4500);
+    }
+
+    .category-item > span {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-primary, #1a1a1a);
+        text-align: center;
+    }
 
     .category-check {
         position: absolute;
@@ -1205,40 +1517,35 @@
 
     /* Responsive */
     @@media (max-width: 991px) {
-        .create-community-container
+        .create-community-container {
+            grid-template-columns: 1fr;
+        }
 
-    {
-        grid-template-columns: 1fr;
-    }
-
-    .create-community-sidebar {
-        order: -1;
-    }
-
+        .create-community-sidebar {
+            order: -1;
+        }
     }
 
     @@media (max-width: 767px) {
-        .create-community-container
+        .create-community-container {
+            padding: 1rem;
+        }
 
-    {
-        padding: 1rem;
-    }
+        .create-community-form {
+            padding: 1.5rem;
+        }
 
-    .create-community-form {
-        padding: 1.5rem;
-    }
+        .form-actions {
+            flex-direction: column-reverse;
+        }
 
-    .form-actions {
-        flex-direction: column-reverse;
-    }
-
-    .btn-cancel,
-    .btn-create {
-        width: 100%;
-    }
+        .btn-cancel,
+        .btn-create {
+            width: 100%;
+        }
         /* ========================================
-       Toast สำหรับ Community Create Modal
-       ======================================== */
+           Toast สำหรับ Community Create Modal
+           ======================================== */
 
         .community-toast {
             position: fixed;
@@ -1321,41 +1628,34 @@
             }
         /* Toast Responsive */
         @@media (max-width: 768px) {
-            .community-toast
-
-    {
-        right: 16px;
-        left: 16px;
-        max-width: none;
-        top: 70px;
-    }
-
-    }
-
-    /* ========================================
-       แก้ไข z-index ของ Modal
-       ======================================== */
-
-    /* Modal Container - ต้องต่ำกว่า toast */
-    .category-modal {
-        z-index: 9000 !important;
-    }
-
-    /* Modal Overlay */
-    .category-modal-overlay {
-        z-index: 1;
-        pointer-events: auto;
-    }
-
-    /* Modal Content */
-    .category-modal-content {
-        z-index: 2;
-        position: relative;
-    }
+            .community-toast {
+                right: 16px;
+                left: 16px;
+                max-width: none;
+                top: 70px;
+            }
+        }
+        /* ========================================
+           แก้ไข z-index ของ Modal
+           ======================================== */
+        /* Modal Container - ต้องต่ำกว่า toast */
+        .category-modal {
+            z-index: 9000 !important;
+        }
+        /* Modal Overlay */
+        .category-modal-overlay {
+            z-index: 1;
+            pointer-events: auto;
+        }
+        /* Modal Content */
+        .category-modal-content {
+            z-index: 2;
+            position: relative;
+        }
         /* แทนที่ CSS #imagePreview เดิมด้วยโค้ดนี้ */
         /* ========================================
-       Image Preview Boxes (ทั้ง Profile และ Cover)
-       ======================================== */
+           Image Preview Boxes (ทั้ง Profile และ Cover)
+           ======================================== */
 
         .image-preview-box {
             margin-top: 1rem;
@@ -1477,17 +1777,366 @@
         }
         /* Responsive */
         @@media (max-width: 768px) {
-            .image-preview-box:not(.cover-preview) img
+            .image-preview-box:not(.cover-preview) img {
+                max-width: 100%;
+                max-height: 250px;
+            }
+
+            .image-preview-box.cover-preview img {
+                max-height: 150px;
+            }
+        }
+        }
+
+    /* Category Group */
+    .category-group {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Parent Category Header (ไม่มี icon, ไม่คลิกได้) */
+    /* Parent Category Header (ไม่มี icon) */
+    .category-parent-header {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--text-primary, #1a1a1a);
+        background: var(--bg-secondary, #f9fafb);
+        border: 2px solid var(--border-primary, #e5e7eb);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+    }
+
+        .category-parent-header:hover {
+            background: rgba(255, 69, 0, 0.05);
+            border-color: var(--primary, #ff4500);
+        }
+
+        .category-parent-header.selected {
+            background: var(--primary, #ff4500);
+            border-color: var(--primary, #ff4500);
+            color: white;
+        }
+
+        /* ซ่อน icon laptop (ตัวแรก) */
+        .category-parent-header > i:first-child {
+            display: none;
+        }
+
+        .category-parent-header > span {
+            flex: 1;
+        }
+
+    .category-parent-check {
+        font-size: 1.125rem;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .category-parent-header.selected .category-parent-check {
+        opacity: 1;
+    }
+
+    [data-theme="dark"] .category-parent-header {
+        color: #f9fafb;
+        background: #374151;
+        border-color: #4b5563;
+    }
+
+        [data-theme="dark"] .category-parent-header:hover {
+            background: rgba(255, 69, 0, 0.1);
+        }
+
+        [data-theme="dark"] .category-parent-header.selected {
+            background: var(--primary, #ff4500);
+            border-color: var(--primary, #ff4500);
+            color: white;
+        }
+
+    /* Category Tags Wrapper (แนวนอน, wrap ได้) */
+    .category-tags-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Category Tag Button (ปุ่มเล็กๆ คล้ายภาพ) */
+    .category-tag-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background: var(--bg-secondary, #f3f4f6);
+        border: 1px solid var(--border-primary, #e5e7eb);
+        border-radius: 9999px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--text-primary, #1a1a1a);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+        .category-tag-btn:hover {
+            background: rgba(255, 69, 0, 0.1);
+            border-color: var(--primary, #ff4500);
+            color: var(--primary, #ff4500);
+        }
+
+        .category-tag-btn.selected {
+            background: var(--primary, #ff4500);
+            border-color: var(--primary, #ff4500);
+            color: white;
+            font-weight: 600;
+        }
+
+    [data-theme="dark"] .category-tag-btn {
+        background: #374151;
+        border-color: #4b5563;
+        color: #f9fafb;
+    }
+
+        [data-theme="dark"] .category-tag-btn:hover {
+            background: rgba(255, 69, 0, 0.2);
+        }
+
+        [data-theme="dark"] .category-tag-btn.selected {
+            background: var(--primary, #ff4500);
+            border-color: var(--primary, #ff4500);
+            color: white;
+        }
+
+    /* Responsive */
+    @@media (max-width: 576px) {
+        .category-parent-header
 
     {
-        max-width: 100%;
-        max-height: 250px;
+        font-size: 0.8125rem;
     }
 
-    .image-preview-box.cover-preview img {
-        max-height: 150px;
+    .category-tag-btn {
+        padding: 0.4rem 0.875rem;
+        font-size: 0.75rem;
     }
 
-    
+    }
+
+    /* ========== Search Box ========== */
+    .category-search {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .category-search-input {
+        width: 100%;
+        padding: 0.75rem 3rem 0.75rem 2.75rem;
+        border: 2px solid var(--border-primary, #e5e7eb);
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        color: var(--text-primary, #1a1a1a);
+        background: var(--bg-primary, #fff);
+        transition: all 0.2s ease;
+    }
+
+        .category-search-input:focus {
+            outline: none;
+            border-color: var(--primary, #ff4500);
+        }
+
+    .category-search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        color: var(--text-tertiary, #9ca3af);
+        pointer-events: none;
+    }
+
+    .category-search-clear {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-secondary, #f3f4f6);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .category-search-input:not(:placeholder-shown) ~ .category-search-clear {
+        display: flex;
+    }
+    /* ========================================
+       Custom File Upload Styling
+       ======================================== */
+
+    /* ซ่อน input file เดิม */
+    .file-input-hidden {
+        position: absolute;
+        width: 0.1px;
+        height: 0.1px;
+        opacity: 0;
+        overflow: hidden;
+        z-index: -1;
+    }
+
+    /* Custom Upload Container */
+    .custom-file-upload {
+        margin-bottom: 0.75rem;
+    }
+
+    /* Upload Label (คลิกได้) */
+    .file-upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        padding: 2rem 1.5rem;
+        border: 2px dashed var(--border-primary, #e5e7eb);
+        border-radius: 12px;
+        background: var(--bg-secondary, #f9fafb);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .file-upload-label:hover {
+            border-color: var(--primary, #ff4500);
+            background: rgba(255, 69, 0, 0.03);
+        }
+
+        .file-upload-label:active {
+            transform: scale(0.98);
+        }
+
+    [data-theme="dark"] .file-upload-label {
+        background: var(--bg-secondary, #111827);
+        border-color: var(--border-primary, #374151);
+    }
+
+        [data-theme="dark"] .file-upload-label:hover {
+            background: rgba(255, 69, 0, 0.05);
+        }
+
+    /* Upload Icon */
+    .file-upload-icon {
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary, #ff4500);
+        border-radius: 50%;
+        color: white;
+        font-size: 1.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload-label:hover .file-upload-icon {
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(255, 69, 0, 0.3);
+    }
+
+    /* Upload Text */
+    .file-upload-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        text-align: center;
+    }
+
+    .upload-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-primary, #1a1a1a);
+    }
+
+    .upload-subtitle {
+        font-size: 0.8125rem;
+        color: var(--text-secondary, #666);
+    }
+
+    [data-theme="dark"] .upload-title {
+        color: #f9fafb;
+    }
+
+    [data-theme="dark"] .upload-subtitle {
+        color: #9ca3af;
+    }
+
+    /* เมื่อมีไฟล์แล้ว (optional enhancement) */
+    .file-input-hidden:focus + .file-upload-label {
+        outline: 2px solid var(--primary, #ff4500);
+        outline-offset: 2px;
+    }
+
+    /* Drag & Drop State (optional - ต้องใช้ JavaScript เพิ่มเติม) */
+    .file-upload-label.drag-over {
+        border-color: var(--primary, #ff4500);
+        background: rgba(255, 69, 0, 0.1);
+    }
+
+    /* Responsive */
+    @@media (max-width: 576px) {
+        .file-upload-label
+
+    {
+        padding: 1.5rem 1rem;
+    }
+
+    .file-upload-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.5rem;
+    }
+
+    .upload-title {
+        font-size: 0.875rem;
+    }
+
+    .upload-subtitle {
+        font-size: 0.75rem;
+    }
+
+    }
+
+    /* Validation Error Styling */
+    .field-validation-error {
+        display: block;
+        font-size: 0.8125rem;
+        color: #ef4444;
+        margin-top: 0.375rem;
+        font-weight: 500;
+    }
+
+        .field-validation-error:empty {
+            display: none;
+        }
+
+    .form-control.input-validation-error,
+    .form-textarea.input-validation-error {
+        border-color: #ef4444 !important;
+    }
+
+        .form-control.input-validation-error:focus,
+        .form-textarea.input-validation-error:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+        }
+
+    [data-theme="dark"] .field-validation-error {
+        color: #fca5a5;
+    }
 
 </style>

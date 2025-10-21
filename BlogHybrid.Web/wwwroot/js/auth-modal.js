@@ -1,5 +1,6 @@
 ﻿/* ========================================
    AUTH MODALS - JavaScript with AJAX
+   แก้ไข: ไม่ให้ modal เปิด-ปิดซ้ำ
    ======================================== */
 
 // เปิด Login Modal
@@ -47,44 +48,28 @@ function closeAllAuthModals() {
     document.body.style.overflow = '';
 }
 
-// สลับแบบ Smooth
+// สลับแบบ Smooth (แก้ให้เร็วมาก ไม่เห็นกระพริบ)
 function switchAuthModal(fromId, toId) {
     const fromModal = document.getElementById(fromId);
     const toModal = document.getElementById(toId);
 
     if (!fromModal || !toModal) return;
 
-    const fromContent = fromModal.querySelector('.auth-modal');
-    const toContent = toModal.querySelector('.auth-modal');
+    // สลับทันทีโดยไม่มี delay
+    fromModal.classList.remove('active');
+    toModal.classList.add('active');
 
-    fromContent.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-    fromContent.style.transform = 'translateX(-50px)';
-    fromContent.style.opacity = '0';
-
+    // Focus input
     setTimeout(() => {
-        fromModal.classList.remove('active');
-        fromContent.style.transform = '';
-        fromContent.style.opacity = '';
-
-        toContent.style.transform = 'translateX(50px)';
-        toContent.style.opacity = '0';
-        toModal.classList.add('active');
-
-        setTimeout(() => {
-            toContent.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-            toContent.style.transform = 'translateX(0)';
-            toContent.style.opacity = '1';
-
-            setTimeout(() => {
-                toContent.style.transition = '';
-                const firstInput = toModal.querySelector('input');
-                if (firstInput) firstInput.focus();
-            }, 300);
-        }, 50);
-    }, 300);
+        const firstInput = toModal.querySelector('input');
+        if (firstInput) {
+            firstInput.focus();
+            firstInput.select(); // เลือกข้อความถ้ามี
+        }
+    }, 100);
 }
 
-// Toggle Password
+// Toggle Password Visibility
 function togglePassword(inputId, button) {
     const input = document.getElementById(inputId);
     const icon = button.querySelector('i');
@@ -102,39 +87,94 @@ function togglePassword(inputId, button) {
     }
 }
 
-// ✨ แสดง Error Toast
+// ✨ แสดง Error Toast (แก้ไขให้แสดงได้)
 function showErrorToast(message) {
-    // ลบ toast เก่า
     const oldToast = document.querySelector('.toast-notification');
     if (oldToast) oldToast.remove();
 
     const toast = document.createElement('div');
     toast.className = 'toast-notification toast-error';
-    toast.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i><span>${message}</span>`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        border-left: 4px solid #ef4444;
+        z-index: 99999;
+        min-width: 300px;
+        max-width: 450px;
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s ease;
+    `;
+    toast.innerHTML = `
+        <i class="bi bi-exclamation-triangle-fill" style="color: #ef4444; font-size: 20px;"></i>
+        <span style="flex: 1; color: #333; font-size: 14px;">${message}</span>
+    `;
     document.body.appendChild(toast);
 
-    setTimeout(() => toast.classList.add('toast-show'), 100);
-
+    // Trigger animation
     setTimeout(() => {
-        toast.classList.remove('toast-show');
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(0)';
+    }, 50);
+
+    // Auto remove
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100px)';
         setTimeout(() => toast.remove(), 300);
     }, 5000);
 }
 
-// ✨ แสดง Success Toast
+// ✨ แสดง Success Toast (แก้ไขให้แสดงได้)
 function showSuccessToast(message) {
     const oldToast = document.querySelector('.toast-notification');
     if (oldToast) oldToast.remove();
 
     const toast = document.createElement('div');
     toast.className = 'toast-notification toast-success';
-    toast.innerHTML = `<i class="bi bi-check-circle-fill"></i><span>${message}</span>`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        border-left: 4px solid #10b981;
+        z-index: 99999;
+        min-width: 300px;
+        max-width: 450px;
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s ease;
+    `;
+    toast.innerHTML = `
+        <i class="bi bi-check-circle-fill" style="color: #10b981; font-size: 20px;"></i>
+        <span style="flex: 1; color: #333; font-size: 14px;">${message}</span>
+    `;
     document.body.appendChild(toast);
 
-    setTimeout(() => toast.classList.add('toast-show'), 100);
-
+    // Trigger animation
     setTimeout(() => {
-        toast.classList.remove('toast-show');
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(0)';
+    }, 50);
+
+    // Auto remove
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100px)';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
@@ -158,15 +198,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // ============================================
     // ✨ AJAX Login Form
+    // ============================================
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const formData = new FormData(this);
-
-            // ✨ แก้ Checkbox Remember Me
             const rememberMe = this.querySelector('#loginRememberMe');
             if (rememberMe && rememberMe.checked) {
                 formData.set('RememberMe', 'true');
@@ -199,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         window.location.href = result.redirectUrl || '/';
                     }, 500);
                 } else {
+                    // ❌ แสดง Error แต่ไม่ปิด modal
                     showErrorToast(result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
                 }
             } catch (error) {
@@ -226,13 +267,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // ============================================
     // ✨ AJAX Register Form
+    // ============================================
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            // ✨ ตรวจสอบ Checkbox
+            // Validation
             const acceptTerms = this.querySelector('#registerAcceptTerms');
             if (!acceptTerms || !acceptTerms.checked) {
                 showErrorToast('กรุณายอมรับข้อกำหนดและเงื่อนไข');
@@ -241,8 +284,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const formData = new FormData(this);
-
-            // ✨ บังคับให้ Checkbox เป็น true
             if (acceptTerms.checked) {
                 formData.set('AcceptTerms', 'true');
             }
@@ -267,17 +308,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (result.success) {
                     showSuccessToast(result.message || 'สมัครสมาชิกสำเร็จ!');
 
+                    // 🎯 Register สำเร็จ → ไปหน้า Login ทันที
                     if (result.openLogin) {
+                        // สลับ modal แบบ smooth
                         setTimeout(() => {
                             switchAuthModal('registerModal', 'loginModal');
-                        }, 1000);
+                        }, 800);
                     } else {
+                        // ไม่ต้อง verify → redirect หน้าหลัก
                         closeAuthModal('registerModal');
                         setTimeout(() => {
                             window.location.href = result.redirectUrl || '/';
-                        }, 500);
+                        }, 1000);
                     }
                 } else {
+                    // ❌ แสดง Error แต่ไม่ปิด modal
                     showErrorToast(result.message || 'ไม่สามารถสมัครสมาชิกได้');
                 }
             } catch (error) {
@@ -310,14 +355,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // ✨ Checkbox - ลบ error เมื่อ tick
-        const acceptTerms = registerForm.querySelector('#registerAcceptTerms');
-        if (acceptTerms) {
-            acceptTerms.addEventListener('change', function () {
-                console.log('Checkbox changed:', this.checked);
-            });
-        }
-
         // Password Match Validation
         const password = registerForm.querySelector('input[name="Password"]');
         const confirmPassword = registerForm.querySelector('input[name="ConfirmPassword"]');
@@ -333,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // เปิด Modal อัตโนมัติ
+    // เปิด Modal อัตโนมัติ (จาก TempData)
     if (document.body.dataset.openLoginModal === 'true') {
         setTimeout(() => openLoginModal(), 100);
     }
