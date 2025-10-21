@@ -17,6 +17,7 @@ namespace BlogHybrid.Domain.Entities
         public bool IsActive { get; set; } = true;
         public bool IsPrivate { get; set; } = false;
         public bool RequireApproval { get; set; } = false;
+        public bool IsNSFW { get; set; } = false;
 
         // Statistics
         public int MemberCount { get; set; } = 0;

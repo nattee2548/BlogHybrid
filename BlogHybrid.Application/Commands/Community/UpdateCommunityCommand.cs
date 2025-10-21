@@ -14,7 +14,7 @@ namespace BlogHybrid.Application.Commands.Community
         public bool IsPrivate { get; set; }
         public bool RequireApproval { get; set; }
         public bool IsActive { get; set; }
-
+        public bool IsNSFW { get; set; } = false;
         // จะถูก set จาก Controller (Current User)
         public string? CurrentUserId { get; set; }
     }

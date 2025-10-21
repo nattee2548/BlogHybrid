@@ -12,7 +12,7 @@ namespace BlogHybrid.Application.Commands.Community
         public string CategoryIds { get; set; } = string.Empty;
         public bool IsPrivate { get; set; } = false;
         public bool RequireApproval { get; set; } = false;
-
+        public bool IsNSFW { get; set; } = false;
         // จะถูก set จาก Controller (Current User)
         public string? CreatorId { get; set; }
     }
