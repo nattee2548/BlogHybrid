@@ -118,6 +118,7 @@ namespace BlogHybrid.Application.Handlers.Community
                 community.UpdatedAt = DateTime.UtcNow;
                 community.MemberCount = 1; // Creator is the first member
                 community.PostCount = 0;
+                community.IsNSFW = request.IsNSFW;
                 community.IsActive = true;
                 community.IsDeleted = false;
 

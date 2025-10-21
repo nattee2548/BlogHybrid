@@ -168,6 +168,7 @@ namespace BlogHybrid.Application.Handlers.Community
                 community.IsPrivate = request.IsPrivate;
                 community.RequireApproval = request.RequireApproval;
                 community.IsActive = request.IsActive;
+                community.IsNSFW = request.IsNSFW;
                 community.UpdatedAt = DateTime.UtcNow;
 
                 await _unitOfWork.Communities.UpdateAsync(community, cancellationToken);

@@ -97,7 +97,12 @@
 
                                 <div class="community-details">
                                     <h3 class="community-name">
-                                        <a href="/@community.CategorySlug/@community.Slug">@community.Name</a>
+                                        @* <a href="/@community.CategorySlug/@community.Slug">@community.Name</a> *@
+                                        <a asp-controller="Community"
+                                           asp-action="Details"
+                                           asp-route-communitySlug="@community.Slug">
+                                            @community.Name
+                                        </a>
                                     </h3>
                                     <p class="community-category">
                                         <i class="bi bi-tag-fill"></i> @community.CategoryName
@@ -131,10 +136,16 @@
                                         <i class="bi bi-lock-fill"></i> ส่วนตัว
                                     </span>
                                 }
-                                @if (!community.IsActive)
+                                @if (community.IsActive)
+                                {
+                                    <span class="badge badge-active">
+                                        <i class="bi bi-check-circle-fill"></i> Active
+                                    </span>
+                                }
+                                else
                                 {
                                     <span class="badge badge-inactive">
-                                        <i class="bi bi-pause-circle"></i> ไม่ active
+                                        <i class="bi bi-pause-circle"></i> ไม่ Active
                                     </span>
                                 }
                                 <span class="badge badge-creator">
@@ -144,7 +155,10 @@
 
                             <!-- Actions -->
                             <div class="card-actions">
-                                <a href="/@community.CategorySlug/@community.Slug" class="btn-action btn-view">
+                                <a asp-controller="Community"
+                                   asp-action="Details"
+                                   asp-route-communitySlug="@community.Slug"
+                                   class="btn-action btn-view">
                                     <i class="bi bi-eye"></i> ดูชุมชน
                                 </a>
                                 <a href="/community/edit/@community.Id" class="btn-action btn-manage">

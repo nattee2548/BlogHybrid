@@ -171,7 +171,11 @@
                 <label class="form-label required">ประเภทชุมชน</label>
 
                 <div class="radio-card">
-                    <input type="radio" id="public" name="IsPrivate" value="false" checked />
+                    <input type="radio"
+                           id="public"
+                           name="CommunityType"
+                           value="public"
+                           checked />
                     <label for="public" class="radio-label">
                         <div class="radio-icon">
                             <i class="bi bi-person"></i>
@@ -184,7 +188,10 @@
                 </div>
 
                 <div class="radio-card">
-                    <input type="radio" id="restricted" name="IsPrivate" value="false" />
+                    <input type="radio"
+                           id="restricted"
+                           name="CommunityType"
+                           value="restricted" />
                     <label for="restricted" class="radio-label">
                         <div class="radio-icon">
                             <i class="bi bi-eye"></i>
@@ -197,7 +204,10 @@
                 </div>
 
                 <div class="radio-card">
-                    <input type="radio" id="private" name="IsPrivate" value="true" />
+                    <input type="radio"
+                           id="private"
+                           name="CommunityType"
+                           value="private" />
                     <label for="private" class="radio-label">
                         <div class="radio-icon">
                             <i class="bi bi-lock"></i>
@@ -209,11 +219,17 @@
                     </label>
                 </div>
             </div>
-
+         
             <!-- Adult Content -->
             <div class="form-section">
                 <div class="checkbox-card">
-                    <input type="checkbox" id="nsfw" name="IsNSFW" />
+                   
+                    <input type="checkbox"
+                           id="nsfw"
+                           name="IsNSFW"
+                           value="true"
+                           @(Model?.IsNSFW == true ? "checked" : "") />
+
                     <label for="nsfw" class="checkbox-label">
                         <div class="checkbox-icon">
                             <i class="bi bi-18-square"></i>
@@ -235,6 +251,8 @@
                     สร้างชุมชน
                 </button>
             </div>
+            <input type="hidden" name="IsPrivate" id="hiddenIsPrivate" value="false" />
+            <input type="hidden" name="RequireApproval" id="hiddenRequireApproval" value="false" />
         </form>
     </div>
 
@@ -808,6 +826,24 @@
                 showToast(tempSuccessMessage, 'success');
             }, 100);
         }
+
+        document.querySelectorAll('input[name="CommunityType"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const hiddenIsPrivate = document.getElementById('hiddenIsPrivate');
+            const hiddenRequireApproval = document.getElementById('hiddenRequireApproval');
+
+            if (this.value === 'public') {
+                hiddenIsPrivate.value = 'false';
+                hiddenRequireApproval.value = 'false';
+            } else if (this.value === 'restricted') {
+                hiddenIsPrivate.value = 'false';
+                hiddenRequireApproval.value = 'true';
+            } else if (this.value === 'private') {
+                hiddenIsPrivate.value = 'true';
+                hiddenRequireApproval.value = 'false';
+            }
+        });
+    });
 
     });
 </script>

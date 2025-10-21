@@ -142,8 +142,9 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
+
 app.MapControllers();
-// 1) Area routes ก่อน
+
 app.MapAreaControllerRoute(
     name: "user_area",
     areaName: "User",
@@ -154,23 +155,6 @@ app.MapAreaControllerRoute(
     areaName: "Admin",
     pattern: "Admin/{controller=Home}/{action=Index}/{id?}");
 
-// 2) เส้นทางอื่น ๆ
-app.MapControllerRoute(
-    name: "create-community",
-    pattern: "create-community",
-    defaults: new { controller = "Community", action = "Create" });
-
-app.MapControllerRoute(
-    name: "community",
-    pattern: "{categorySlug}/{communitySlug}",
-    defaults: new { controller = "Community", action = "Details" },
-    constraints: new
-    {
-        categorySlug = @"^(?!user|admin|account|home|api)([a-z0-9\-]+)$",
-        communitySlug = @"^[a-z0-9\-]+$"
-    });
-
-// 3) Default route ปิดท้าย
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

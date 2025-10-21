@@ -60,7 +60,6 @@ namespace BlogHybrid.Web.Controllers
         {
             try
             {
-                // Get current user ID
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -70,16 +69,12 @@ namespace BlogHybrid.Web.Controllers
 
                 command.CreatorId = userId;
 
-                // ✅ ถ้า ModelState ไม่ valid ให้โหลด categories และคืนค่า form
                 if (!ModelState.IsValid)
                 {
                     var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                     var categories = await _mediator.Send(categoriesQuery);
                     ViewBag.Categories = categories;
-
-                    // ✅ เพิ่มส่วนนี้: เก็บค่าเดิมเพื่อแสดงใน form
                     ViewBag.SelectedCategoryIds = command.CategoryIds;
-
                     return View(command);
                 }
 
@@ -100,7 +95,6 @@ namespace BlogHybrid.Web.Controllers
                         var categories = await _mediator.Send(categoriesQuery);
                         ViewBag.Categories = categories;
                         ViewBag.SelectedCategoryIds = command.CategoryIds;
-
                         return View(command);
                     }
                 }
@@ -116,41 +110,31 @@ namespace BlogHybrid.Web.Controllers
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error uploading community cover image");
-
-                        // Delete profile image if already uploaded
                         if (!string.IsNullOrEmpty(command.ImageUrl))
                         {
                             await _imageService.DeleteAsync(command.ImageUrl);
                         }
-
                         ModelState.AddModelError("CoverImageFile", "ไม่สามารถอัปโหลดรูปปกได้");
 
                         var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                         var categories = await _mediator.Send(categoriesQuery);
                         ViewBag.Categories = categories;
                         ViewBag.SelectedCategoryIds = command.CategoryIds;
-
                         return View(command);
                     }
                 }
 
-                // Send command to create community
                 var result = await _mediator.Send(command);
 
                 if (result.Success)
                 {
                     TempData["SuccessMessage"] = "สร้างชุมชนสำเร็จ!";
 
-                    // Redirect to community detail page
-                    return RedirectToAction("Details", new
-                    {
-                        categorySlug = result.FullSlug?.Split('/')[0] ?? "community",
-                        communitySlug = result.Slug
-                    });
+                    // ✅ แก้ไข: เปลี่ยนเป็น /community/{slug}
+                    return RedirectToAction("Details", new { communitySlug = result.Slug });
                 }
                 else
                 {
-                    // Delete uploaded images if community creation failed
                     if (!string.IsNullOrEmpty(command.ImageUrl))
                     {
                         await _imageService.DeleteAsync(command.ImageUrl);
@@ -160,17 +144,15 @@ namespace BlogHybrid.Web.Controllers
                         await _imageService.DeleteAsync(command.CoverImageUrl);
                     }
 
-                    // Show errors
                     foreach (var error in result.Errors)
                     {
-                        ModelState.AddModelError("เกิดข้อผิดพลาด กรุณารอซักครู่ หรือติดต่อผู้ดูและระบบ", error);
+                        ModelState.AddModelError("", error);
                     }
 
                     var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                     var categories = await _mediator.Send(categoriesQuery);
                     ViewBag.Categories = categories;
                     ViewBag.SelectedCategoryIds = command.CategoryIds;
-
                     return View(command);
                 }
             }
@@ -178,7 +160,6 @@ namespace BlogHybrid.Web.Controllers
             {
                 _logger.LogError(ex, "Error creating community");
 
-                // Clean up uploaded images on error
                 if (!string.IsNullOrEmpty(command.ImageUrl))
                 {
                     await _imageService.DeleteAsync(command.ImageUrl);
@@ -194,15 +175,14 @@ namespace BlogHybrid.Web.Controllers
                 var categories = await _mediator.Send(categoriesQuery);
                 ViewBag.Categories = categories;
                 ViewBag.SelectedCategoryIds = command.CategoryIds;
-
                 return View(command);
             }
         }
 
-        // GET: /{category-slug}/{community-slug}
+        // ✅ แก้ไข: เปลี่ยนเป็น /community/{communitySlug}
         [AllowAnonymous]
-        [HttpGet("{categorySlug}/{communitySlug}")]
-        public async Task<IActionResult> Details(string categorySlug, string communitySlug)
+        [HttpGet("community/{communitySlug}")]
+        public async Task<IActionResult> Details(string communitySlug)
         {
             try
             {
@@ -217,11 +197,6 @@ namespace BlogHybrid.Web.Controllers
                 if (community == null)
                 {
                     return NotFound();
-                }
-
-                if (community.CategorySlug != categorySlug)
-                {
-                    return RedirectPermanent($"/{community.CategorySlug}/{community.Slug}");
                 }
 
                 return View(community);
@@ -259,7 +234,6 @@ namespace BlogHybrid.Web.Controllers
             }
         }
 
-        // Edit methods remain the same...
         [Authorize]
         [HttpGet("community/edit/{id}")]
         public async Task<IActionResult> Edit(int id)
@@ -305,9 +279,11 @@ namespace BlogHybrid.Web.Controllers
                     CategoryIds = string.Join(",", selectedCategoryIds),
                     IsPrivate = community.IsPrivate,
                     RequireApproval = community.RequireApproval,
-                    IsActive = community.IsActive
+                    IsActive = community.IsActive,
+                    IsNSFW = community.IsNSFW
                 };
 
+                ViewBag.SelectedCategoryIds = command.CategoryIds;
                 return View(command);
             }
             catch (Exception ex)
@@ -346,8 +322,23 @@ namespace BlogHybrid.Web.Controllers
                     return RedirectToAction("MyCommunities");
                 }
 
+                if (existingCommunity.CreatorId != userId)
+                {
+                    TempData["ErrorMessage"] = "คุณไม่มีสิทธิ์แก้ไขชุมชนนี้";
+                    return RedirectToAction("MyCommunities");
+                }
+
                 var oldImageUrl = existingCommunity.ImageUrl;
                 var oldCoverImageUrl = existingCommunity.CoverImageUrl;
+
+                if (!ModelState.IsValid)
+                {
+                    var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
+                    var categories = await _mediator.Send(categoriesQuery);
+                    ViewBag.Categories = categories;
+                    ViewBag.SelectedCategoryIds = command.CategoryIds;
+                    return View(command);
+                }
 
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
@@ -369,7 +360,8 @@ namespace BlogHybrid.Web.Controllers
                         var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                         var categories = await _mediator.Send(categoriesQuery);
                         ViewBag.Categories = categories;
-                        return View("Edit", command);
+                        ViewBag.SelectedCategoryIds = command.CategoryIds;
+                        return View(command);
                     }
                 }
                 else
@@ -403,20 +395,13 @@ namespace BlogHybrid.Web.Controllers
                         var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                         var categories = await _mediator.Send(categoriesQuery);
                         ViewBag.Categories = categories;
-                        return View("Edit", command);
+                        ViewBag.SelectedCategoryIds = command.CategoryIds;
+                        return View(command);
                     }
                 }
                 else
                 {
                     command.CoverImageUrl = oldCoverImageUrl;
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
-                    var categories = await _mediator.Send(categoriesQuery);
-                    ViewBag.Categories = categories;
-                    return View("Edit", command);
                 }
 
                 var result = await _mediator.Send(command);
@@ -428,6 +413,15 @@ namespace BlogHybrid.Web.Controllers
                 }
                 else
                 {
+                    if (ImageFile != null && !string.IsNullOrEmpty(command.ImageUrl) && command.ImageUrl != oldImageUrl)
+                    {
+                        await _imageService.DeleteAsync(command.ImageUrl);
+                    }
+                    if (CoverImageFile != null && !string.IsNullOrEmpty(command.CoverImageUrl) && command.CoverImageUrl != oldCoverImageUrl)
+                    {
+                        await _imageService.DeleteAsync(command.CoverImageUrl);
+                    }
+
                     foreach (var error in result.Errors)
                     {
                         ModelState.AddModelError("", error);
@@ -436,18 +430,30 @@ namespace BlogHybrid.Web.Controllers
                     var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                     var categories = await _mediator.Send(categoriesQuery);
                     ViewBag.Categories = categories;
-                    return View("Edit", command);
+                    ViewBag.SelectedCategoryIds = command.CategoryIds;
+                    return View(command);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating community");
-                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการอัปเดตชุมชน";
+
+                if (ImageFile != null && !string.IsNullOrEmpty(command.ImageUrl))
+                {
+                    await _imageService.DeleteAsync(command.ImageUrl);
+                }
+                if (CoverImageFile != null && !string.IsNullOrEmpty(command.CoverImageUrl))
+                {
+                    await _imageService.DeleteAsync(command.CoverImageUrl);
+                }
+
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการอัปเดตชุมชน: " + ex.Message;
 
                 var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                 var categories = await _mediator.Send(categoriesQuery);
                 ViewBag.Categories = categories;
-                return View("Edit", command);
+                ViewBag.SelectedCategoryIds = command.CategoryIds;
+                return View(command);
             }
         }
     }
