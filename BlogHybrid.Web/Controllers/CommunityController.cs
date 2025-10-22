@@ -633,7 +633,8 @@ namespace BlogHybrid.Web.Controllers
             int pageSize = 20,
             string? searchTerm = null,
             CommunityRole? roleFilter = null,
-            bool showPending = false)
+            bool showPending = false,
+            bool showBanned = false)
         {
             try
             {
@@ -680,10 +681,16 @@ namespace BlogHybrid.Web.Controllers
                 // Filter pending members if requested
                 if (showPending)
                 {
-                    members = members.Where(m => !m.IsApproved && !m.IsBanned).ToList();
+                    //members = members.Where(m => !m.IsApproved && !m.IsBanned).ToList();
+                    //totalCount = members.Count;
+                    members = members.Where(m => !m.IsApproved || m.IsBanned).ToList();
                     totalCount = members.Count;
                 }
-
+                if (showBanned)
+                {
+                    members = members.Where(m => m.IsBanned).ToList();
+                    totalCount = members.Count;
+                }
                 // Pass data to view
                 ViewBag.Community = community;
                 ViewBag.IsCreator = community.CreatorId == userId;
@@ -691,6 +698,7 @@ namespace BlogHybrid.Web.Controllers
                 ViewBag.SearchTerm = searchTerm;
                 ViewBag.RoleFilter = roleFilter;
                 ViewBag.ShowPending = showPending;
+                ViewBag.ShowBanned = showBanned;
                 ViewBag.PageNumber = pageNumber;
                 ViewBag.PageSize = pageSize;
                 ViewBag.TotalCount = totalCount;

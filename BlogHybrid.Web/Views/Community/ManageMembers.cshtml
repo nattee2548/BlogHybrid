@@ -4,15 +4,16 @@
 @{
     ViewData["Title"] = "จัดการสมาชิก";
     var community = ViewBag.Community as BlogHybrid.Domain.Entities.Community;
-    var isCreator = (bool)ViewBag.IsCreator;
-    var currentUserId = ViewBag.CurrentUserId as string;
-    var searchTerm = ViewBag.SearchTerm as string;
+    var isCreator = ViewBag.IsCreator as bool? ?? false;
+    var currentUserId = ViewBag.CurrentUserId as string ?? "";
+    var searchTerm = ViewBag.SearchTerm as string ?? "";
     var roleFilter = ViewBag.RoleFilter as CommunityRole?;
-    var showPending = (bool)ViewBag.ShowPending;
-    var pageNumber = (int)ViewBag.PageNumber;
-    var pageSize = (int)ViewBag.PageSize;
-    var totalCount = (int)ViewBag.TotalCount;
-    var totalPages = (int)ViewBag.TotalPages;
+    var showPending = ViewBag.ShowPending as bool? ?? false;
+    var pageNumber = ViewBag.PageNumber as int? ?? 1;
+    var pageSize = ViewBag.PageSize as int? ?? 20;
+    var totalCount = ViewBag.TotalCount as int? ?? 0;
+    var totalPages = ViewBag.TotalPages as int? ?? 0;
+    var showBanned = ViewBag.ShowBanned as bool? ?? false;
 }
 
 <div class="manage-members-page">
@@ -55,8 +56,15 @@
             <!-- Show Pending Toggle -->
             <label class="toggle-switch">
                 <input type="checkbox" id="showPending" @(showPending ? "checked" : "")>
-                <span class="toggle-slider"></span>
-                <span class="toggle-label">รอการอนุมัติ</span>
+                <div class="toggle-slider"></div>
+                <span>รออนุมัติ</span>
+            </label>
+
+            <!-- Show Banned Toggle (เพิ่มใหม่) -->
+            <label class="toggle-switch">
+                <input type="checkbox" id="showBanned" @(showBanned ? "checked" : "")>
+                <div class="toggle-slider"></div>
+                <span>ถูกแบน</span>
             </label>
         </div>
 
@@ -875,8 +883,230 @@
         }
 
     }
-</style>
 
+    /* ========== Confirmation Dialog ========== */
+    .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 99998;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        pointer-events: none;
+    }
+
+        .confirm-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+    .confirm-dialog {
+        background: var(--card-bg, #ffffff);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: calc(100% - 2rem);
+        transform: scale(0.9);
+        transition: transform 0.2s ease;
+        overflow: hidden;
+    }
+
+    .confirm-overlay.active .confirm-dialog {
+        transform: scale(1);
+    }
+
+    [data-theme="dark"] .confirm-dialog {
+        background: var(--card-bg, #1f2937);
+    }
+
+    .confirm-header {
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-bottom: 1px solid var(--border-primary, #e5e7eb);
+    }
+
+    [data-theme="dark"] .confirm-header {
+        border-color: var(--border-primary, #374151);
+    }
+
+    .confirm-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+        .confirm-icon.danger {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .confirm-icon.warning {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .confirm-icon.info {
+            background: #dbeafe;
+            color: #3b82f6;
+        }
+
+    [data-theme="dark"] .confirm-icon.danger {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    [data-theme="dark"] .confirm-icon.warning {
+        background: rgba(245, 158, 11, 0.2);
+    }
+
+    [data-theme="dark"] .confirm-icon.info {
+        background: rgba(59, 130, 246, 0.2);
+    }
+
+    .confirm-title {
+        flex: 1;
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: var(--text-primary, #1f2937);
+        margin: 0;
+    }
+
+    [data-theme="dark"] .confirm-title {
+        color: var(--text-primary, #f9fafb);
+    }
+
+    .confirm-body {
+        padding: 1.25rem 1.5rem;
+        color: var(--text-secondary, #6b7280);
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        white-space: pre-line;
+    }
+
+    [data-theme="dark"] .confirm-body {
+        color: var(--text-secondary, #d1d5db);
+    }
+
+    .confirm-footer {
+        padding: 1rem 1.5rem;
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        border-top: 1px solid var(--border-primary, #e5e7eb);
+    }
+
+    [data-theme="dark"] .confirm-footer {
+        border-color: var(--border-primary, #374151);
+    }
+
+    .confirm-btn {
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .confirm-btn-cancel {
+        background: var(--bg-secondary, #f3f4f6);
+        color: var(--text-primary, #1f2937);
+    }
+
+        .confirm-btn-cancel:hover {
+            background: var(--bg-hover, #e5e7eb);
+        }
+
+    [data-theme="dark"] .confirm-btn-cancel {
+        background: var(--bg-secondary, #374151);
+        color: var(--text-primary, #f9fafb);
+    }
+
+        [data-theme="dark"] .confirm-btn-cancel:hover {
+            background: var(--bg-hover, #4b5563);
+        }
+
+    .confirm-btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+
+        .confirm-btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+    .confirm-btn-warning {
+        background: #f59e0b;
+        color: white;
+    }
+
+        .confirm-btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+
+    .confirm-btn-info {
+        background: #3b82f6;
+        color: white;
+    }
+
+        .confirm-btn-info:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+    @@media (max-width: 640px) {
+        .confirm-dialog {
+            width: calc(100% - 1rem);
+        }
+
+        .confirm-footer {
+            flex-direction: column-reverse;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+</style>
+<div id="confirmDialog" class="confirm-overlay">
+    <div class="confirm-dialog">
+        <div class="confirm-header">
+            <div id="confirmIcon" class="confirm-icon danger">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h3 id="confirmTitle" class="confirm-title">ยืนยันการกระทำ</h3>
+        </div>
+        <div class="confirm-body">
+            <p id="confirmMessage">คุณแน่ใจหรือไม่?</p>
+        </div>
+        <div class="confirm-footer">
+            <button type="button" class="confirm-btn confirm-btn-cancel" id="confirmCancelBtn">
+                <i class="bi bi-x-lg"></i> ยกเลิก
+            </button>
+            <button type="button" class="confirm-btn confirm-btn-danger" id="confirmOkBtn">
+                <i class="bi bi-check-lg"></i> ยืนยัน
+            </button>
+        </div>
+    </div>
+</div>
 <script>
     // Search functionality
     let searchTimeout;
@@ -892,12 +1122,15 @@
 
     // Show pending toggle
     document.getElementById('showPending').addEventListener('change', applyFilters);
+        // Show banned toggle
+    document.getElementById('showBanned').addEventListener('change', applyFilters);
 
     // Clear filters
     document.getElementById('clearFilters').addEventListener('click', function() {
         document.getElementById('searchInput').value = '';
         document.getElementById('roleFilter').value = '';
         document.getElementById('showPending').checked = false;
+        document.getElementById('showBanned').checked = false;
         applyFilters();
     });
 
@@ -905,42 +1138,124 @@
         const searchTerm = document.getElementById('searchInput').value;
         const roleFilter = document.getElementById('roleFilter').value;
         const showPending = document.getElementById('showPending').checked;
+        const showBanned = document.getElementById('showBanned').checked;
 
         const params = new URLSearchParams();
         if (searchTerm) params.append('searchTerm', searchTerm);
         if (roleFilter) params.append('roleFilter', roleFilter);
         if (showPending) params.append('showPending', 'true');
+        if (showBanned) params.append('showBanned', 'true');
         params.append('pageNumber', '1');
 
         window.location.href = window.location.pathname + '?' + params.toString();
     }
 
-    // Confirmation dialogs
-    function confirmRoleChange(form, newRole, memberName) {
-        const roleNames = { '0': 'Member', '1': 'Moderator', '2': 'Admin' };
-        if (confirm(`คุณต้องการเปลี่ยนบทบาทของ "${memberName}" เป็น ${roleNames[newRole]} หรือไม่?`)) {
-            form.submit();
-        }
+     // ========== Confirmation Dialog System ==========
+    let confirmCallback = null;
+
+    function showConfirmDialog(options = {}) {
+        return new Promise((resolve) => {
+            const defaults = {
+                title: 'ยืนยันการกระทำ',
+                message: 'คุณแน่ใจหรือไม่?',
+                type: 'danger',
+                confirmText: 'ยืนยัน',
+                cancelText: 'ยกเลิก',
+                icon: 'bi-exclamation-triangle-fill'
+            };
+
+            const config = { ...defaults, ...options };
+
+            document.getElementById('confirmTitle').textContent = config.title;
+            document.getElementById('confirmMessage').textContent = config.message;
+            document.getElementById('confirmOkBtn').innerHTML = `<i class="bi bi-check-lg"></i> ${config.confirmText}`;
+            document.getElementById('confirmCancelBtn').innerHTML = `<i class="bi bi-x-lg"></i> ${config.cancelText}`;
+
+            const iconEl = document.getElementById('confirmIcon');
+            const okBtn = document.getElementById('confirmOkBtn');
+
+            iconEl.className = `confirm-icon ${config.type}`;
+            okBtn.className = `confirm-btn confirm-btn-${config.type}`;
+            iconEl.innerHTML = `<i class="bi ${config.icon}"></i>`;
+
+            const overlay = document.getElementById('confirmDialog');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            confirmCallback = (result) => {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                resolve(result);
+                confirmCallback = null;
+            };
+        });
     }
 
-    function confirmReject(form, memberName) {
-        if (confirm(`คุณต้องการปฏิเสธคำขอเข้าร่วมของ "${memberName}" หรือไม่?`)) {
-            form.submit();
-        }
-    }
+    // Event listeners for dialog
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('confirmDialog');
+            const okBtn = document.getElementById('confirmOkBtn');
+            const cancelBtn = document.getElementById('confirmCancelBtn');
 
-    function confirmBan(form, memberName, isBanned) {
-        const action = isBanned ? 'ปลดแบน' : 'แบน';
-        if (confirm(`คุณต้องการ${action} "${memberName}" หรือไม่?`)) {
-            form.submit();
-        }
-    }
+            okBtn.addEventListener('click', () => confirmCallback && confirmCallback(true));
+            cancelBtn.addEventListener('click', () => confirmCallback && confirmCallback(false));
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) confirmCallback && confirmCallback(false);
+            });
 
-    function confirmRemove(form, memberName) {
-        if (confirm(`คุณแน่ใจหรือไม่ที่จะลบ "${memberName}" ออกจากชุมชน?\n\nการกระทำนี้ไม่สามารถยกเลิกได้`)) {
-            form.submit();
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && overlay.classList.contains('active')) {
+                    confirmCallback && confirmCallback(false);
+                }
+            });
+        });
+
+        // ========== Confirmation Functions ==========
+        async function confirmRoleChange(form, newRole, memberName) {
+            const roleNames = { '0': 'Member', '1': 'Moderator', '2': 'Admin' };
+            const confirmed = await showConfirmDialog({
+                title: 'ยืนยันการเปลี่ยนบทบาท',
+                message: `คุณต้องการเปลี่ยนบทบาทของ "${memberName}" เป็น ${roleNames[newRole]} หรือไม่?`,
+                type: 'info',
+                confirmText: 'เปลี่ยนบทบาท',
+                icon: 'bi-person-badge-fill'
+            });
+            if (confirmed) form.submit();
         }
-    }
+
+        async function confirmReject(form, memberName) {
+            const confirmed = await showConfirmDialog({
+                title: 'ยืนยันการปฏิเสธ',
+                message: `คุณต้องการปฏิเสธคำขอเข้าร่วมของ "${memberName}" หรือไม่?`,
+                type: 'warning',
+                confirmText: 'ปฏิเสธ',
+                icon: 'bi-x-circle-fill'
+            });
+            if (confirmed) form.submit();
+        }
+
+        async function confirmBan(form, memberName, isBanned) {
+            const action = isBanned ? 'ปลดแบน' : 'แบน';
+            const confirmed = await showConfirmDialog({
+                title: `ยืนยันการ${action}`,
+                message: `คุณต้องการ${action} "${memberName}" หรือไม่?`,
+                type: isBanned ? 'info' : 'warning',
+                confirmText: action,
+                icon: isBanned ? 'bi-check-circle-fill' : 'bi-slash-circle-fill'
+            });
+            if (confirmed) form.submit();
+        }
+
+        async function confirmRemove(form, memberName) {
+            const confirmed = await showConfirmDialog({
+                title: 'ยืนยันการลบ',
+                message: `คุณแน่ใจหรือไม่ที่จะลบ "${memberName}" ออกจากชุมชน?\n\nการกระทำนี้ไม่สามารถยกเลิกได้`,
+                type: 'danger',
+                confirmText: 'ลบ',
+                icon: 'bi-trash-fill'
+            });
+            if (confirmed) form.submit();
+        }
 </script>
 
 @Html.AntiForgeryToken()

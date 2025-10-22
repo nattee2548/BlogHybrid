@@ -227,7 +227,7 @@ namespace BlogHybrid.Infrastructure.Repositories
             CancellationToken cancellationToken = default)
         {
             var query = _context.CommunityMembers
-                .Where(cm => cm.CommunityId == communityId && !cm.IsBanned)
+                .Where(cm => cm.CommunityId == communityId)
                 .Include(cm => cm.User)
                 .AsQueryable();
 
