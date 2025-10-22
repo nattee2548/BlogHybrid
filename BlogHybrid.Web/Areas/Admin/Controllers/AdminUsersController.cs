@@ -16,15 +16,17 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
         private readonly IMediator _mediator;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<AdminUsersController> _logger;
-
+        private readonly SignInManager<ApplicationUser> _signInManager;
         public AdminUsersController(
             IMediator mediator,
             UserManager<ApplicationUser> userManager,
-            ILogger<AdminUsersController> logger)
+            ILogger<AdminUsersController> logger,
+            SignInManager<ApplicationUser> signInManager)
         {
             _mediator = mediator;
             _userManager = userManager;
             _logger = logger;
+            _signInManager = signInManager;
         }
 
         // GET: /Admin/AdminUsers
@@ -283,5 +285,115 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+        // ✅ GET: /Admin/AdminUsers/ChangePassword/5
+        public async Task<IActionResult> ChangePassword(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null || !await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                return NotFound();
+            }
+
+            var viewModel = new ChangeUserPasswordViewModel
+            {
+                UserId = user.Id,
+                UserName = user.UserName
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: /Admin/AdminUsers/ChangePassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangeUserPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var targetUser = await _userManager.FindByIdAsync(model.UserId);
+                if (targetUser == null || !await _userManager.IsInRoleAsync(targetUser, "Admin"))
+                {
+                    return NotFound();
+                }
+
+                // 🔥 CRITICAL: เก็บ Current Admin BEFORE การเปลี่ยนรหัสผ่าน
+                var currentAdminUser = await _userManager.GetUserAsync(User);
+                var currentAdminId = currentAdminUser?.Id;
+                var isChangingOwnPassword = targetUser.Id == currentAdminId;
+
+                _logger.LogInformation($"Admin {currentAdminUser?.UserName} is changing password for {targetUser.UserName}. IsSelf: {isChangingOwnPassword}");
+
+                // ลบรหัสผ่านเดิม
+                var removePasswordResult = await _userManager.RemovePasswordAsync(targetUser);
+                if (!removePasswordResult.Succeeded)
+                {
+                    foreach (var error in removePasswordResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View(model);
+                }
+
+                // ตั้งรหัสผ่านใหม่
+                var addPasswordResult = await _userManager.AddPasswordAsync(targetUser, model.NewPassword);
+                if (!addPasswordResult.Succeeded)
+                {
+                    foreach (var error in addPasswordResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View(model);
+                }
+
+                _logger.LogInformation($"Password changed successfully for {targetUser.UserName}");
+
+                // 🔥 CRITICAL: จัดการ Security Stamp และ Session
+                if (isChangingOwnPassword && currentAdminUser != null)
+                {
+                    // เปลี่ยนรหัสผ่านตัวเอง
+                    _logger.LogInformation($"Refreshing sign-in for current admin: {currentAdminUser.UserName}");
+
+                    // อัพเดท Security Stamp
+                    await _userManager.UpdateSecurityStampAsync(currentAdminUser);
+
+                    // 🔥 MUST: Refresh session ก่อน redirect
+                    await _signInManager.RefreshSignInAsync(currentAdminUser);
+
+                    TempData["SuccessMessage"] = "เปลี่ยนรหัสผ่านของคุณสำเร็จ";
+                }
+                else
+                {
+                    // เปลี่ยนรหัสผ่านให้ Admin อื่น
+                    _logger.LogInformation($"Password changed for another admin: {targetUser.UserName}");
+
+                    // อัพเดท Security Stamp → Admin คนนั้นจะถูก logout
+                    await _userManager.UpdateSecurityStampAsync(targetUser);
+
+                    TempData["SuccessMessage"] = $"เปลี่ยนรหัสผ่านของ {targetUser.UserName} สำเร็จ (Admin นี้จะถูก logout)";
+                }
+
+                return RedirectToAction(nameof(Details), new { id = model.UserId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error changing password for admin user ID: {model.UserId}");
+                ModelState.AddModelError(string.Empty, "เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน");
+                return View(model);
+            }
+        }
+
+
+
     }
 }

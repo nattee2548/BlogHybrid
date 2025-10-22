@@ -16,15 +16,17 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
         private readonly IMediator _mediator;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<UsersController> _logger;
-
+        private readonly SignInManager<ApplicationUser> _signInManager;
         public UsersController(
             IMediator mediator,
             UserManager<ApplicationUser> userManager,
-            ILogger<UsersController> logger)
+            ILogger<UsersController> logger,
+            SignInManager<ApplicationUser> signInManager)
         {
             _mediator = mediator;
             _userManager = userManager;
             _logger = logger;
+            _signInManager = signInManager;
         }
 
         // GET: /Admin/Users
@@ -375,6 +377,10 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                     return NotFound();
                 }
 
+                // ✅ เก็บ Current User (Admin) ไว้ก่อน
+                var currentAdminUser = await _userManager.GetUserAsync(User);
+                var currentAdminId = currentAdminUser?.Id;
+
                 // ลบรหัสผ่านเดิมและตั้งรหัสผ่านใหม่
                 var removePasswordResult = await _userManager.RemovePasswordAsync(user);
                 if (!removePasswordResult.Succeeded)
@@ -390,7 +396,25 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
                 if (addPasswordResult.Succeeded)
                 {
                     _logger.LogInformation($"Admin changed password for user: {user.UserName}");
-                    TempData["SuccessMessage"] = "เปลี่ยนรหัสผ่านสำเร็จ";
+
+                    // ✅ ถ้าเป็นการเปลี่ยนรหัสผ่านให้ตัวเอง → Update Security Stamp ของ Admin
+                    if (user.Id == currentAdminId)
+                    {
+                        await _userManager.UpdateSecurityStampAsync(currentAdminUser!);
+
+                        // ✅ Refresh Sign In เพื่อไม่ให้โดน logout
+                        await _signInManager.RefreshSignInAsync(currentAdminUser!);
+
+                        TempData["SuccessMessage"] = "เปลี่ยนรหัสผ่านของคุณสำเร็จ";
+                    }
+                    else
+                    {
+                        // ✅ เปลี่ยนรหัสผ่านให้ User อื่น → Update Security Stamp ของ User นั้น
+                        await _userManager.UpdateSecurityStampAsync(user);
+
+                        TempData["SuccessMessage"] = $"เปลี่ยนรหัสผ่านของ {user.UserName} สำเร็จ";
+                    }
+
                     return RedirectToAction(nameof(Details), new { id = model.UserId });
                 }
 

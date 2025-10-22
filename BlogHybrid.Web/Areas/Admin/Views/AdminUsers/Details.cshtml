@@ -1,373 +1,241 @@
-﻿@model BlogHybrid.Web.Areas.Admin.Models.AdminUserDetailsViewModel
+@model BlogHybrid.Web.Areas.Admin.Models.AdminUserDetailsViewModel
 @{
     ViewData["Title"] = "รายละเอียด Admin";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Toast Notifications -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-notification toast-success">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@TempData["SuccessMessage"]</span>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-notification toast-error">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@TempData["ErrorMessage"]</span>
+    </div>
 }
 
 <div class="admin-page-header">
     <div>
-        <h1><i class="bi bi-person-badge"></i> รายละเอียด Admin</h1>
-        <p class="text-muted">ข้อมูลบัญชีผู้ดูแลระบบ</p>
+        <h1><i class="bi bi-shield-lock"></i> รายละเอียด Admin</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Admin</a></li>
+                <li class="breadcrumb-item active">@Model.FullName</li>
+            </ol>
+        </nav>
     </div>
-    <div>
-        <a asp-action="Index" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> กลับ
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary">
+            <i class="bi bi-pencil"></i> แก้ไข
         </a>
+        <!-- ✅ เพิ่มปุ่ม Change Password -->
+        <a asp-action="ChangePassword" asp-route-id="@Model.Id" class="btn btn-warning">
+            <i class="bi bi-key"></i> เปลี่ยนรหัสผ่าน
+        </a>
+        @{
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        }
+        @if (Model.Id != currentUserId)
+        {
+            <button type="button" 
+                    class="btn @(Model.IsActive ? "btn-danger" : "btn-success")" 
+                    onclick="confirmToggleActive()">
+                <i class="bi @(Model.IsActive ? "bi-pause-circle" : "bi-play-circle")"></i>
+                @(Model.IsActive ? "ปิดใช้งาน" : "เปิดใช้งาน")
+            </button>
+        }
     </div>
 </div>
 
 <div class="row">
-    <div class="col-lg-4">
-        <!-- Profile Card -->
-        <div class="admin-card">
-            <div class="admin-card-body text-center">
-                <div class="profile-avatar mb-3">
-                    @if (!string.IsNullOrEmpty(Model.DisplayName))
-                    {
-                        @Model.DisplayName.Substring(0, 1).ToUpper()
-                    }
-                    else if (!string.IsNullOrEmpty(Model.FullName))
-                    {
-                        @Model.FullName.Substring(0, 1).ToUpper()
-                    }
-                    else
-                    {
-                        @Model.UserName.Substring(0, 1).ToUpper()
-                    }
-                </div>
-                <h4 class="mb-1">@(!string.IsNullOrEmpty(Model.DisplayName) ? Model.DisplayName : Model.FullName)</h4>
-                <p class="text-muted mb-3">@@@Model.UserName</p>
-
-                <div class="roles-list">
-                    @foreach (var role in Model.Roles)
-                    {
-                        <span class="badge bg-primary role-badge">
-                            <i class="bi bi-shield-check"></i> @role
-                        </span>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Contact Info Card -->
+    <!-- Left Column - Main Info -->
+    <div class="col-md-8">
+        <!-- Basic Information -->
         <div class="admin-card">
             <div class="admin-card-header">
-                <h5><i class="bi bi-envelope"></i> ข้อมูลติดต่อ</h5>
+                <h5 class="mb-0"><i class="bi bi-person-badge"></i> ข้อมูลพื้นฐาน</h5>
             </div>
             <div class="admin-card-body">
-                <div class="profile-info">
-                    <div class="info-item">
-                        <i class="bi bi-envelope"></i>
-                        <div class="flex-fill">
-                            <div class="info-label">อีเมล</div>
-                            <div class="info-value">@Model.Email</div>
-                        </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">ชื่อ-นามสกุล</label>
+                        <p class="mb-0 fw-medium">@Model.FullName</p>
                     </div>
-                    @if (!string.IsNullOrEmpty(Model.PhoneNumber))
-                    {
-                        <div class="info-item">
-                            <i class="bi bi-telephone"></i>
-                            <div class="flex-fill">
-                                <div class="info-label">เบอร์โทรศัพท์</div>
-                                <div class="info-value">@Model.PhoneNumber</div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-8">
-        <!-- Account Details Card -->
-        <div class="admin-card">
-            <div class="admin-card-header">
-                <h5><i class="bi bi-info-circle"></i> ข้อมูลบัญชี</h5>
-            </div>
-            <div class="admin-card-body">
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <div class="detail-label">ชื่อ-นามสกุล</div>
-                        <div class="detail-value">@Model.FullName</div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Username</label>
+                        <p class="mb-0 fw-medium">@Model.UserName</p>
                     </div>
-                    <div class="detail-item">
-                        <div class="detail-label">วันที่สร้างบัญชี</div>
-                        <div class="detail-value">
-                            @Model.CreatedAt.ToString("dd MMMM yyyy HH:mm", new System.Globalization.CultureInfo("th-TH")) น.
-                        </div>
-                    </div>
-                    @if (Model.LastLoginAt.HasValue)
-                    {
-                        <div class="detail-item">
-                            <div class="detail-label">เข้าสู่ระบบล่าสุด</div>
-                            <div class="detail-value">
-                                @Model.LastLoginAt.Value.ToString("dd MMMM yyyy HH:mm", new System.Globalization.CultureInfo("th-TH")) น.
-                            </div>
-                        </div>
-                    }
-                    <div class="detail-item">
-                        <div class="detail-label">สถานะอีเมล</div>
-                        <div class="detail-value">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">อีเมล</label>
+                        <p class="mb-0">
+                            @Model.Email
                             @if (Model.EmailConfirmed)
                             {
-                                <span class="badge bg-success">
+                                <span class="badge bg-success ms-2">
                                     <i class="bi bi-check-circle"></i> ยืนยันแล้ว
                                 </span>
                             }
                             else
                             {
-                                <span class="badge bg-secondary">
-                                    <i class="bi bi-x-circle"></i> ปิดใช้งาน
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-exclamation-circle"></i> ยังไม่ยืนยัน
                                 </span>
                             }
-                        </div>
+                        </p>
                     </div>
-                    <div class="detail-item">
-                        <div class="detail-label">สถานะบัญชี</div>
-                        <div class="detail-value">
-                            @if (Model.IsActive)
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">เบอร์โทรศัพท์</label>
+                        <p class="mb-0 fw-medium">@(Model.PhoneNumber ?? "-")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Information -->
+        <div class="admin-card mt-4">
+            <div class="admin-card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> ข้อมูลการใช้งาน</h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">วันที่สมัคร</label>
+                        <p class="mb-0">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">เข้าสู่ระบบล่าสุด</label>
+                        <p class="mb-0">
+                            @if (Model.LastLoginAt.HasValue)
                             {
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle"></i> Active
-                                </span>
+                                @Model.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm")
                             }
                             else
                             {
-                                <span class="badge bg-warning">
-                                    <i class="bi bi-clock-history"></i> รออนุมัติ
-                                </span>
+                                <span class="text-muted">ยังไม่เคยเข้าสู่ระบบ</span>
                             }
-                        </div>
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Actions Card -->
+    <!-- Right Column - Status & Actions -->
+    <div class="col-md-4">
+        <!-- Status Card -->
         <div class="admin-card">
             <div class="admin-card-header">
-                <h5><i class="bi bi-tools"></i> การจัดการ</h5>
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> สถานะ</h5>
             </div>
             <div class="admin-card-body">
-                <div class="action-buttons">
-                    <form asp-action="ToggleActive" asp-route-id="@Model.Id" method="post" id="toggleActiveForm">
-                        @Html.AntiForgeryToken()
-                        @if (Model.IsActive)
-                        {
-                            <button type="button"
-                                    class="btn btn-warning"
-                                    onclick="confirmDeactivate()">
-                                <i class="bi bi-pause-circle"></i> ปิดการใช้งาน
-                            </button>
-                        }
-                        else
-                        {
-                            <button type="button"
-                                    class="btn btn-success"
-                                    onclick="confirmApprove()">
-                                <i class="bi bi-check-circle"></i> อนุมัติและเปิดใช้งาน
-                            </button>
-                        }
-                    </form>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <label class="mb-0 text-muted small">สถานะการใช้งาน:</label>
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i> เปิดใช้งาน
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">
+                            <i class="bi bi-x-circle"></i> ปิดใช้งาน
+                        </span>
+                    }
+                </div>
 
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
-                        <i class="bi bi-pencil"></i> แก้ไขข้อมูล
-                    </a>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="mb-0 text-muted small">สิทธิ์การใช้งาน:</label>
+                    <span class="badge bg-primary">
+                        <i class="bi bi-shield-lock"></i> Admin
+                    </span>
                 </div>
             </div>
         </div>
+
+        <!-- Roles Card -->
+        @if (Model.Roles != null && Model.Roles.Any())
+        {
+            <div class="admin-card mt-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0"><i class="bi bi-shield"></i> บทบาท</h5>
+                </div>
+                <div class="admin-card-body">
+                    @foreach (var role in Model.Roles)
+                    {
+                        <span class="badge bg-secondary me-1 mb-1">@role</span>
+                    }
+                </div>
+            </div>
+        }
     </div>
 </div>
 
-<!-- Confirm Modal -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<!-- Toggle Active Status Form (Hidden) -->
+<form asp-action="ToggleActive" asp-route-id="@Model.Id" method="post" id="toggleActiveForm">
+    @Html.AntiForgeryToken()
+</form>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header border-0">
-                <h5 class="modal-title" id="confirmModalTitle">
-                    <i class="bi bi-question-circle text-warning"></i>
-                    ยืนยันการดำเนินการ
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p id="confirmModalMessage" class="mb-0"></p>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-lg"></i> ยกเลิก
-                </button>
-                <button type="button" class="btn btn-primary" id="confirmButton">
-                    <i class="bi bi-check-lg"></i> ยืนยัน
-                </button>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-primary" id="confirmButton"></button>
             </div>
         </div>
     </div>
 </div>
 
-@section Styles {
-    <style>
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 48px;
-            margin: 0 auto;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .profile-info {
-            text-align: left;
-        }
-
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--admin-card-border);
-        }
-
-            .info-item:last-child {
-                border-bottom: none;
-            }
-
-            .info-item i {
-                font-size: 20px;
-                color: var(--admin-text-muted);
-            }
-
-        .info-label {
-            font-size: 12px;
-            color: var(--admin-text-muted);
-            margin-bottom: 2px;
-        }
-
-        .info-value {
-            font-weight: 600;
-            color: var(--admin-text-primary);
-        }
-
-        .roles-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-        }
-
-        .role-badge {
-            padding: 8px 16px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .detail-grid {
-            display: grid;
-            gap: 20px;
-        }
-
-        .detail-item {
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--admin-card-border);
-        }
-
-            .detail-item:last-child {
-                border-bottom: none;
-                padding-bottom: 0;
-            }
-
-        .detail-label {
-            font-size: 13px;
-            color: var(--admin-text-muted);
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
-
-        .detail-value {
-            font-size: 16px;
-            color: var(--admin-text-primary);
-            display: flex;
-            align-items: center;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        /* Modal Customization */
-        .modal-content {
-            border-radius: 12px;
-            border: none;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-            font-size: 15px;
-            color: var(--admin-text-secondary);
-        }
-
-        .modal-footer {
-            padding: 1rem 1.5rem;
-        }
-
-        .modal-title i {
-            font-size: 24px;
-            margin-right: 8px;
-        }
-    </style>
-}
-
 @section Scripts {
     <script>
-        let confirmModal;
-
+        // Toast Auto-hide
         document.addEventListener('DOMContentLoaded', function() {
-            confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            const toasts = document.querySelectorAll('.toast-notification');
+            toasts.forEach(toast => {
+                setTimeout(() => toast.classList.add('toast-show'), 100);
+                setTimeout(() => {
+                    toast.classList.remove('toast-show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 5000);
+            });
         });
 
-        function confirmApprove() {
-            const modalTitle = document.getElementById('confirmModalTitle');
-            const modalMessage = document.getElementById('confirmModalMessage');
-            const confirmButton = document.getElementById('confirmButton');
+        // Confirm Toggle Active
+        function confirmToggleActive() {
+            var isActive = @Model.IsActive.ToString().ToLower();
+            var modalElement = document.getElementById('confirmModal');
+            var confirmModal = new bootstrap.Modal(modalElement);
+            
+            var modalTitle = document.getElementById('modalTitle');
+            var modalBody = document.getElementById('modalBody');
+            var confirmButton = document.getElementById('confirmButton');
 
-            // ตั้งค่า Modal สำหรับอนุมัติ
-            modalTitle.innerHTML = '<i class="bi bi-check-circle text-success"></i> ยืนยันการอนุมัติ';
-            modalMessage.textContent = 'คุณต้องการอนุมัติและเปิดใช้งานบัญชี Admin นี้หรือไม่?';
-            confirmButton.className = 'btn btn-success';
-            confirmButton.innerHTML = '<i class="bi bi-check-lg"></i> ยืนยันการอนุมัติ';
+            if (isActive) {
+                modalTitle.innerHTML = '<i class="bi bi-exclamation-triangle text-warning"></i> ยืนยันการปิดใช้งาน';
+                modalBody.innerHTML = '<p class="mb-0">คุณแน่ใจหรือไม่ที่จะปิดใช้งานบัญชี Admin นี้?</p><div class="alert alert-warning mt-2 mb-0"><small><strong>หมายเหตุ:</strong> Admin จะไม่สามารถเข้าสู่ระบบได้</small></div>';
+                confirmButton.className = 'btn btn-danger';
+                confirmButton.innerHTML = '<i class="bi bi-pause-circle"></i> ยืนยันปิดใช้งาน';
+            } else {
+                modalTitle.innerHTML = '<i class="bi bi-info-circle text-info"></i> ยืนยันการเปิดใช้งาน';
+                modalBody.innerHTML = '<p class="mb-0">คุณแน่ใจหรือไม่ที่จะเปิดใช้งานบัญชี Admin นี้?</p>';
+                confirmButton.className = 'btn btn-success';
+                confirmButton.innerHTML = '<i class="bi bi-play-circle"></i> ยืนยันเปิดใช้งาน';
+            }
 
-            // เมื่อกดยืนยัน
-            confirmButton.onclick = function() {
-                document.getElementById('toggleActiveForm').submit();
-            };
-
-            confirmModal.show();
-        }
-
-        function confirmDeactivate() {
-            const modalTitle = document.getElementById('confirmModalTitle');
-            const modalMessage = document.getElementById('confirmModalMessage');
-            const confirmButton = document.getElementById('confirmButton');
-
-            // ตั้งค่า Modal สำหรับปิดการใช้งาน
-            modalTitle.innerHTML = '<i class="bi bi-exclamation-triangle text-warning"></i> ยืนยันการปิดใช้งาน';
-            modalMessage.textContent = 'คุณต้องการปิดการใช้งานบัญชี Admin นี้หรือไม่?';
-            confirmButton.className = 'btn btn-warning';
-            confirmButton.innerHTML = '<i class="bi bi-pause-circle"></i> ยืนยันปิดใช้งาน';
-
-            // เมื่อกดยืนยัน
             confirmButton.onclick = function() {
                 document.getElementById('toggleActiveForm').submit();
             };
