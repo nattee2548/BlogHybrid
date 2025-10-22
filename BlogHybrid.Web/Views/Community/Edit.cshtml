@@ -1,9 +1,30 @@
-﻿@model BlogHybrid.Application.Commands.Community.UpdateCommunityCommand
+@model BlogHybrid.Application.Commands.Community.UpdateCommunityCommand
 @using Microsoft.Extensions.Configuration
 @inject IConfiguration Configuration
 @{
     ViewData["Title"] = "แก้ไขชุมชน";
     var maxCategories = Configuration.GetValue<int>("CommunitySettings:MaxCategoriesPerCommunity", 3);
+}
+
+<!-- ✅ เพิ่มส่วนนี้ -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-notification-hidden toast-success" data-message="@TempData["SuccessMessage"]"></div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-notification-hidden toast-error" data-message="@TempData["ErrorMessage"]"></div>
+}
+
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="toast-notification-hidden toast-info" data-message="@TempData["InfoMessage"]"></div>
+}
+
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="toast-notification-hidden toast-warning" data-message="@TempData["WarningMessage"]"></div>
 }
 
 <div class="create-community-container">
@@ -250,7 +271,7 @@
             <!-- Adult Content -->
             <div class="form-section">
                 <div class="checkbox-card">
-                   
+
                     <input type="checkbox"
                            id="nsfw"
                            name="IsNSFW"
@@ -385,6 +406,32 @@
 
     // Load categories from server
     const categoryTree = @Html.Raw(Json.Serialize(ViewBag.Categories ?? new List<object>()));
+
+    function showToast(message, type = 'info') {
+            const oldToast = document.querySelector('.community-toast');
+            if (oldToast) oldToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `community-toast community-toast-${type}`;
+
+            let icon = 'bi-info-circle-fill';
+            if (type === 'error') icon = 'bi-exclamation-triangle-fill';
+            else if (type === 'success') icon = 'bi-check-circle-fill';
+            else if (type === 'warning') icon = 'bi-exclamation-circle-fill';
+
+            toast.innerHTML = `
+                <i class="bi ${icon}"></i>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
 
     // ========================================
     // Modal Functions
@@ -774,6 +821,17 @@
         // ========================================
         // แสดง Toast ถ้ามี Validation Errors
         // ========================================
+         document.querySelectorAll('.toast-notification-hidden').forEach(el => {
+        const message = el.getAttribute('data-message');
+        let type = 'info';
+        if (el.classList.contains('toast-success')) type = 'success';
+        else if (el.classList.contains('toast-error')) type = 'error';
+        else if (el.classList.contains('toast-warning')) type = 'warning';
+
+        if (message) {
+            showToast(message, type);
+        }
+    });
         const errorElements = document.querySelectorAll('.field-validation-error');
         const missingFields = [];
 
@@ -1650,8 +1708,8 @@
             width: 100%;
         }
         /* ========================================
-               Toast สำหรับ Community Create Modal
-               ======================================== */
+                   Toast สำหรับ Community Create Modal
+                   ======================================== */
 
         .community-toast {
             position: fixed;
@@ -1742,8 +1800,8 @@
             }
         }
         /* ========================================
-               แก้ไข z-index ของ Modal
-               ======================================== */
+                   แก้ไข z-index ของ Modal
+                   ======================================== */
         /* Modal Container - ต้องต่ำกว่า toast */
         .category-modal {
             z-index: 9000 !important;
@@ -1760,8 +1818,8 @@
         }
         /* แทนที่ CSS #imagePreview เดิมด้วยโค้ดนี้ */
         /* ========================================
-               Image Preview Boxes (ทั้ง Profile และ Cover)
-               ======================================== */
+                   Image Preview Boxes (ทั้ง Profile และ Cover)
+                   ======================================== */
 
         .image-preview-box {
             margin-top: 1rem;
@@ -2081,8 +2139,8 @@
         display: flex;
     }
     /* ========================================
-           Custom File Upload Styling
-           ======================================== */
+               Custom File Upload Styling
+               ======================================== */
 
     /* ซ่อน input file เดิม */
     .file-input-hidden {
@@ -2239,8 +2297,8 @@
         color: #fca5a5;
     }
     /* ========================================
-       Active Status Toggle
-       ======================================== */
+           Active Status Toggle
+           ======================================== */
 
     .setting-card {
         display: flex;
@@ -2350,21 +2408,18 @@
 
     /* Responsive */
     @@media (max-width: 576px) {
-        .setting-card
+        .setting-card {
+            flex-direction: column;
+            gap: 1rem;
+        }
 
-    {
-        flex-direction: column;
-        gap: 1rem;
-    }
+        .setting-info {
+            width: 100%;
+        }
 
-    .setting-info {
-        width: 100%;
-    }
-
-    .toggle-switch {
-        align-self: flex-start;
-    }
-
+        .toggle-switch {
+            align-self: flex-start;
+        }
     }
     /* เพิ่มใน style section ที่มีอยู่ */
     .back-navigation {
@@ -2432,16 +2487,17 @@
 
     /* Responsive */
     @@media (max-width: 767px) {
-        .back-navigation
+        .back-navigation {
+            padding: 1rem 0 0.5rem 0;
+        }
 
-    {
-        padding: 1rem 0 0.5rem 0;
+        .btn-back-nav {
+            width: 100%;
+            justify-content: center;
+        }
     }
 
-    .btn-back-nav {
-        width: 100%;
-        justify-content: center;
-    }
-
+    .toast-notification-hidden {
+        display: none;
     }
 </style>

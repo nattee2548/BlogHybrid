@@ -1,0 +1,264 @@
+@model BlogHybrid.Application.Commands.Community.UpdateCommunityResult
+
+@{
+    ViewData["Title"] = "อัปเดตชุมชนสำเร็จ";
+    var redirectUrl = TempData["RedirectUrl"]?.ToString() ?? "/my-communities";
+    var redirectDelay = TempData["RedirectDelay"] != null ? (int)TempData["RedirectDelay"] : 2000;
+}
+
+<div class="success-container">
+    <div class="success-card">
+        <div class="success-icon">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <h1 class="success-title">อัปเดตชุมชนสำเร็จ!</h1>
+        <p class="success-message">กำลังนำคุณกลับไปยังหน้าชุมชนของคุณ...</p>
+        <div class="success-spinner">
+            <div class="spinner"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="successToast" class="toast-notification">
+    <i class="bi bi-check-circle-fill toast-icon"></i>
+    <div class="toast-content">
+        <div class="toast-title">สำเร็จ!</div>
+        <div class="toast-message">@TempData["ToastMessage"]</div>
+    </div>
+</div>
+
+<style>
+    body {
+        background: var(--bg-primary, #f8f9fa);
+        overflow: hidden;
+    }
+
+    .success-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .success-card {
+        background: var(--card-bg, #ffffff);
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .success-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: scaleIn 0.6s ease-out 0.2s backwards;
+    }
+
+    @@keyframes scaleIn {
+        from {
+            transform: scale(0);
+        }
+        to {
+            transform: scale(1);
+        }
+    }
+
+    .success-icon i {
+        font-size: 4rem;
+        color: white;
+    }
+
+    .success-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary, #1a1a1a);
+        margin-bottom: 0.75rem;
+        animation: fadeIn 0.6s ease-out 0.4s backwards;
+    }
+
+    [data-theme="dark"] .success-title {
+        color: #f9fafb;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .success-message {
+        font-size: 1.125rem;
+        color: var(--text-secondary, #666);
+        margin-bottom: 2rem;
+        animation: fadeIn 0.6s ease-out 0.5s backwards;
+    }
+
+    [data-theme="dark"] .success-message {
+        color: #d1d5db;
+    }
+
+    .success-spinner {
+        display: flex;
+        justify-content: center;
+        animation: fadeIn 0.6s ease-out 0.6s backwards;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--border-primary, #e5e7eb);
+        border-top-color: #10b981;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    [data-theme="dark"] .spinner {
+        border-color: #374151;
+        border-top-color: #10b981;
+    }
+
+    /* Toast Notification */
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        border-left: 4px solid #10b981;
+        z-index: 99999;
+        min-width: 320px;
+        max-width: 450px;
+        opacity: 0;
+        transform: translateX(100px);
+        animation: toastSlideIn 0.4s ease-out 0.3s forwards, toastSlideOut 0.4s ease-in 1.6s forwards;
+    }
+
+    [data-theme="dark"] .toast-notification {
+        background: #1f2937;
+        color: #f9fafb;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    @@keyframes toastSlideIn {
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @@keyframes toastSlideOut {
+        to {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+    }
+
+    .toast-icon {
+        font-size: 24px;
+        color: #10b981;
+        flex-shrink: 0;
+    }
+
+    .toast-content {
+        flex: 1;
+    }
+
+    .toast-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-primary, #1a1a1a);
+        margin-bottom: 4px;
+    }
+
+    [data-theme="dark"] .toast-title {
+        color: #f9fafb;
+    }
+
+    .toast-message {
+        font-size: 13px;
+        color: var(--text-secondary, #666);
+        line-height: 1.4;
+    }
+
+    [data-theme="dark"] .toast-message {
+        color: #d1d5db;
+    }
+
+    @@media (max-width: 767px) {
+        .success-container {
+            padding: 1rem;
+        }
+
+        .success-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+        }
+
+        .success-icon i {
+            font-size: 3rem;
+        }
+
+        .success-title {
+            font-size: 1.5rem;
+        }
+
+        .success-message {
+            font-size: 1rem;
+        }
+
+        .toast-notification {
+            right: 10px;
+            left: 10px;
+            min-width: auto;
+        }
+    }
+</style>
+
+<script>
+    // Auto redirect after delay
+    setTimeout(function() {
+        window.location.href = '@Html.Raw(redirectUrl)';
+    }, @redirectDelay);
+</script>

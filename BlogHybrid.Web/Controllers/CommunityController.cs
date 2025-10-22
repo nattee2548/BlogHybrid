@@ -435,8 +435,23 @@ namespace BlogHybrid.Web.Controllers
 
                 if (result.Success)
                 {
+                    if (ImageFile != null && !string.IsNullOrEmpty(oldImageUrl) && command.ImageUrl != oldImageUrl)
+                    {
+                        await _imageService.DeleteAsync(oldImageUrl);
+                    }
+                    if (CoverImageFile != null && !string.IsNullOrEmpty(oldCoverImageUrl) && command.CoverImageUrl != oldCoverImageUrl)
+                    {
+                        await _imageService.DeleteAsync(oldCoverImageUrl);
+                    }
                     TempData["SuccessMessage"] = "อัปเดตชุมชนเรียบร้อยแล้ว";
-                    return RedirectToAction("MyCommunities");
+                    return RedirectToAction("Details", new { communitySlug = result.Slug });
+                    //TempData["SuccessMessage"] = "อัปเดตชุมชนเรียบร้อยแล้ว";
+                    //return RedirectToAction("MyCommunities");
+                    //TempData["ToastMessage"] = "อัปเดตชุมชนของคุณเรียบร้อยแล้ว";
+                    //TempData["RedirectUrl"] = Url.Action("MyCommunities", "Community");
+                    //TempData["RedirectDelay"] = 2000; // 2 วินาที
+
+                    //return View("EditSuccess", result);
                 }
                 else
                 {
