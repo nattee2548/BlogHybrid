@@ -25,10 +25,13 @@ namespace BlogHybrid.Application.DTOs.Community
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        // Category info
+        // Category info (primary - for backward compatibility)
         public int CategoryId { get; set; }
         public string CategoryName { get; set; } = string.Empty;
         public string CategorySlug { get; set; } = string.Empty;
+
+        // ✅ เพิ่มใหม่: รายการหมวดหมู่ทั้งหมดที่ชุมชนนี้อยู่
+        public List<CommunityCategoryInfo> Categories { get; set; } = new();
 
         // Creator info
         public string CreatorId { get; set; } = string.Empty;
@@ -40,5 +43,14 @@ namespace BlogHybrid.Application.DTOs.Community
 
         // Full URL path (for frontend)
         public string FullSlug => $"{CategorySlug}/{Slug}";
+    }
+
+    // ✅ เพิ่ม class ใหม่สำหรับเก็บข้อมูลหมวดหมู่
+    public class CommunityCategoryInfo
+    {
+        public int CategoryId { get; set; }
+        public string CategoryName { get; set; } = string.Empty;
+        public string CategorySlug { get; set; } = string.Empty;
+        public string CategoryColor { get; set; } = "#0066cc";
     }
 }

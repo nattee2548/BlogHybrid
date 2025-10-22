@@ -125,17 +125,20 @@
                                     }
                                 </div>
 
-                                <div class="community-info">
-                                    <h3 class="community-name">
-                                        <a asp-controller="Community"
-                                           asp-action="Details"
-                                           asp-route-communitySlug="@community.Slug">
-                                            @community.Name
-                                        </a>
-                                    </h3>
-                                    <p class="community-category">
-                                        <i class="bi bi-tag-fill"></i> @community.CategoryName
-                                    </p>
+                                <div class="community-categories-list">
+                                    @if (community.Categories != null && community.Categories.Any())
+                                    {
+                                        foreach (var category in community.Categories.Take(3))
+                                        {
+                                            <span class="category-badge" style="background-color: @(category.CategoryColor)15; color: @category.CategoryColor; border: 1px solid @(category.CategoryColor)40;">
+                                                <i class="bi bi-tag-fill"></i> @category.CategoryName
+                                            </span>
+                                        }
+                                        @if (community.Categories.Count > 3)
+                                        {
+                                            <span class="category-badge-more">+@(community.Categories.Count - 3)</span>
+                                        }
+                                    }
                                 </div>
                             </div>
 
@@ -844,6 +847,45 @@
     }
 
     }
+    /* Community Categories List */
+    .community-categories-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .category-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        transition: all 0.2s;
+    }
+
+        .category-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-badge i {
+            font-size: 0.65rem;
+        }
+
+    .category-badge-more {
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: var(--bg-secondary, #f3f4f6);
+        color: var(--text-secondary, #666);
+        border: 1px solid var(--border-primary, #e5e7eb);
+    }
+
 </style>
 
 <script>

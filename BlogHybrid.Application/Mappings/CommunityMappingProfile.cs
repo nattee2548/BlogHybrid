@@ -11,8 +11,7 @@ namespace BlogHybrid.Application.Mappings
         {
             // Entity to DTO mappings
             CreateMap<Community, CommunityDto>()
-                //.ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
-                //.ForMember(dest => dest.CategorySlug, opt => opt.MapFrom(src => src.Category.Slug))
+                // Primary category (first one for backward compatibility)
                 .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src =>
                     src.CommunityCategories.OrderBy(cc => cc.AssignedAt).FirstOrDefault() != null
                         ? src.CommunityCategories.OrderBy(cc => cc.AssignedAt).FirstOrDefault()!.CategoryId
@@ -25,6 +24,18 @@ namespace BlogHybrid.Application.Mappings
                     src.CommunityCategories.OrderBy(cc => cc.AssignedAt).FirstOrDefault() != null
                         ? src.CommunityCategories.OrderBy(cc => cc.AssignedAt).FirstOrDefault()!.Category.Slug
                         : string.Empty))
+                // ✅ เพิ่มใหม่: Map ทุกหมวดหมู่ที่ชุมชนอยู่
+                .ForMember(dest => dest.Categories, opt => opt.MapFrom(src =>
+                    src.CommunityCategories
+                        .OrderBy(cc => cc.AssignedAt)
+                        .Select(cc => new CommunityCategoryInfo
+                        {
+                            CategoryId = cc.CategoryId,
+                            CategoryName = cc.Category.Name,
+                            CategorySlug = cc.Category.Slug,
+                            CategoryColor = cc.Category.Color
+                        })
+                        .ToList()))
                 .ForMember(dest => dest.CreatorDisplayName, opt => opt.MapFrom(src => src.Creator.DisplayName))
                 .ForMember(dest => dest.IsCurrentUserMember, opt => opt.Ignore()) // Set manually in handler
                 .ForMember(dest => dest.CurrentUserRole, opt => opt.Ignore()); // Set manually in handler
@@ -42,7 +53,6 @@ namespace BlogHybrid.Application.Mappings
                 .ForMember(dest => dest.PostCount, opt => opt.Ignore())
                 .ForMember(dest => dest.SortOrder, opt => opt.Ignore())
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true))
-                //.ForMember(dest => dest.Category, opt => opt.Ignore())
                 .ForMember(dest => dest.Creator, opt => opt.Ignore())
                 .ForMember(dest => dest.CommunityMembers, opt => opt.Ignore())
                 .ForMember(dest => dest.CommunityInvites, opt => opt.Ignore())
@@ -50,7 +60,6 @@ namespace BlogHybrid.Application.Mappings
                 .ForMember(dest => dest.CommunityCategories, opt => opt.Ignore());
 
             CreateMap<UpdateCommunityDto, Community>()
-                .ForMember(dest => dest.Slug, opt => opt.Ignore()) // May regenerate in handler
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
@@ -59,43 +68,6 @@ namespace BlogHybrid.Application.Mappings
                 .ForMember(dest => dest.MemberCount, opt => opt.Ignore())
                 .ForMember(dest => dest.PostCount, opt => opt.Ignore())
                 .ForMember(dest => dest.SortOrder, opt => opt.Ignore())
-                //.ForMember(dest => dest.Category, opt => opt.Ignore())
-                .ForMember(dest => dest.CommunityCategories, opt => opt.Ignore())
-                .ForMember(dest => dest.Creator, opt => opt.Ignore())
-                .ForMember(dest => dest.CommunityMembers, opt => opt.Ignore())
-                .ForMember(dest => dest.CommunityInvites, opt => opt.Ignore())
-                .ForMember(dest => dest.Posts, opt => opt.Ignore());
-
-            // Command to Entity mappings
-            CreateMap<CreateCommunityCommand, Community>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Slug, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.MemberCount, opt => opt.Ignore())
-                .ForMember(dest => dest.PostCount, opt => opt.Ignore())
-                .ForMember(dest => dest.SortOrder, opt => opt.Ignore())
-                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true))
-                //.ForMember(dest => dest.Category, opt => opt.Ignore())
-                .ForMember(dest => dest.Creator, opt => opt.Ignore())
-                .ForMember(dest => dest.CommunityMembers, opt => opt.Ignore())
-                .ForMember(dest => dest.CommunityInvites, opt => opt.Ignore())
-                .ForMember(dest => dest.Posts, opt => opt.Ignore())
-                .ForMember(dest => dest.CommunityCategories, opt => opt.Ignore());
-
-            CreateMap<UpdateCommunityCommand, Community>()
-                .ForMember(dest => dest.Slug, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatorId, opt => opt.Ignore())
-                .ForMember(dest => dest.MemberCount, opt => opt.Ignore())
-                .ForMember(dest => dest.PostCount, opt => opt.Ignore())
-                .ForMember(dest => dest.SortOrder, opt => opt.Ignore())
-                //.ForMember(dest => dest.Category, opt => opt.Ignore())
                 .ForMember(dest => dest.Creator, opt => opt.Ignore())
                 .ForMember(dest => dest.CommunityMembers, opt => opt.Ignore())
                 .ForMember(dest => dest.CommunityInvites, opt => opt.Ignore())

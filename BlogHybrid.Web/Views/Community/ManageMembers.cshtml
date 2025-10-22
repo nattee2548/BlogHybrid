@@ -184,6 +184,7 @@
                                     @if (!isCommunityCreator && !isCurrentUser)
                                     {
                                         <div class="action-buttons">
+                                            @* ✅ กรณี 1: รออนุมัติ (Pending) *@
                                             @if (!member.IsApproved && !member.IsBanned)
                                             {
                                                 <!-- Approve/Reject -->
@@ -205,18 +206,46 @@
                                                     </button>
                                                 </form>
                                             }
-                                            else if (member.IsApproved)
+                                            @* ✅ กรณี 2: ถูกแบนแล้ว (Banned) - แสดงปุ่ม Unban *@
+                                            else if (member.IsBanned)
                                             {
-                                                <!-- Ban/Unban -->
+                                                <!-- Unban -->
                                                 <form method="post" asp-action="BanMember" style="display: inline;">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="communityId" value="@community.Id" />
                                                     <input type="hidden" name="memberUserId" value="@member.UserId" />
-                                                    <input type="hidden" name="isBanned" value="@(!member.IsBanned)" />
-                                                    <button type="button" class="btn-action @(member.IsBanned ? "btn-unban" : "btn-ban")"
-                                                            onclick="confirmBan(this.form, '@member.User.DisplayName', @member.IsBanned.ToString().ToLower())"
-                                                            title="@(member.IsBanned ? "ปลดแบน" : "แบน")">
-                                                        <i class="bi bi-@(member.IsBanned ? "shield-check" : "slash-circle")"></i>
+                                                    <input type="hidden" name="isBanned" value="false" />
+                                                    <button type="button" class="btn-action btn-unban"
+                                                            onclick="confirmBan(this.form, '@member.User.DisplayName', true)"
+                                                            title="ปลดแบน">
+                                                        <i class="bi bi-shield-check"></i>
+                                                    </button>
+                                                </form>
+
+                                                <!-- Remove -->
+                                                <form method="post" asp-action="RemoveMember" style="display: inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="communityId" value="@community.Id" />
+                                                    <input type="hidden" name="memberUserId" value="@member.UserId" />
+                                                    <button type="button" class="btn-action btn-remove"
+                                                            onclick="confirmRemove(this.form, '@member.User.DisplayName')" title="ลบออก">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            @* ✅ กรณี 3: อนุมัติแล้ว (Approved) - แสดงปุ่ม Ban + Remove *@
+                                            else if (member.IsApproved)
+                                            {
+                                                <!-- Ban -->
+                                                <form method="post" asp-action="BanMember" style="display: inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="communityId" value="@community.Id" />
+                                                    <input type="hidden" name="memberUserId" value="@member.UserId" />
+                                                    <input type="hidden" name="isBanned" value="true" />
+                                                    <button type="button" class="btn-action btn-ban"
+                                                            onclick="confirmBan(this.form, '@member.User.DisplayName', false)"
+                                                            title="แบน">
+                                                        <i class="bi bi-slash-circle"></i>
                                                     </button>
                                                 </form>
 
@@ -242,6 +271,7 @@
                                         <span class="text-muted">-</span>
                                     }
                                 </td>
+                           
                             </tr>
                         }
                     </tbody>

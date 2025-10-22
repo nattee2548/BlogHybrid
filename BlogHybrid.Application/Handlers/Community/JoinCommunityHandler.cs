@@ -91,7 +91,7 @@ namespace BlogHybrid.Application.Handlers.Community
                 }
 
                 await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
+                bool requiresApproval = community.IsPrivate || community.RequireApproval;
                 // Create new member
                 var newMember = new CommunityMember
                 {
@@ -99,7 +99,7 @@ namespace BlogHybrid.Application.Handlers.Community
                     UserId = request.UserId,
                     Role = CommunityRole.Member,
                     JoinedAt = DateTime.UtcNow,
-                    IsApproved = !community.RequireApproval, // Auto-approve if not required
+                    IsApproved = !requiresApproval, // Auto-approve if not required
                     IsBanned = false
                 };
 
