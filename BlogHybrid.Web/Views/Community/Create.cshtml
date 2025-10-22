@@ -4,6 +4,13 @@
     ViewData["Title"] = "สร้างชุมชน";
     var maxCategories = Configuration.GetValue<int>("CommunitySettings:MaxCategoriesPerCommunity", 3);
 }
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="toast-notification toast-error" id="errorToast" style="display: none;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@ViewBag.ErrorMessage</span>
+    </div>
+}
 
 <div class="create-community-container">
     <div class="create-community-content">

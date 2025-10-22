@@ -1,6 +1,6 @@
 ﻿using BlogHybrid.Application.Interfaces.Repositories;
 using BlogHybrid.Application.Queries.User;
-using BlogHybrid.Domain.Entities; // แก้ไขจาก Core.Entities เป็น Domain.Entities
+using BlogHybrid.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -63,11 +63,12 @@ namespace BlogHybrid.Application.Handlers.User
         {
             try
             {
-                var (users, totalCount) = await _unitOfWork.Users.GetPagedAsync(
-                    request.PageNumber,
-                    request.PageSize,
+                // ดึง users ทั้งหมดก่อน (ยังไม่ filter role)
+                var (users, totalCountBeforeRoleFilter) = await _unitOfWork.Users.GetPagedAsync(
+                    1, // ดึงทั้งหมดก่อน
+                    int.MaxValue, // ไม่จำกัดจำนวน
                     request.SearchTerm,
-                    request.RoleFilter,
+                    null, // ไม่ส่ง roleFilter ไปที่ repository
                     request.IsActiveFilter,
                     request.SortBy,
                     request.SortDirection,
@@ -75,15 +76,38 @@ namespace BlogHybrid.Application.Handlers.User
 
                 var userListItems = new List<UserListItem>();
 
+                // Loop และ Filter ตาม Role
                 foreach (var user in users)
                 {
                     var roles = await _unitOfWork.Users.GetRolesAsync(user, cancellationToken);
+
+                    // ✅ Filter ตาม Role ที่ต้องการ
+                    if (!string.IsNullOrWhiteSpace(request.RoleFilter))
+                    {
+                        // กรณี Admin/Moderator - แสดงเฉพาะ Admin และ Moderator
+                        if (request.RoleFilter.ToLower() == "admin")
+                        {
+                            if (!roles.Contains("Admin") && !roles.Contains("Moderator"))
+                            {
+                                continue; // ข้าม user ที่ไม่ใช่ Admin/Moderator
+                            }
+                        }
+                        // กรณี User - แสดงเฉพาะที่ไม่ใช่ Admin และไม่ใช่ Moderator
+                        else if (request.RoleFilter.ToLower() == "user")
+                        {
+                            if (roles.Contains("Admin") || roles.Contains("Moderator"))
+                            {
+                                continue; // ข้าม user ที่เป็น Admin/Moderator
+                            }
+                        }
+                    }
 
                     userListItems.Add(new UserListItem
                     {
                         Id = user.Id,
                         Email = user.Email!,
                         UserName = user.UserName!,
+                        DisplayName = user.DisplayName ?? user.UserName!,
                         FirstName = user.FirstName,
                         LastName = user.LastName,
                         IsActive = user.IsActive,
@@ -94,9 +118,18 @@ namespace BlogHybrid.Application.Handlers.User
                     });
                 }
 
+                // นับจำนวนหลัง Filter
+                var totalCount = userListItems.Count;
+
+                // Pagination หลัง Filter
+                var pagedUsers = userListItems
+                    .Skip((request.PageNumber - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .ToList();
+
                 return new GetPagedUsersResult
                 {
-                    Users = userListItems,
+                    Users = pagedUsers,
                     TotalCount = totalCount,
                     PageNumber = request.PageNumber,
                     PageSize = request.PageSize
@@ -138,24 +171,25 @@ namespace BlogHybrid.Application.Handlers.User
             try
             {
                 var user = await _unitOfWork.Users.GetByIdAsync(request.Id, cancellationToken);
+
                 if (user == null)
                 {
                     return null;
                 }
 
                 var roles = await _unitOfWork.Users.GetRolesAsync(user, cancellationToken);
-                var claims = await _unitOfWork.Users.GetClaimsAsync(user, cancellationToken);
-                var logins = await _unitOfWork.Users.GetLoginsAsync(user, cancellationToken);
 
                 return new UserDetailsResult
                 {
                     Id = user.Id,
                     Email = user.Email!,
                     UserName = user.UserName!,
-                    DisplayName = user.DisplayName,
+                    DisplayName = user.DisplayName ?? user.UserName!,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     PhoneNumber = user.PhoneNumber,
+                    Bio = user.Bio,
+                    ProfileImageUrl = user.ProfileImageUrl,
                     IsActive = user.IsActive,
                     EmailConfirmed = user.EmailConfirmed,
                     PhoneNumberConfirmed = user.PhoneNumberConfirmed,
@@ -165,16 +199,12 @@ namespace BlogHybrid.Application.Handlers.User
                     AccessFailedCount = user.AccessFailedCount,
                     CreatedAt = user.CreatedAt,
                     LastLoginAt = user.LastLoginAt,
-                    ProfileImageUrl = user.ProfileImageUrl,
-                    Bio = user.Bio,
-                    Roles = roles,
-                    Claims = claims.ToDictionary(c => c.Type, c => c.Value),
-                    ExternalLogins = logins.Select(l => l.LoginProvider).ToList()
+                    Roles = roles
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting user details for ID: {UserId}", request.Id);
+                _logger.LogError(ex, $"Error getting user details for ID: {request.Id}");
                 return null;
             }
         }

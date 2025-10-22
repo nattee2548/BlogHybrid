@@ -73,6 +73,7 @@ namespace BlogHybrid.Web.Controllers
 
                 if (!ModelState.IsValid)
                 {
+                    ViewBag.ErrorMessage = "กรุณากรอกข้อมูลให้ครบถ้วน";
                     var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                     var categories = await _mediator.Send(categoriesQuery);
                     ViewBag.Categories = categories;
@@ -92,7 +93,7 @@ namespace BlogHybrid.Web.Controllers
                     {
                         _logger.LogError(ex, "Error uploading community profile image");
                         ModelState.AddModelError("ImageFile", "ไม่สามารถอัปโหลดรูปโปรไฟล์ได้");
-
+                        ViewBag.ErrorMessage = "ไม่สามารถอัปโหลดรูปโปรไฟล์ได้";
                         var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                         var categories = await _mediator.Send(categoriesQuery);
                         ViewBag.Categories = categories;
@@ -117,7 +118,7 @@ namespace BlogHybrid.Web.Controllers
                             await _imageService.DeleteAsync(command.ImageUrl);
                         }
                         ModelState.AddModelError("CoverImageFile", "ไม่สามารถอัปโหลดรูปปกได้");
-
+                        ViewBag.ErrorMessage = "ไม่สามารถอัปโหลดรูปปกได้";
                         var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                         var categories = await _mediator.Send(categoriesQuery);
                         ViewBag.Categories = categories;
@@ -131,8 +132,7 @@ namespace BlogHybrid.Web.Controllers
                 if (result.Success)
                 {
                     TempData["SuccessMessage"] = "สร้างชุมชนสำเร็จ!";
-
-                    // ✅ แก้ไข: เปลี่ยนเป็น /community/{slug}
+                   
                     return RedirectToAction("Details", new { communitySlug = result.Slug });
                 }
                 else
@@ -150,7 +150,7 @@ namespace BlogHybrid.Web.Controllers
                     {
                         ModelState.AddModelError("", error);
                     }
-
+                    ViewBag.ErrorMessage = result.Errors?.FirstOrDefault() ?? "ไม่สามารถสร้างชุมชนได้";
                     var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                     var categories = await _mediator.Send(categoriesQuery);
                     ViewBag.Categories = categories;
@@ -172,7 +172,7 @@ namespace BlogHybrid.Web.Controllers
                 }
 
                 TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการสร้างชุมชน: " + ex.Message;
-
+                ViewBag.ErrorMessage = "เกิดข้อผิดพลาดในการสร้างชุมชน";
                 var categoriesQuery = new GetCategoryTreeQuery { ActiveOnly = true };
                 var categories = await _mediator.Send(categoriesQuery);
                 ViewBag.Categories = categories;
@@ -180,28 +180,14 @@ namespace BlogHybrid.Web.Controllers
                 return View(command);
             }
         }
-
-        // ✅ แก้ไข: เปลี่ยนเป็น /community/{communitySlug}
+      
         [AllowAnonymous]
         [HttpGet("community/{communitySlug}")]
         public async Task<IActionResult> Details(string communitySlug)
         {
             try
-            {
-                //var query = new GetCommunityBySlugQuery
-                //{
-                //    Slug = communitySlug,
-                //    CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                //};
-
-                //var community = await _mediator.Send(query);
-
-                //if (community == null)
-                //{
-                //    return NotFound();
-                //}
-
-                //return View(community);
+            {               
+                
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 var query = new GetCommunityDetailsQuery
@@ -229,7 +215,7 @@ namespace BlogHybrid.Web.Controllers
 
         [Authorize]
         [HttpGet("my-communities")]
-        public async Task<IActionResult> MyCommunities()
+        public async Task<IActionResult> MyCommunities(string? filter = null)
         {
             try
             {
@@ -241,9 +227,30 @@ namespace BlogHybrid.Web.Controllers
                 }
 
                 var query = new GetUserCommunitiesQuery { UserId = userId };
-                var communities = await _mediator.Send(query);
+                var allCommunities = await _mediator.Send(query);
 
-                return View(communities);
+                // Filter ตามสถานะ (ถ้ามี)
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    allCommunities = filter.ToLower() switch
+                    {
+                        "owned" => allCommunities.Where(c => c.IsCreator).ToList(),
+                        "joined" => allCommunities.Where(c => c.MemberStatus == CommunityMemberStatus.Approved && !c.IsCreator).ToList(),
+                        "pending" => allCommunities.Where(c => c.MemberStatus == CommunityMemberStatus.Pending).ToList(),
+                        "banned" => allCommunities.Where(c => c.MemberStatus == CommunityMemberStatus.Banned).ToList(),
+                        _ => allCommunities
+                    };
+                }
+
+                // ส่งข้อมูลสถิติไปยัง View
+                ViewBag.TotalCommunities = allCommunities.Count;
+                ViewBag.OwnedCount = allCommunities.Count(c => c.IsCreator);
+                ViewBag.JoinedCount = allCommunities.Count(c => c.MemberStatus == CommunityMemberStatus.Approved && !c.IsCreator);
+                ViewBag.PendingCount = allCommunities.Count(c => c.MemberStatus == CommunityMemberStatus.Pending);
+                ViewBag.BannedCount = allCommunities.Count(c => c.MemberStatus == CommunityMemberStatus.Banned);
+                ViewBag.CurrentFilter = filter;
+
+                return View(allCommunities);
             }
             catch (Exception ex)
             {
@@ -338,6 +345,7 @@ namespace BlogHybrid.Web.Controllers
                 if (existingCommunity == null)
                 {
                     TempData["ErrorMessage"] = "ไม่พบชุมชนที่ต้องการแก้ไข";
+                    ViewBag.ErrorMessage = "ไม่พบชุมชนที่ต้องการแก้ไข";
                     return RedirectToAction("MyCommunities");
                 }
 

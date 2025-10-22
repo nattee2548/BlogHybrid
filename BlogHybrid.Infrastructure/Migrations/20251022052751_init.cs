@@ -68,15 +68,22 @@ namespace BlogHybrid.Infrastructure.Migrations
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Slug = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    ImageUrl = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    Color = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    ImageUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Color = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     SortOrder = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ParentCategoryId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Categories_Categories_ParentCategoryId",
+                        column: x => x.ParentCategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -186,6 +193,43 @@ namespace BlogHybrid.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Communities",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Slug = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    ImageUrl = table.Column<string>(type: "text", nullable: true),
+                    CoverImageUrl = table.Column<string>(type: "text", nullable: true),
+                    Rules = table.Column<string>(type: "text", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsPrivate = table.Column<bool>(type: "boolean", nullable: false),
+                    RequireApproval = table.Column<bool>(type: "boolean", nullable: false),
+                    IsNSFW = table.Column<bool>(type: "boolean", nullable: false),
+                    MemberCount = table.Column<int>(type: "integer", nullable: false),
+                    PostCount = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    CreatorId = table.Column<string>(type: "text", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Communities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Communities_AspNetUsers_CreatorId",
+                        column: x => x.CreatorId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RefreshTokens",
                 columns: table => new
                 {
@@ -235,45 +279,28 @@ namespace BlogHybrid.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Communities",
+                name: "CommunityCategories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Slug = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
-                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
-                    ImageUrl = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    CoverImageUrl = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    Rules = table.Column<string>(type: "character varying(5000)", maxLength: 5000, nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    IsPrivate = table.Column<bool>(type: "boolean", nullable: false),
-                    RequireApproval = table.Column<bool>(type: "boolean", nullable: false),
-                    MemberCount = table.Column<int>(type: "integer", nullable: false),
-                    PostCount = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CommunityId = table.Column<int>(type: "integer", nullable: false),
                     CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    CreatorId = table.Column<string>(type: "text", nullable: false),
-                    SortOrder = table.Column<int>(type: "integer", nullable: false)
+                    AssignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Communities", x => x.Id);
+                    table.PrimaryKey("PK_CommunityCategories", x => new { x.CommunityId, x.CategoryId });
                     table.ForeignKey(
-                        name: "FK_Communities_AspNetUsers_CreatorId",
-                        column: x => x.CreatorId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Communities_Categories_CategoryId",
+                        name: "FK_CommunityCategories_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CommunityCategories_Communities_CommunityId",
+                        column: x => x.CommunityId,
+                        principalTable: "Communities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -549,6 +576,16 @@ namespace BlogHybrid.Infrastructure.Migrations
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Categories_Name",
+                table: "Categories",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_ParentCategoryId",
+                table: "Categories",
+                column: "ParentCategoryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Categories_Slug",
                 table: "Categories",
                 column: "Slug",
@@ -600,45 +637,24 @@ namespace BlogHybrid.Infrastructure.Migrations
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Communities_CategoryId",
-                table: "Communities",
-                column: "CategoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Communities_CategoryId_IsActive_IsDeleted",
-                table: "Communities",
-                columns: new[] { "CategoryId", "IsActive", "IsDeleted" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Communities_CreatedAt",
-                table: "Communities",
-                column: "CreatedAt");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Communities_CreatorId",
                 table: "Communities",
                 column: "CreatorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Communities_IsActive",
-                table: "Communities",
-                column: "IsActive");
+                name: "IX_CommunityCategories_AssignedAt",
+                table: "CommunityCategories",
+                column: "AssignedAt");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Communities_IsDeleted",
-                table: "Communities",
-                column: "IsDeleted");
+                name: "IX_CommunityCategories_CategoryId",
+                table: "CommunityCategories",
+                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Communities_IsPrivate",
-                table: "Communities",
-                column: "IsPrivate");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Communities_Slug",
-                table: "Communities",
-                column: "Slug",
-                unique: true);
+                name: "IX_CommunityCategories_CommunityId",
+                table: "CommunityCategories",
+                column: "CommunityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CommunityInvites_CommunityId",
@@ -842,6 +858,9 @@ namespace BlogHybrid.Infrastructure.Migrations
                 name: "CommentLikes");
 
             migrationBuilder.DropTable(
+                name: "CommunityCategories");
+
+            migrationBuilder.DropTable(
                 name: "CommunityInvites");
 
             migrationBuilder.DropTable(
@@ -869,13 +888,13 @@ namespace BlogHybrid.Infrastructure.Migrations
                 name: "Posts");
 
             migrationBuilder.DropTable(
+                name: "Categories");
+
+            migrationBuilder.DropTable(
                 name: "Communities");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "Categories");
         }
     }
 }

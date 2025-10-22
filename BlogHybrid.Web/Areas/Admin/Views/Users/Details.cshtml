@@ -1,0 +1,481 @@
+@model BlogHybrid.Web.Areas.Admin.Models.UserDetailsViewModel
+@{
+    ViewData["Title"] = "รายละเอียดสมาชิก";
+}
+
+<!-- Toast Notifications -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-notification toast-success" id="successToast">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@TempData["SuccessMessage"]</span>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-notification toast-error" id="errorToast">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@TempData["ErrorMessage"]</span>
+    </div>
+}
+
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="toast-notification toast-info" id="infoToast">
+        <i class="bi bi-info-circle-fill"></i>
+        <span>@TempData["InfoMessage"]</span>
+    </div>
+}
+
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="toast-notification toast-warning" id="warningToast">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@TempData["WarningMessage"]</span>
+    </div>
+}
+
+<div class="admin-page-header">
+    <div>
+        <h1><i class="bi bi-person-circle"></i> รายละเอียดสมาชิก</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">สมาชิก</a></li>
+                <li class="breadcrumb-item active">@Model.DisplayName</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary">
+            <i class="bi bi-pencil"></i> แก้ไข
+        </a>
+        <a asp-action="ChangePassword" asp-route-id="@Model.Id" class="btn btn-warning">
+            <i class="bi bi-key"></i> เปลี่ยนรหัสผ่าน
+        </a>
+        <button type="button" 
+                class="btn @(Model.IsActive ? "btn-danger" : "btn-success")"
+                onclick="confirmToggleStatus('@Model.Id', '@Model.DisplayName', @Model.IsActive.ToString().ToLower())">
+            @if (Model.IsActive)
+            {
+                <i class="bi bi-x-circle"></i> <text>ปิดใช้งาน</text>
+            }
+            else
+            {
+                <i class="bi bi-check-circle"></i> <text>เปิดใช้งาน</text>
+            }
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <!-- User Info Card -->
+    <div class="col-lg-4">
+        <div class="admin-card mb-4">
+            <div class="admin-card-body text-center">
+                <div class="user-avatar-large mx-auto mb-3">
+                    @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                    {
+                        <img src="@Model.ProfileImageUrl" alt="@Model.DisplayName" />
+                    }
+                    else
+                    {
+                        <span>@Model.DisplayName.Substring(0, 1).ToUpper()</span>
+                    }
+                </div>
+                <h4 class="mb-1">@Model.DisplayName</h4>
+                <p class="text-muted mb-3">@("@" + Model.UserName)</p>
+
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success mb-2">
+                        <i class="bi bi-check-circle"></i> บัญชีใช้งานปกติ
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-danger mb-2">
+                        <i class="bi bi-x-circle"></i> บัญชีถูกปิดใช้งาน
+                    </span>
+                }
+
+                @if (Model.EmailConfirmed)
+                {
+                    <span class="badge bg-success mb-2">
+                        <i class="bi bi-patch-check"></i> ยืนยันอีเมล
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-warning mb-2">
+                        <i class="bi bi-clock"></i> รอยืนยันอีเมล
+                    </span>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Bio))
+                {
+                    <hr />
+                    <p class="text-muted small">@Model.Bio</p>
+                }
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h5 class="admin-card-title">
+                    <i class="bi bi-bar-chart"></i> สถิติ
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="stat-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">
+                            <i class="bi bi-file-text"></i> โพสต์
+                        </span>
+                        <strong class="text-primary">@Model.PostCount</strong>
+                    </div>
+                </div>
+                <div class="stat-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">
+                            <i class="bi bi-chat"></i> ความคิดเห็น
+                        </span>
+                        <strong class="text-info">@Model.CommentCount</strong>
+                    </div>
+                </div>
+                <div class="stat-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">
+                            <i class="bi bi-people"></i> ชุมชน
+                        </span>
+                        <strong class="text-success">@Model.CommunityCount</strong>
+                    </div>
+                </div>
+                <hr />
+                <div class="stat-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">
+                            <i class="bi bi-person-plus"></i> ผู้ติดตาม
+                        </span>
+                        <strong>@Model.FollowerCount</strong>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">
+                            <i class="bi bi-person-check"></i> กำลังติดตาม
+                        </span>
+                        <strong>@Model.FollowingCount</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Cards -->
+    <div class="col-lg-8">
+        <!-- Personal Information -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h5 class="admin-card-title">
+                    <i class="bi bi-person"></i> ข้อมูลส่วนตัว
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">ชื่อ - นามสกุล</label>
+                        <p class="fw-semibold">@Model.FullName</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">ชื่อที่แสดง</label>
+                        <p class="fw-semibold">@Model.DisplayName</p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">อีเมล</label>
+                        <p class="fw-semibold">
+                            @Model.Email
+                            @if (Model.EmailConfirmed)
+                            {
+                                <i class="bi bi-patch-check-fill text-success ms-1" title="ยืนยันแล้ว"></i>
+                            }
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">เบอร์โทรศัพท์</label>
+                        <p class="fw-semibold">
+                            @(Model.PhoneNumber ?? "-")
+                            @if (Model.PhoneNumberConfirmed && !string.IsNullOrEmpty(Model.PhoneNumber))
+                            {
+                                <i class="bi bi-patch-check-fill text-success ms-1" title="ยืนยันแล้ว"></i>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Information -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h5 class="admin-card-title">
+                    <i class="bi bi-shield-lock"></i> ข้อมูลบัญชี
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">User ID</label>
+                        <p class="fw-semibold font-monospace small">@Model.Id</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Username</label>
+                        <p class="fw-semibold">@("@" + Model.UserName)</p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">สมัครสมาชิกเมื่อ</label>
+                        <p class="fw-semibold">
+                            @Model.CreatedAt.ToString("dd MMMM yyyy HH:mm", new System.Globalization.CultureInfo("th-TH"))
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">เข้าใช้งานล่าสุด</label>
+                        <p class="fw-semibold">
+                            @if (Model.LastLoginAt.HasValue)
+                            {
+                                @Model.LastLoginAt.Value.ToString("dd MMMM yyyy HH:mm", new System.Globalization.CultureInfo("th-TH"))
+                            }
+                            else
+                            {
+                                <span class="text-muted">ยังไม่เคยเข้าใช้งาน</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="text-muted small">Two-Factor Authentication</label>
+                        <p>
+                            @if (Model.TwoFactorEnabled)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi bi-shield-check"></i> เปิดใช้งาน
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-shield"></i> ปิดใช้งาน
+                                </span>
+                            }
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">บทบาท</label>
+                        <p>
+                            @foreach (var role in Model.Roles)
+                            {
+                                <span class="badge bg-primary me-1">@role</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity (TODO: เพิ่มในอนาคต) -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h5 class="admin-card-title">
+                    <i class="bi bi-clock-history"></i> กิจกรรมล่าสุด
+                </h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                    <p class="mt-2">ฟีเจอร์กำลังพัฒนา</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toggle Status Confirmation Modal -->
+<div class="modal fade" id="toggleStatusModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="toggleStatusTitle">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    ยืนยันการเปลี่ยนสถานะ
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i id="toggleStatusIcon" class="bi" style="font-size: 3rem;"></i>
+                </div>
+                <p class="mb-2" id="toggleStatusMessage"></p>
+                <p class="fw-bold mb-3" id="toggleStatusUserName"></p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> ยกเลิก
+                </button>
+                <form id="toggleStatusForm" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn" id="toggleStatusBtn">
+                        <i class="bi"></i> <span id="toggleStatusBtnText"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Toast Auto-hide
+    document.addEventListener('DOMContentLoaded', function() {
+        const toasts = document.querySelectorAll('.toast-notification');
+        toasts.forEach(toast => {
+            setTimeout(() => {
+                toast.classList.add('toast-show');
+            }, 100);
+
+            setTimeout(() => {
+                toast.classList.remove('toast-show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        });
+    });
+
+    // Toggle Status Confirmation
+    function confirmToggleStatus(userId, userName, isActive) {
+        const modal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
+        const form = document.getElementById('toggleStatusForm');
+        const icon = document.getElementById('toggleStatusIcon');
+        const message = document.getElementById('toggleStatusMessage');
+        const userNameEl = document.getElementById('toggleStatusUserName');
+        const btn = document.getElementById('toggleStatusBtn');
+        const btnText = document.getElementById('toggleStatusBtnText');
+
+        // Set form action
+        form.action = '/Admin/Users/ToggleStatus/' + userId;
+
+        // Set content based on current status
+        if (isActive) {
+            // Will disable
+            icon.className = 'bi bi-x-circle-fill';
+            icon.style.color = 'var(--bs-danger)';
+            message.textContent = 'คุณต้องการปิดใช้งานบัญชี';
+            btn.className = 'btn btn-danger';
+            btn.querySelector('i').className = 'bi bi-x-circle';
+            btnText.textContent = 'ปิดใช้งาน';
+        } else {
+            // Will enable
+            icon.className = 'bi bi-check-circle-fill';
+            icon.style.color = 'var(--bs-success)';
+            message.textContent = 'คุณต้องการเปิดใช้งานบัญชี';
+            btn.className = 'btn btn-success';
+            btn.querySelector('i').className = 'bi bi-check-circle';
+            btnText.textContent = 'เปิดใช้งาน';
+        }
+
+        userNameEl.textContent = userName;
+        modal.show();
+    }
+</script>
+}
+
+<style>
+    .user-avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: bold;
+        color: white;
+        border: 4px solid var(--border-primary);
+    }
+
+    .user-avatar-large img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .stat-item {
+        padding: 0.5rem 0;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        min-width: 300px;
+        padding: 1rem 1.5rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 9999;
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s ease;
+    }
+
+    .toast-notification.toast-show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .toast-notification i {
+        font-size: 1.25rem;
+    }
+
+    .toast-success {
+        border-left: 4px solid #10b981;
+    }
+
+    .toast-success i {
+        color: #10b981;
+    }
+
+    .toast-error {
+        border-left: 4px solid #ef4444;
+    }
+
+    .toast-error i {
+        color: #ef4444;
+    }
+
+    .toast-info {
+        border-left: 4px solid #3b82f6;
+    }
+
+    .toast-info i {
+        color: #3b82f6;
+    }
+
+    .toast-warning {
+        border-left: 4px solid #f59e0b;
+    }
+
+    .toast-warning i {
+        color: #f59e0b;
+    }
+</style>

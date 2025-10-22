@@ -50,6 +50,7 @@ namespace BlogHybrid.Application.Queries.User
         public string Id { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty; // ✅ เพิ่ม DisplayName
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public bool IsActive { get; set; }
@@ -77,6 +78,8 @@ namespace BlogHybrid.Application.Queries.User
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? Bio { get; set; }
+        public string? ProfileImageUrl { get; set; }
         public bool IsActive { get; set; }
         public bool EmailConfirmed { get; set; }
         public bool PhoneNumberConfirmed { get; set; }
@@ -86,11 +89,7 @@ namespace BlogHybrid.Application.Queries.User
         public int AccessFailedCount { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
-        public string? ProfileImageUrl { get; set; }
-        public string? Bio { get; set; }
         public List<string> Roles { get; set; } = new();
-        public Dictionary<string, string> Claims { get; set; } = new();
-        public List<string> ExternalLogins { get; set; } = new();
     }
 
     #endregion

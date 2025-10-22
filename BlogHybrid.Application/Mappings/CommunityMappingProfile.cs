@@ -9,7 +9,7 @@ namespace BlogHybrid.Application.Mappings
     {
         public CommunityMappingProfile()
         {
-            // Entity to DTO mappings
+            // ========== Entity to DTO mappings ==========
             CreateMap<Community, CommunityDto>()
                 // Primary category (first one for backward compatibility)
                 .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src =>
@@ -24,7 +24,7 @@ namespace BlogHybrid.Application.Mappings
                     src.CommunityCategories.OrderBy(cc => cc.AssignedAt).FirstOrDefault() != null
                         ? src.CommunityCategories.OrderBy(cc => cc.AssignedAt).FirstOrDefault()!.Category.Slug
                         : string.Empty))
-                // ✅ เพิ่มใหม่: Map ทุกหมวดหมู่ที่ชุมชนอยู่
+                // All categories
                 .ForMember(dest => dest.Categories, opt => opt.MapFrom(src =>
                     src.CommunityCategories
                         .OrderBy(cc => cc.AssignedAt)
@@ -37,11 +37,13 @@ namespace BlogHybrid.Application.Mappings
                         })
                         .ToList()))
                 .ForMember(dest => dest.CreatorDisplayName, opt => opt.MapFrom(src => src.Creator.DisplayName))
-                .ForMember(dest => dest.IsCurrentUserMember, opt => opt.Ignore()) // Set manually in handler
-                .ForMember(dest => dest.CurrentUserRole, opt => opt.Ignore()); // Set manually in handler
+                .ForMember(dest => dest.IsCurrentUserMember, opt => opt.Ignore())
+                .ForMember(dest => dest.CurrentUserRole, opt => opt.Ignore());
 
-            // DTO to Entity mappings
-            CreateMap<CreateCommunityDto, Community>()
+            // ========== ⭐ เพิ่ม Command to Entity mappings ⭐ ==========
+
+            // CreateCommunityCommand -> Community
+            CreateMap<CreateCommunityCommand, Community>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Slug, opt => opt.Ignore()) // Generate in handler
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
@@ -49,6 +51,45 @@ namespace BlogHybrid.Application.Mappings
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
                 .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatorId, opt => opt.Ignore()) // Set in handler
+                .ForMember(dest => dest.MemberCount, opt => opt.Ignore())
+                .ForMember(dest => dest.PostCount, opt => opt.Ignore())
+                .ForMember(dest => dest.SortOrder, opt => opt.Ignore())
+                .ForMember(dest => dest.CategoryId, opt => opt.Ignore()) // Old single category FK
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true))
+                .ForMember(dest => dest.Creator, opt => opt.Ignore())
+                .ForMember(dest => dest.CommunityMembers, opt => opt.Ignore())
+                .ForMember(dest => dest.CommunityInvites, opt => opt.Ignore())
+                .ForMember(dest => dest.Posts, opt => opt.Ignore())
+                .ForMember(dest => dest.CommunityCategories, opt => opt.Ignore()); // Many-to-many
+
+            // UpdateCommunityCommand -> Community
+            CreateMap<UpdateCommunityCommand, Community>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Slug, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+                .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatorId, opt => opt.Ignore())
+                .ForMember(dest => dest.MemberCount, opt => opt.Ignore())
+                .ForMember(dest => dest.PostCount, opt => opt.Ignore())
+                .ForMember(dest => dest.SortOrder, opt => opt.Ignore())
+                .ForMember(dest => dest.CategoryId, opt => opt.Ignore()) // Old single category FK
+                .ForMember(dest => dest.Creator, opt => opt.Ignore())
+                .ForMember(dest => dest.CommunityMembers, opt => opt.Ignore())
+                .ForMember(dest => dest.CommunityInvites, opt => opt.Ignore())
+                .ForMember(dest => dest.Posts, opt => opt.Ignore())
+                .ForMember(dest => dest.CommunityCategories, opt => opt.Ignore()); // Many-to-many
+
+            // ========== DTO to Entity mappings ==========
+            CreateMap<CreateCommunityDto, Community>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Slug, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+                .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatorId, opt => opt.Ignore())
                 .ForMember(dest => dest.MemberCount, opt => opt.Ignore())
                 .ForMember(dest => dest.PostCount, opt => opt.Ignore())
                 .ForMember(dest => dest.SortOrder, opt => opt.Ignore())
@@ -74,14 +115,14 @@ namespace BlogHybrid.Application.Mappings
                 .ForMember(dest => dest.Posts, opt => opt.Ignore())
                 .ForMember(dest => dest.CommunityCategories, opt => opt.Ignore());
 
-            // CommunityMember mappings
+            // ========== CommunityMember mappings ==========
             CreateMap<CommunityMember, CommunityMemberDto>()
                 .ForMember(dest => dest.UserDisplayName, opt => opt.MapFrom(src => src.User.DisplayName))
                 .ForMember(dest => dest.UserProfileImageUrl, opt => opt.MapFrom(src => src.User.ProfileImageUrl))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()));
 
-            // Map Community -> CommunityDetailsDto
-            CreateMap<Domain.Entities.Community, CommunityDetailsDto>()
+            // ========== Community -> CommunityDetailsDto ==========
+            CreateMap<Community, CommunityDetailsDto>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src =>
                     src.CommunityCategories.FirstOrDefault() != null
                         ? src.CommunityCategories.FirstOrDefault()!.Category.Name

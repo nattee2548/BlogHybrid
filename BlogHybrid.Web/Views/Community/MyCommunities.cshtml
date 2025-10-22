@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "ชุมชนของฉัน";
+    var currentFilter = ViewBag.CurrentFilter as string;
 }
 
 <div class="my-communities-container">
@@ -15,6 +16,46 @@
             <a href="/create-community" class="btn-create-new">
                 <i class="bi bi-plus-lg"></i> สร้างชุมชนใหม่
             </a>
+        </div>
+    </div>
+    <div class="filter-section">
+        <div class="filter-tabs">
+            <a href="@Url.Action("MyCommunities")"
+               class="filter-tab @(string.IsNullOrEmpty(currentFilter) ? "active" : "")">
+                <i class="bi bi-grid-fill"></i>
+                <span>ทั้งหมด</span>
+                <span class="count-badge">@ViewBag.TotalCommunities</span>
+            </a>
+            <a href="@Url.Action("MyCommunities", new { filter = "owned" })"
+               class="filter-tab @(currentFilter == "owned" ? "active" : "")">
+                <i class="bi bi-star-fill"></i>
+                <span>ชุมชนของฉัน</span>
+                <span class="count-badge">@ViewBag.OwnedCount</span>
+            </a>
+            <a href="@Url.Action("MyCommunities", new { filter = "joined" })"
+               class="filter-tab @(currentFilter == "joined" ? "active" : "")">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>เข้าร่วมแล้ว</span>
+                <span class="count-badge">@ViewBag.JoinedCount</span>
+            </a>
+            <a href="@Url.Action("MyCommunities", new { filter = "pending" })"
+               class="filter-tab @(currentFilter == "pending" ? "active" : "")">
+                <i class="bi bi-clock-fill"></i>
+                <span>รออนุมัติ</span>
+                @if (ViewBag.PendingCount > 0)
+                {
+                    <span class="count-badge pending">@ViewBag.PendingCount</span>
+                }
+            </a>
+            @if (ViewBag.BannedCount > 0)
+            {
+                <a href="@Url.Action("MyCommunities", new { filter = "banned" })"
+                   class="filter-tab @(currentFilter == "banned" ? "active" : "")">
+                    <i class="bi bi-x-circle-fill"></i>
+                    <span>ถูกแบน</span>
+                    <span class="count-badge banned">@ViewBag.BannedCount</span>
+                </a>
+            }
         </div>
     </div>
 
@@ -774,6 +815,146 @@
         color: var(--text-secondary, #666);
         border: 1px solid var(--border-primary, #e5e7eb);
     }
+    /* Filter Section */
+    .filter-section {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-primary, #e5e7eb);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .filter-tabs {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        border: 2px solid var(--border-primary, #e5e7eb);
+        border-radius: 8px;
+        background: var(--bg-secondary, #f3f4f6);
+        color: var(--text-primary, #1a1a1a);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+        .filter-tab:hover {
+            background: var(--bg-hover, #e5e7eb);
+            border-color: var(--primary, #ff4500);
+            color: var(--primary, #ff4500);
+        }
+
+        .filter-tab.active {
+            background: var(--primary, #ff4500);
+            border-color: var(--primary, #ff4500);
+            color: white;
+        }
+
+        .filter-tab i {
+            font-size: 1rem;
+        }
+
+    .count-badge {
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        background: rgba(0, 0, 0, 0.1);
+        font-size: 0.75rem;
+        font-weight: 700;
+        min-width: 24px;
+        text-align: center;
+    }
+
+    .filter-tab.active .count-badge {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+    }
+
+    .count-badge.pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .count-badge.banned {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Badge Styles */
+    .badge-member {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-banned {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-role-moderator {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-role-admin {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    /* Action Buttons */
+    .btn-cancel {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+        .btn-cancel:hover {
+            background: #fbbf24;
+            color: white;
+        }
+
+    .btn-leave {
+        background: var(--bg-secondary, #f3f4f6);
+        color: var(--text-primary, #1a1a1a);
+    }
+
+        .btn-leave:hover {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+    .btn-banned {
+        background: #fee2e2;
+        color: #991b1b;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    /* Responsive */
+    @@media (max-width: 767px) {
+        .filter-tabs
+
+    {
+        flex-direction: column;
+    }
+
+    .filter-tab {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    }
+
 </style>
 
 <script>

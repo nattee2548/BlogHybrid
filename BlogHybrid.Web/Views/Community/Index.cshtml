@@ -125,20 +125,30 @@
                                     }
                                 </div>
 
-                                <div class="community-categories-list">
-                                    @if (community.Categories != null && community.Categories.Any())
-                                    {
-                                        foreach (var category in community.Categories.Take(3))
+                                <div class="community-info">
+                                    <h3 class="community-name">
+                                        <a asp-controller="Community"
+                                           asp-action="Details"
+                                           asp-route-communitySlug="@community.Slug">
+                                            @community.Name
+                                        </a>
+                                    </h3>
+                                    <div class="community-categories-list">
+                                        @if (community.Categories != null && community.Categories.Any())
                                         {
-                                            <span class="category-badge" style="background-color: @(category.CategoryColor)15; color: @category.CategoryColor; border: 1px solid @(category.CategoryColor)40;">
-                                                <i class="bi bi-tag-fill"></i> @category.CategoryName
-                                            </span>
+                                            foreach (var category in community.Categories.Take(3))
+                                            {
+                                                <span class="category-badge" style="background-color: @(category.CategoryColor)15; color: @category.CategoryColor; border: 1px solid @(category.CategoryColor)40;">
+                                                    <i class="bi bi-tag-fill"></i> @category.CategoryName
+                                                </span>
+                                            }
+
+                                            @if (community.Categories.Count() > 3)
+                                            {
+                                                <span class="category-badge-more">+@(community.Categories.Count() - 3) เพิ่มเติม</span>
+                                            }
                                         }
-                                        @if (community.Categories.Count > 3)
-                                        {
-                                            <span class="category-badge-more">+@(community.Categories.Count - 3)</span>
-                                        }
-                                    }
+                                    </div>
                                 </div>
                             </div>
 

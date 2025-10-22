@@ -1,0 +1,278 @@
+@model BlogHybrid.Web.Areas.Admin.Models.EditUserViewModel
+@{
+    ViewData["Title"] = "แก้ไขข้อมูลสมาชิก";
+}
+
+<!-- Toast Notifications -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-notification toast-success" id="successToast">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@TempData["SuccessMessage"]</span>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-notification toast-error" id="errorToast">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@TempData["ErrorMessage"]</span>
+    </div>
+}
+
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="toast-notification toast-info" id="infoToast">
+        <i class="bi bi-info-circle-fill"></i>
+        <span>@TempData["InfoMessage"]</span>
+    </div>
+}
+
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="toast-notification toast-warning" id="warningToast">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@TempData["WarningMessage"]</span>
+    </div>
+}
+
+<div class="admin-page-header">
+    <div>
+        <h1><i class="bi bi-pencil-square"></i> แก้ไขข้อมูลสมาชิก</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">สมาชิก</a></li>
+                <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.DisplayName</a></li>
+                <li class="breadcrumb-item active">แก้ไข</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h5 class="admin-card-title">แก้ไขข้อมูล</h5>
+            </div>
+            <div class="admin-card-body">
+                <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                    @Html.HiddenFor(m => m.Id)
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <!-- Account Information -->
+                    <h6 class="mb-3 text-primary">
+                        <i class="bi bi-shield-lock"></i> ข้อมูลบัญชี
+                    </h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="UserName" class="form-label"></label>
+                            <input asp-for="UserName" class="form-control" />
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DisplayName" class="form-label"></label>
+                        <input asp-for="DisplayName" class="form-control" />
+                        <span asp-validation-for="DisplayName" class="text-danger"></span>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Personal Information -->
+                    <h6 class="mb-3 text-primary">
+                        <i class="bi bi-person"></i> ข้อมูลส่วนตัว
+                    </h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="FirstName" class="form-label"></label>
+                            <input asp-for="FirstName" class="form-control" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="LastName" class="form-label"></label>
+                            <input asp-for="LastName" class="form-control" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber" class="form-control" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Bio" class="form-label"></label>
+                        <textarea asp-for="Bio" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Bio" class="text-danger"></span>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Account Status -->
+                    <h6 class="mb-3 text-primary">
+                        <i class="bi bi-gear"></i> สถานะบัญชี
+                    </h6>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label asp-for="IsActive" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="EmailConfirmed" class="form-check-input" />
+                            <label asp-for="EmailConfirmed" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> บันทึกการเปลี่ยนแปลง
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> ยกเลิก
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // Toast Auto-hide
+        document.addEventListener('DOMContentLoaded', function() {
+            const toasts = document.querySelectorAll('.toast-notification');
+            toasts.forEach(toast => {
+                setTimeout(() => {
+                    toast.classList.add('toast-show');
+                }, 100);
+
+                setTimeout(() => {
+                    toast.classList.remove('toast-show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 5000);
+            });
+        });
+
+        // Track form changes
+        let hasChanges = false;
+        const form = document.querySelector('form');
+        const originalData = new FormData(form);
+
+        form.addEventListener('input', function() {
+            hasChanges = true;
+        });
+
+        // Warn before leaving if there are unsaved changes
+        window.addEventListener('beforeunload', function(e) {
+            if (hasChanges) {
+                e.preventDefault();
+                e.returnValue = 'คุณมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก ต้องการออกจากหน้านี้หรือไม่?';
+            }
+        });
+
+        // Clear warning when form is submitted
+        form.addEventListener('submit', function() {
+            hasChanges = false;
+        });
+
+        // Email validation
+        document.querySelector('input[name="Email"]')?.addEventListener('blur', function() {
+            const email = this.value;
+            if (email) {               
+                const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+                if (!emailRegex.test(email)) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+            }
+        });
+
+        // Phone number validation (optional)
+        document.querySelector('input[name="PhoneNumber"]')?.addEventListener('input', function() {
+            // Remove non-numeric characters
+            this.value = this.value.replace(/[^\d-]/g, '');
+        });
+    </script>
+}
+
+<style>
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        min-width: 300px;
+        padding: 1rem 1.5rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 9999;
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s ease;
+    }
+
+    .toast-notification.toast-show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .toast-notification i {
+        font-size: 1.25rem;
+    }
+
+    .toast-success {
+        border-left: 4px solid #10b981;
+    }
+
+    .toast-success i {
+        color: #10b981;
+    }
+
+    .toast-error {
+        border-left: 4px solid #ef4444;
+    }
+
+    .toast-error i {
+        color: #ef4444;
+    }
+
+    .toast-info {
+        border-left: 4px solid #3b82f6;
+    }
+
+    .toast-info i {
+        color: #3b82f6;
+    }
+
+    .toast-warning {
+        border-left: 4px solid #f59e0b;
+    }
+
+    .toast-warning i {
+        color: #f59e0b;
+    }
+</style>

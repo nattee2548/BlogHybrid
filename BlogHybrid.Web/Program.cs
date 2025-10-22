@@ -123,7 +123,26 @@ builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
 });
 
 var app = builder.Build();
+// ========== AUTO SEED ROLES ==========
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        var context = services.GetRequiredService<ApplicationDbContext>();
 
+        await context.Database.MigrateAsync();
+        await BlogHybrid.Infrastructure.Data.Seeds.RoleSeeder.SeedRolesAsync(services);
+
+        logger.LogInformation("Roles seeded successfully.");
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Error seeding roles.");
+    }
+}
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {

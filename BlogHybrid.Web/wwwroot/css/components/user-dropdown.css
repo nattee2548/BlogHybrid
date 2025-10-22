@@ -1,0 +1,353 @@
+﻿/* ================================================
+   Modern User Dropdown - Redesigned
+   ================================================ */
+
+/* ========== User Menu Container ========== */
+.modern-user-menu {
+    position: relative;
+}
+
+/* ========== User Button ========== */
+.modern-user-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+    .modern-user-menu-btn:hover {
+        background: var(--bg-hover);
+        border-color: var(--border-primary);
+    }
+
+.modern-user-menu.active .modern-user-menu-btn {
+    background: var(--bg-hover);
+    border-color: var(--primary);
+}
+
+/* ========== User Avatar ========== */
+.modern-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--border-primary);
+    object-fit: cover;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease;
+}
+
+.modern-user-menu-btn:hover .modern-user-avatar,
+.modern-user-menu.active .modern-user-avatar {
+    border-color: var(--primary);
+}
+
+/* ========== User Info ========== */
+.modern-user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 100px;
+    max-width: 150px;
+}
+
+.modern-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.modern-user-email {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* ========== Chevron Icon ========== */
+.modern-user-chevron {
+    width: 18px;
+    height: 18px;
+    color: var(--text-tertiary);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.modern-user-menu.active .modern-user-chevron {
+    transform: rotate(180deg);
+}
+
+/* ========== Dropdown Menu ========== */
+.modern-user-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: 280px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+    .modern-user-dropdown.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+    }
+
+[data-theme="dark"] .modern-user-dropdown {
+    background: var(--card-bg);
+    border-color: var(--border-primary);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* ========== Dropdown Header ========== */
+.modern-user-dropdown-header {
+    padding: 20px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+    border-bottom: 1px solid var(--border-secondary);
+}
+
+[data-theme="dark"] .modern-user-dropdown-header {
+    background: linear-gradient(135deg, #ff4500 0%, #ff6b35 100%);
+}
+
+.modern-user-dropdown-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.modern-user-dropdown-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.modern-user-dropdown-email {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ========== Dropdown Body ========== */
+.modern-user-dropdown-body {
+    padding: 8px;
+}
+
+/* ========== Dropdown Item ========== */
+.modern-user-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+    position: relative;
+}
+
+    .modern-user-dropdown-item:hover {
+        background: var(--bg-hover);
+        color: var(--primary);
+        transform: translateX(4px);
+    }
+
+    .modern-user-dropdown-item:active {
+        transform: translateX(2px) scale(0.98);
+    }
+
+    .modern-user-dropdown-item i {
+        width: 20px;
+        height: 20px;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
+    }
+
+    .modern-user-dropdown-item:hover i {
+        transform: scale(1.1);
+    }
+
+    .modern-user-dropdown-item span {
+        flex: 1;
+    }
+
+/* ========== Dropdown Divider ========== */
+.modern-user-dropdown-divider {
+    height: 1px;
+    background: var(--border-secondary);
+    margin: 8px 12px;
+}
+
+/* ========== Logout Button (Danger Style) ========== */
+.modern-user-dropdown-logout {
+    color: #ef4444 !important;
+}
+
+    .modern-user-dropdown-logout:hover {
+        background: rgba(239, 68, 68, 0.1) !important;
+        color: #dc2626 !important;
+    }
+
+    .modern-user-dropdown-logout i {
+        color: #ef4444;
+    }
+
+[data-theme="dark"] .modern-user-dropdown-logout {
+    color: #fca5a5 !important;
+}
+
+    [data-theme="dark"] .modern-user-dropdown-logout:hover {
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #fecaca !important;
+    }
+
+/* ========== Settings Icon Style ========== */
+.modern-user-dropdown-item.settings {
+    color: var(--text-secondary);
+}
+
+    .modern-user-dropdown-item.settings:hover {
+        color: var(--primary);
+        background: var(--bg-hover);
+    }
+
+/* ========== Responsive ========== */
+@media (max-width: 991px) {
+    .modern-user-info {
+        display: none;
+    }
+
+    .modern-user-menu-btn {
+        padding: 6px;
+    }
+
+    .modern-user-dropdown {
+        min-width: 260px;
+    }
+}
+
+@media (max-width: 767px) {
+    .modern-user-dropdown {
+        right: -8px;
+        min-width: 280px;
+        max-width: calc(100vw - 32px);
+    }
+
+    .modern-user-dropdown-header {
+        padding: 16px;
+    }
+
+    .modern-user-dropdown-name {
+        font-size: 15px;
+    }
+
+    .modern-user-dropdown-email {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 575px) {
+    .modern-user-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .modern-user-dropdown {
+        position: fixed;
+        top: auto !important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        min-width: 100%;
+        border-radius: 16px 16px 0 0;
+        transform: translateY(100%) scale(1);
+    }
+
+        .modern-user-dropdown.active {
+            transform: translateY(0) scale(1);
+        }
+}
+
+/* ========== Animation Keyframes ========== */
+@keyframes dropdown-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ========== Accessibility ========== */
+.modern-user-dropdown-item:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+    .modern-user-dropdown-item:focus:not(:focus-visible) {
+        outline: none;
+    }
+
+/* ========== Loading State ========== */
+.modern-user-dropdown-item.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+    .modern-user-dropdown-item.loading::after {
+        content: '';
+        position: absolute;
+        right: 16px;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--border-primary);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

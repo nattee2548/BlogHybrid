@@ -24,8 +24,7 @@ namespace BlogHybrid.Web.Areas.Admin.Controllers
         public async Task<IActionResult> Index()
         {
             try
-            {
-                // ✅ ดึงข้อมูลสถิติจริงจาก database
+            {                
                 var query = new GetUserStatisticsQuery();
                 var stats = await _mediator.Send(query);
 

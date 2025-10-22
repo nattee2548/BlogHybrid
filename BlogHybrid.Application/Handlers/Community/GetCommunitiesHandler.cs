@@ -2,6 +2,7 @@
 using BlogHybrid.Application.DTOs.Community;
 using BlogHybrid.Application.Interfaces.Repositories;
 using BlogHybrid.Application.Queries.Community;
+using BlogHybrid.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -197,9 +198,24 @@ namespace BlogHybrid.Application.Handlers.Community
         {
             try
             {
-                var communities = await _unitOfWork.Communities.GetUserCommunitiesAsync(request.UserId, cancellationToken);
+                // ใช้ method ใหม่ที่รวมสถานะ
+                var communitiesWithStatus = await _unitOfWork.Communities
+                    .GetUserCommunitiesWithStatusAsync(request.UserId, cancellationToken);
 
-                var communityDtos = communities.Select(c => _mapper.Map<CommunityDto>(c)).ToList();
+                var communityDtos = new List<CommunityDto>();
+
+                foreach (var (community, status, role) in communitiesWithStatus)
+                {
+                    var dto = _mapper.Map<CommunityDto>(community);
+                    dto.MemberStatus = status;
+                    dto.MemberRole = role;
+                    dto.IsCreator = community.CreatorId == request.UserId;
+                    dto.IsCurrentUserMember = status == CommunityMemberStatus.Approved ||
+                                             status == CommunityMemberStatus.Creator;
+                    dto.CurrentUserRole = role;
+
+                    communityDtos.Add(dto);
+                }
 
                 return communityDtos;
             }
@@ -210,7 +226,6 @@ namespace BlogHybrid.Application.Handlers.Community
             }
         }
     }
-
     #endregion
 
     #region Get Popular Communities Handler

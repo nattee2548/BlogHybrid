@@ -8,6 +8,14 @@
 
 <div class="create-community-container">
     <div class="create-community-content">
+        <!-- Back Navigation -->
+        <div class="back-navigation">
+            <button onclick="goBack()" class="btn-back-nav">
+                <i class="bi bi-arrow-left-circle-fill"></i>
+                <span>กลับ</span>
+            </button>
+        </div>
+
         <!-- Header -->
         <div class="create-header">
             <h1>แก้ไขชุมชน</h1>
@@ -742,7 +750,23 @@
             }
         }, false);
     }
+       function goBack() {
+            // ตรวจสอบว่ามี history หรือไม่
+            if (document.referrer && document.referrer !== '') {
+                // มี referrer ให้ย้อนกลับ
+                window.history.back();
+            } else {
+                // ไม่มี referrer ให้ไปหน้า MyCommunities
+                window.location.href = '@Url.Action("MyCommunities", "Community")';
+            }
+        }
 
+        // ถ้า user กด browser back button
+        window.addEventListener('popstate', function(event) {
+            if (!document.referrer) {
+                window.location.href = '@Url.Action("MyCommunities", "Community")';
+            }
+        });
         // ========================================
     // Initialize on Page Load
     // ========================================
@@ -2339,6 +2363,84 @@
 
     .toggle-switch {
         align-self: flex-start;
+    }
+
+    }
+    /* เพิ่มใน style section ที่มีอยู่ */
+    .back-navigation {
+        padding: 1.5rem 0 1rem 0;
+    }
+
+    .btn-back-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, var(--primary, #ff4500) 0%, #ff6b35 100%);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: 700;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(255, 69, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .btn-back-nav::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff4500 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-back-nav:hover::before {
+            opacity: 1;
+        }
+
+        .btn-back-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 69, 0, 0.35);
+        }
+
+        .btn-back-nav:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(255, 69, 0, 0.3);
+        }
+
+        .btn-back-nav i,
+        .btn-back-nav span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-back-nav i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-back-nav:hover i {
+            transform: translateX(-3px);
+        }
+
+    /* Responsive */
+    @@media (max-width: 767px) {
+        .back-navigation
+
+    {
+        padding: 1rem 0 0.5rem 0;
+    }
+
+    .btn-back-nav {
+        width: 100%;
+        justify-content: center;
     }
 
     }

@@ -1,0 +1,144 @@
+@* ไฟล์: BlogHybrid.Web/Views/Shared/_Layout.cshtml *@
+@* แทนที่ส่วน User Dropdown ด้วยโค้ดนี้ *@
+
+@if (SignInManager.IsSignedIn(User))
+{
+    var currentUser = await UserManager.GetUserAsync(User);
+    var displayName = currentUser?.DisplayName ?? currentUser?.UserName ?? "User";
+
+    <!-- Modern User Menu -->
+    <div class="modern-user-menu" id="userMenu">
+        <!-- User Button -->
+        <button class="modern-user-menu-btn" type="button" onclick="toggleUserMenu()">
+            <img class="modern-user-avatar"
+                 src="@(!string.IsNullOrEmpty(currentUser?.ProfileImageUrl) ? currentUser.ProfileImageUrl : $"https://ui-avatars.com/api/?name={displayName}&background=ff4500&color=fff&bold=true&size=128")"
+                 alt="@displayName" />
+            
+            <div class="modern-user-info">
+                <span class="modern-user-name">@displayName</span>
+                @if (!string.IsNullOrEmpty(currentUser?.Email))
+                {
+                    <span class="modern-user-email">@currentUser.Email</span>
+                }
+            </div>
+            
+            <svg class="modern-user-chevron" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div class="modern-user-dropdown" id="userMenuDropdown">
+            <!-- Header with Gradient -->
+            <div class="modern-user-dropdown-header">
+                <div class="modern-user-dropdown-info">
+                    <p class="modern-user-dropdown-name">@displayName</p>
+                    @if (!string.IsNullOrEmpty(currentUser?.Email))
+                    {
+                        <p class="modern-user-dropdown-email">@currentUser.Email</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Body with Menu Items -->
+            <div class="modern-user-dropdown-body">
+                <!-- Profile -->
+                <a asp-area="User" asp-controller="Profile" asp-action="Index" 
+                   class="modern-user-dropdown-item">
+                    <i class="bi bi-person-circle"></i>
+                    <span>โปรไฟล์</span>
+                </a>
+
+                <!-- Communities (ถ้ามี) -->
+                <a asp-controller="Community" asp-action="MyCommunities" 
+                   class="modern-user-dropdown-item">
+                    <i class="bi bi-people"></i>
+                    <span>ชุมชนของฉัน</span>
+                </a>
+
+                <!-- Bookmarks/Saved Posts -->
+                <a href="#" class="modern-user-dropdown-item">
+                    <i class="bi bi-bookmark"></i>
+                    <span>รายการโปรด</span>
+                </a>
+
+                <div class="modern-user-dropdown-divider"></div>
+
+                <!-- Settings -->
+                <a href="#" class="modern-user-dropdown-item settings">
+                    <i class="bi bi-gear"></i>
+                    <span>ตั้งค่า</span>
+                </a>
+
+                <!-- Admin Panel (ถ้าเป็น Admin) -->
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" 
+                       class="modern-user-dropdown-item">
+                        <i class="bi bi-shield-check"></i>
+                        <span>แผงควบคุม Admin</span>
+                    </a>
+                }
+
+                <div class="modern-user-dropdown-divider"></div>
+
+                <!-- Logout -->
+                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="modern-user-dropdown-item modern-user-dropdown-logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>ออกจากระบบ</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Guest User Buttons -->
+    <button class="modern-btn-outline" onclick="openLoginModal()">
+        <i class="bi bi-box-arrow-in-right"></i>
+        <span class="modern-btn-text">เข้าสู่ระบบ</span>
+    </button>
+    <button class="modern-btn-primary" onclick="openRegisterModal()">
+        <i class="bi bi-person-plus"></i>
+        <span class="modern-btn-text">สมัครสมาชิก</span>
+    </button>
+}
+
+@* JavaScript *@
+<script>
+    // Toggle User Menu Dropdown
+    function toggleUserMenu() {
+        const userMenu = document.getElementById('userMenu');
+        const dropdown = document.getElementById('userMenuDropdown');
+        
+        userMenu.classList.toggle('active');
+        dropdown.classList.toggle('active');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const userMenu = document.getElementById('userMenu');
+        const dropdown = document.getElementById('userMenuDropdown');
+        
+        if (userMenu && dropdown && !userMenu.contains(event.target)) {
+            userMenu.classList.remove('active');
+            dropdown.classList.remove('active');
+        }
+    });
+
+    // Close dropdown on ESC key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const userMenu = document.getElementById('userMenu');
+            const dropdown = document.getElementById('userMenuDropdown');
+            
+            if (userMenu && dropdown) {
+                userMenu.classList.remove('active');
+                dropdown.classList.remove('active');
+            }
+        }
+    });
+</script>

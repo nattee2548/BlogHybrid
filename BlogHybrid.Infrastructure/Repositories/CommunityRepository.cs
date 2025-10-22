@@ -367,14 +367,91 @@ namespace BlogHybrid.Infrastructure.Repositories
 
         public async Task<List<Community>> GetUserCommunitiesAsync(string userId, CancellationToken cancellationToken = default)
         {
-            return await _context.Communities
+            // ดึงชุมชนที่เป็นเจ้าของ
+            var ownedCommunities = await _context.Communities
                 .Where(c => c.CreatorId == userId)
                 .Include(c => c.CommunityCategories)
                     .ThenInclude(cc => cc.Category)
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync(cancellationToken);
-        }
 
+            // ดึงชุมชนที่เป็นสมาชิก (approved และไม่ถูกแบน)
+            var memberCommunityIds = await _context.CommunityMembers
+                .Where(cm => cm.UserId == userId &&
+                             cm.IsApproved &&
+                             !cm.IsBanned &&
+                             cm.CommunityId != ownedCommunities.Select(c => c.Id).FirstOrDefault()) // ไม่รวมที่เป็นเจ้าของ
+                .Select(cm => cm.CommunityId)
+                .ToListAsync(cancellationToken);
+
+            var memberCommunities = await _context.Communities
+                .Where(c => memberCommunityIds.Contains(c.Id))
+                .Include(c => c.CommunityCategories)
+                    .ThenInclude(cc => cc.Category)
+                .ToListAsync(cancellationToken);
+
+            // รวมทั้ง 2 list และ sort
+            var allCommunities = ownedCommunities
+                .Concat(memberCommunities)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToList();
+
+            return allCommunities;
+        }
+        // เพิ่มใน CommunityRepository class
+        public async Task<List<(Community Community, CommunityMemberStatus Status, CommunityRole? Role)>>
+            GetUserCommunitiesWithStatusAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            var results = new List<(Community Community, CommunityMemberStatus Status, CommunityRole? Role)>();
+
+            // 1. ชุมชนที่เป็นเจ้าของ
+            var ownedCommunities = await _context.Communities
+                .Where(c => c.CreatorId == userId)
+                .Include(c => c.CommunityCategories)
+                    .ThenInclude(cc => cc.Category)
+                .ToListAsync(cancellationToken);
+
+            foreach (var community in ownedCommunities)
+            {
+                results.Add((community, CommunityMemberStatus.Creator, CommunityRole.Admin));
+            }
+
+            // 2. ชุมชนที่เป็นสมาชิก (ทุกสถานะ)
+            var memberships = await _context.CommunityMembers
+                .Where(cm => cm.UserId == userId &&
+                             !ownedCommunities.Select(c => c.Id).Contains(cm.CommunityId)) // ไม่รวมที่เป็นเจ้าของ
+                .Include(cm => cm.Community)
+                    .ThenInclude(c => c.CommunityCategories)
+                        .ThenInclude(cc => cc.Category)
+                .ToListAsync(cancellationToken);
+
+            foreach (var membership in memberships)
+            {
+                CommunityMemberStatus status;
+
+                if (membership.IsBanned)
+                {
+                    status = CommunityMemberStatus.Banned;
+                }
+                else if (!membership.IsApproved)
+                {
+                    status = CommunityMemberStatus.Pending;
+                }
+                else
+                {
+                    status = CommunityMemberStatus.Approved;
+                }
+
+                results.Add((membership.Community, status, membership.Role));
+            }
+
+            // Sort: Creator first, then Approved, then Pending, then Banned
+            // และเรียงตามวันที่สร้างล่าสุด
+            return results
+                .OrderBy(r => r.Status)
+                .ThenByDescending(r => r.Community.CreatedAt)
+                .ToList();
+        }
         public async Task<int> GetMemberCountAsync(int communityId, CancellationToken cancellationToken = default)
         {
             return await _context.CommunityMembers

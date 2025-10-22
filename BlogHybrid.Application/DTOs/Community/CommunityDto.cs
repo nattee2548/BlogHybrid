@@ -43,6 +43,9 @@ namespace BlogHybrid.Application.DTOs.Community
 
         // Full URL path (for frontend)
         public string FullSlug => $"{CategorySlug}/{Slug}";
+        public CommunityMemberStatus? MemberStatus { get; set; }
+        public CommunityRole? MemberRole { get; set; }
+        public bool IsCreator { get; set; }
     }
 
     // ✅ เพิ่ม class ใหม่สำหรับเก็บข้อมูลหมวดหมู่

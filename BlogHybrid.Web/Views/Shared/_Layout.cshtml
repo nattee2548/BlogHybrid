@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="~/css/modern/sidebar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/modern/homepage.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components/user-sidebar.css" asp-append-version="true" />
-
+    <link rel="stylesheet" href="~/css/components/user-dropdown.css" asp-append-version="true" />
     <!-- Responsive CSS -->
     <link rel="stylesheet" href="~/css/user-responsive.css" asp-append-version="true" />
 
@@ -95,60 +95,95 @@
 
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <!-- User Menu -->
-                    <div class="modern-user-menu">
-                        <button class="modern-user-btn" id="userMenuButton">
+                    <!-- ⭐ Modern User Menu (ปรับปรุงแล้ว) -->
+                    <div class="modern-user-menu" id="userMenu">
+                        <button class="modern-user-menu-btn" type="button" onclick="toggleUserMenu()">
                             @{
                                 var currentUser = await UserManager.GetUserAsync(User);
                                 var displayName = currentUser?.DisplayName ?? User.Identity?.Name ?? "User";
                             }
                             <img class="modern-user-avatar"
-                                 src="https://ui-avatars.com/api/?name=@displayName&background=random"
+                                 src="@(!string.IsNullOrEmpty(currentUser?.ProfileImageUrl) ? currentUser.ProfileImageUrl : $"https://ui-avatars.com/api/?name={displayName}&background=ff4500&color=fff&bold=true&size=128")"
                                  alt="@displayName" />
+
                             <div class="modern-user-info">
                                 <span class="modern-user-name">@displayName</span>
+                                @if (!string.IsNullOrEmpty(currentUser?.Email))
+                                {
+                                    <span class="modern-user-email">@currentUser.Email</span>
+                                }
                             </div>
+
                             <svg class="modern-user-chevron" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                             </svg>
                         </button>
 
-                        <!-- User Dropdown -->
+                        <!-- Dropdown Menu -->
                         <div class="modern-user-dropdown" id="userMenuDropdown">
+                            <!-- Header with Gradient -->
                             <div class="modern-user-dropdown-header">
                                 <div class="modern-user-dropdown-info">
                                     <p class="modern-user-dropdown-name">@displayName</p>
-                                    <p class="modern-user-dropdown-email">@currentUser?.Email</p>
+                                    @if (!string.IsNullOrEmpty(currentUser?.Email))
+                                    {
+                                        <p class="modern-user-dropdown-email">@currentUser.Email</p>
+                                    }
                                 </div>
                             </div>
-                            <div class="modern-user-dropdown-divider"></div>
-                            <a asp-area="User" asp-controller="Profile" asp-action="Index" class="modern-user-dropdown-item">
-                                <i class="bi bi-person"></i>
-                                <span>โปรไฟล์</span>
-                            </a>
-                            <a class="dropdown-item" href="/my-communities">
-                                <i class="bi bi-collection"></i> ชุมชนของฉัน
-                            </a>
-                            <a asp-area="User" asp-controller="Settings" asp-action="Index" class="modern-user-dropdown-item">
-                                <i class="bi bi-gear"></i>
-                                <span>ตั้งค่า</span>
-                            </a>
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <div class="modern-user-dropdown-divider"></div>
-                                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="modern-user-dropdown-item">
-                                    <i class="bi bi-shield-check"></i>
-                                    <span>แอดมิน</span>
+
+                            <!-- Body with Menu Items -->
+                            <div class="modern-user-dropdown-body">
+                                <!-- Profile -->
+                                <a asp-area="User" asp-controller="Profile" asp-action="Index"
+                                   class="modern-user-dropdown-item">
+                                    <i class="bi bi-person-circle"></i>
+                                    <span>โปรไฟล์</span>
                                 </a>
-                            }
-                            <div class="modern-user-dropdown-divider"></div>
-                            <form asp-controller="Account" asp-action="Logout" method="post" style="margin: 0;">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="modern-user-dropdown-item modern-user-dropdown-logout">
-                                    <i class="bi bi-box-arrow-right"></i>
-                                    <span>ออกจากระบบ</span>
-                                </button>
-                            </form>
+
+                                <!-- Communities -->
+                                <a asp-controller="Community" asp-action="MyCommunities"
+                                   class="modern-user-dropdown-item">
+                                    <i class="bi bi-people"></i>
+                                    <span>ชุมชนของฉัน</span>
+                                </a>
+
+                                <!-- Bookmarks -->
+                                <a href="#" class="modern-user-dropdown-item">
+                                    <i class="bi bi-bookmark"></i>
+                                    <span>รายการโปรด</span>
+                                </a>
+
+                                <div class="modern-user-dropdown-divider"></div>
+
+                                <!-- Settings -->
+                                <a asp-area="User" asp-controller="Settings" asp-action="Index"
+                                   class="modern-user-dropdown-item settings">
+                                    <i class="bi bi-gear"></i>
+                                    <span>ตั้งค่า</span>
+                                </a>
+
+                                <!-- Admin Panel -->
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+                                       class="modern-user-dropdown-item">
+                                        <i class="bi bi-shield-check"></i>
+                                        <span>แผงควบคุม Admin</span>
+                                    </a>
+                                }
+
+                                <div class="modern-user-dropdown-divider"></div>
+
+                                <!-- Logout -->
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="modern-user-dropdown-item modern-user-dropdown-logout">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                        <span>ออกจากระบบ</span>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 }
@@ -214,24 +249,40 @@
             showToast('ฟีเจอร์กำลังพัฒนา กรุณารอติดตาม!', 'info');
         }
 
-        // User Menu Dropdown Toggle
+        // ⭐ Toggle User Menu Dropdown (ปรับปรุงแล้ว)
+        function toggleUserMenu() {
+            const userMenu = document.getElementById('userMenu');
+            const dropdown = document.getElementById('userMenuDropdown');
+
+            userMenu.classList.toggle('active');
+            dropdown.classList.toggle('active');
+        }
+
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            const userMenuButton = document.getElementById('userMenuButton');
-            const userMenuDropdown = document.getElementById('userMenuDropdown');
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const userMenu = document.getElementById('userMenu');
+                const dropdown = document.getElementById('userMenuDropdown');
 
-            if (userMenuButton && userMenuDropdown) {
-                userMenuButton.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    userMenuDropdown.classList.toggle('active');
-                });
+                if (userMenu && dropdown && !userMenu.contains(event.target)) {
+                    userMenu.classList.remove('active');
+                    dropdown.classList.remove('active');
+                }
+            });
 
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
-                        userMenuDropdown.classList.remove('active');
+            // Close dropdown on ESC key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    const userMenu = document.getElementById('userMenu');
+                    const dropdown = document.getElementById('userMenuDropdown');
+
+                    if (userMenu && dropdown) {
+                        userMenu.classList.remove('active');
+                        dropdown.classList.remove('active');
                     }
-                });
-            }
+                }
+            });
 
             // Auto-hide toast notifications
             const toasts = document.querySelectorAll('.toast-notification');

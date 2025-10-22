@@ -29,7 +29,7 @@
                      class="profile-avatar" />
                 <div class="profile-info">
                     <h4 class="profile-name">@User.Identity.Name</h4>
-                    <p class="profile-username">@@(User.Identity.Name?.ToLower().Replace(" ", ""))</p>
+                    <p class="profile-username">@(User.Identity.Name?.ToLower().Replace(" ", ""))</p>
                 </div>
             </div>
             <div class="profile-stats">

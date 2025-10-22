@@ -1,0 +1,417 @@
+@model BlogHybrid.Web.Areas.Admin.Models.UsersListViewModel
+@{
+    ViewData["Title"] = "จัดการสมาชิก";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h1><i class="bi bi-person-badge"></i> จัดการสมาชิก</h1>
+        <p class="text-muted">จัดการบัญชีสมาชิกทั่วไปในระบบ</p>
+    </div>
+    <div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> เพิ่มสมาชิกใหม่
+        </a>
+    </div>
+</div>
+
+<!-- Toast Notifications -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-notification toast-success" id="successToast">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@TempData["SuccessMessage"]</span>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-notification toast-error" id="errorToast">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@TempData["ErrorMessage"]</span>
+    </div>
+}
+
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="toast-notification toast-info" id="infoToast">
+        <i class="bi bi-info-circle-fill"></i>
+        <span>@TempData["InfoMessage"]</span>
+    </div>
+}
+
+<!-- Search & Filter -->
+<div class="admin-card mb-4">
+    <div class="admin-card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text"
+                           class="form-control"
+                           name="search"
+                           value="@Model.SearchTerm"
+                           placeholder="ค้นหาด้วยชื่อ, อีเมล, หรือชื่อผู้ใช้...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" name="status">
+                    <option value="all" selected="@(Model.StatusFilter == "all")">สถานะทั้งหมด</option>
+                    <option value="active" selected="@(Model.StatusFilter == "active")">ใช้งานปกติ</option>
+                    <option value="inactive" selected="@(Model.StatusFilter == "inactive")">ปิดใช้งาน</option>
+                    <option value="pending" selected="@(Model.StatusFilter == "pending")">รอยืนยันอีเมล</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> ค้นหา
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-primary">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">สมาชิกทั้งหมด</div>
+                <div class="stat-value">@Model.TotalCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-success">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">ใช้งานปกติ</div>
+                <div class="stat-value">@Model.Users.Count(u => u.IsActive && u.EmailConfirmed)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-warning">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">รอยืนยันอีเมล</div>
+                <div class="stat-value">@Model.Users.Count(u => u.IsActive && !u.EmailConfirmed)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="admin-stat-card">
+            <div class="stat-icon bg-danger">
+                <i class="bi bi-x-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">ปิดใช้งาน</div>
+                <div class="stat-value">@Model.Users.Count(u => !u.IsActive)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="admin-card">
+    <div class="admin-card-body">
+        @if (!Model.Users.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-3">ไม่พบข้อมูลสมาชิก</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table admin-table">
+                    <thead>
+                        <tr>
+                            <th>สมาชิก</th>
+                            <th>อีเมล</th>
+                            <th>สถานะ</th>
+                            <th>ยืนยันอีเมล</th>
+                            <th>สมัครเมื่อ</th>
+                            <th>เข้าใช้ล่าสุด</th>
+                            <th>กิจกรรม</th>
+                            <th class="text-end">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar">
+                                            @if (!string.IsNullOrEmpty(user.FullName))
+                                            {
+                                                <span>@user.FullName.Substring(0, 1).ToUpper()</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@user.DisplayName.Substring(0, 1).ToUpper()</span>
+                                            }
+                                        </div>
+                                        <div class="ms-3">
+                                            <div class="fw-semibold">@user.DisplayName</div>
+                                            <div class="text-muted small">@("@" + user.UserName)</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted">@user.Email</span>
+                                </td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> ใช้งาน
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-x-circle"></i> ปิดใช้งาน
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.EmailConfirmed)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-patch-check"></i> ยืนยันแล้ว
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-clock"></i> รอยืนยัน
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="text-muted small">
+                                        @user.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (user.LastLoginAt.HasValue)
+                                    {
+                                        <span class="text-muted small">
+                                            @user.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <span class="badge bg-primary" title="โพสต์">
+                                            <i class="bi bi-file-text"></i> @user.PostCount
+                                        </span>
+                                        <span class="badge bg-info" title="ความคิดเห็น">
+                                            <i class="bi bi-chat"></i> @user.CommentCount
+                                        </span>
+                                        <span class="badge bg-secondary" title="ชุมชน">
+                                            <i class="bi bi-people"></i> @user.CommunityCount
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <a asp-action="Details" asp-route-id="@user.Id"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="รายละเอียด">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@user.Id"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="แก้ไข">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmDelete('@user.Id', '@user.DisplayName')"
+                                                title="ลบ">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@(Model.PageNumber - 1)"
+                               asp-route-search="@Model.SearchTerm"
+                               asp-route-status="@Model.StatusFilter">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@i"
+                                   asp-route-search="@Model.SearchTerm"
+                                   asp-route-status="@Model.StatusFilter">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@(Model.PageNumber + 1)"
+                               asp-route-search="@Model.SearchTerm"
+                               asp-route-status="@Model.StatusFilter">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    ยืนยันการลบ
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-trash" style="font-size: 3rem; color: var(--bs-danger);"></i>
+                </div>
+                <p class="mb-2">คุณแน่ใจหรือไม่ที่จะลบสมาชิก</p>
+                <p class="fw-bold mb-3" id="deleteUserName"></p>
+                <div class="alert alert-danger text-start">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>คำเตือน:</strong> การดำเนินการนี้ไม่สามารถย้อนกลับได้
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> ยกเลิก
+                </button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> ลบ
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Toast Auto-hide
+    document.addEventListener('DOMContentLoaded', function() {
+        const toasts = document.querySelectorAll('.toast-notification');
+        toasts.forEach(toast => {
+            setTimeout(() => {
+                toast.classList.add('toast-show');
+            }, 100);
+
+            setTimeout(() => {
+                toast.classList.remove('toast-show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        });
+    });
+
+    // Delete Confirmation
+    function confirmDelete(userId, userName) {
+        document.getElementById('deleteUserName').textContent = userName;
+        document.getElementById('deleteForm').action = '/Admin/Users/Delete/' + userId;
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+    }
+</script>
+
+<style>
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        min-width: 300px;
+        padding: 1rem 1.5rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 9999;
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s ease;
+    }
+
+    .toast-notification.toast-show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .toast-notification i {
+        font-size: 1.25rem;
+    }
+
+    .toast-success {
+        border-left: 4px solid #10b981;
+    }
+
+    .toast-success i {
+        color: #10b981;
+    }
+
+    .toast-error {
+        border-left: 4px solid #ef4444;
+    }
+
+    .toast-error i {
+        color: #ef4444;
+    }
+
+    .toast-info {
+        border-left: 4px solid #3b82f6;
+    }
+
+    .toast-info i {
+        color: #3b82f6;
+    }
+</style>
+}

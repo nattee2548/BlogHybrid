@@ -71,6 +71,7 @@ namespace BlogHybrid.Application.Interfaces.Repositories
         /// นับจำนวนสมาชิกที่รออนุมัติ (IsApproved = false และ IsBanned = false)
         /// </summary>
         Task<int> GetPendingMembersCountAsync(int communityId, CancellationToken cancellationToken = default);
-
+        Task<List<(Community Community, CommunityMemberStatus Status, CommunityRole? Role)>>
+    GetUserCommunitiesWithStatusAsync(string userId, CancellationToken cancellationToken = default);
     }
 }
