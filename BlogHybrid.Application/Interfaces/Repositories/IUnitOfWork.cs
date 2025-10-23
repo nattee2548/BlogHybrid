@@ -13,6 +13,7 @@ namespace BlogHybrid.Application.Interfaces.Repositories
         IUserRepository Users { get; }
         ITagRepository Tags { get; }
         ICommunityRepository Communities { get; }
+        IPostRepository Posts { get; }
         DbContext DbContext { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync(CancellationToken cancellationToken = default);

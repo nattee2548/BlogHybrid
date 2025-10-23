@@ -20,7 +20,7 @@ namespace BlogHybrid.Infrastructure.Repositories
         private IUserRepository? _users;
         private ITagRepository? _tags;
         private ICommunityRepository? _communities;
-
+        private IPostRepository? _posts;
         public UnitOfWork(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
@@ -64,6 +64,14 @@ namespace BlogHybrid.Infrastructure.Repositories
             {
                 _tags ??= new TagRepository(_context);
                 return _tags;
+            }
+        }
+        public IPostRepository Posts
+        {
+            get
+            {
+                _posts ??= new PostRepository(_context);
+                return _posts;
             }
         }
         // Transaction methods

@@ -1,0 +1,417 @@
+@model BlogHybrid.Web.Models.Post.CreatePostViewModel
+@{
+    ViewData["Title"] = "สร้างโพสต์";
+}
+
+<!-- Toast Notification (ถ้ามี error) -->
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="toast-notification toast-error" id="errorToast" style="display: none;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@ViewBag.ErrorMessage</span>
+    </div>
+}
+
+<div class="create-post-container">
+    <div class="create-post-content">
+        <!-- Header -->
+        <div class="create-header">
+            <h1><i class="bi bi-plus-circle-fill"></i> สร้างโพสต์ใหม่</h1>
+            <button type="button" onclick="window.history.back()" class="btn-close-page">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form asp-action="Create" method="post" class="create-post-form" id="createPostForm">
+            @Html.AntiForgeryToken()
+            
+            <!-- Hidden fields -->
+            <input type="hidden" asp-for="IsFromCommunity" />
+            <input type="hidden" asp-for="CommunityName" />
+
+            <!-- Validation Summary -->
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <!-- Main Form Content -->
+            <div class="form-sections">
+                
+                <!-- Left Column: Main Content -->
+                <div class="form-main">
+                    
+                    <!-- Title -->
+                    <div class="form-group">
+                        <label asp-for="Title" class="form-label required">หัวข้อโพสต์</label>
+                        <input asp-for="Title" 
+                               class="form-control form-control-lg" 
+                               placeholder="เช่น วิธีการทำ... แนะนำ... รีวิว..."
+                               maxlength="200" 
+                               required />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                        <p class="form-help">หัวข้อที่ดีควรชัดเจน น่าสนใจ และสื่อความหมาย (3-200 ตัวอักษร)</p>
+                    </div>
+
+                    <!-- Content Editor -->
+                    <div class="form-group">
+                        <label asp-for="Content" class="form-label required">เนื้อหาโพสต์</label>
+                        
+                        <!-- Hidden textarea for form submission -->
+                        <textarea asp-for="Content" 
+                                  id="contentTextarea"
+                                  style="display: none;"></textarea>
+                        
+                        <!-- Quill Rich Text Editor -->
+                        <div id="quillEditorContainer"
+                             data-quill-editor
+                             data-textarea="contentTextarea"
+                             data-min-length="10"
+                             data-max-length="50000"
+                             data-placeholder="เขียนเนื้อหาของคุณที่นี่...&#13;&#13;ใช้ Toolbar ด้านบนเพื่อจัดรูปแบบข้อความ"
+                             data-upload-url="/api/upload-image"
+                             data-upload-folder="posts/content">
+                        </div>
+                        
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                        <p class="form-help">เนื้อหาต้องมีความยาวอย่างน้อย 10 ตัวอักษร | รองรับ Rich Text และอัปโหลดรูปภาพ</p>
+                    </div>
+
+                    <!-- Excerpt (Optional) -->
+                    <div class="form-group">
+                        <label asp-for="Excerpt" class="form-label">
+                            คำอธิบายย่อ <span class="optional-text">(ไม่บังคับ)</span>
+                        </label>
+                        <textarea asp-for="Excerpt" 
+                                  class="form-control form-textarea" 
+                                  rows="3"
+                                  maxlength="500"
+                                  placeholder="สรุปเนื้อหาสั้นๆ สำหรับแสดงในหน้ารายการ (ถ้าไม่ระบุจะสร้างอัตโนมัติ)"></textarea>
+                        <span asp-validation-for="Excerpt" class="text-danger"></span>
+                        <p class="form-help">สูงสุด 500 ตัวอักษร</p>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="form-group">
+                        <label asp-for="Tags" class="form-label">
+                            แท็ก <span class="optional-text">(ไม่บังคับ)</span>
+                        </label>
+                        
+                        <!-- Hidden input for form submission -->
+                        <input type="hidden" asp-for="Tags" id="tagsHiddenInput" />
+                        
+                        <!-- Modern Tag Input Component -->
+                        <div id="tagInputContainer" 
+                             data-tag-input
+                             data-input="tagsHiddenInput"
+                             data-max-tags="10"
+                             data-colorful="true"
+                             data-placeholder="Type and press Enter or Comma to add..."
+                             data-popular-tags='["programming", "javascript", "tutorial", "react", "python", "web", "mobile", "design"]'>
+                        </div>
+                        
+                        <span asp-validation-for="Tags" class="text-danger"></span>
+                        <p class="form-help">แท็กช่วยให้ผู้อื่นค้นหาโพสต์ของคุณได้ง่ายขึ้น (สูงสุด 10 แท็ก)</p>
+                    </div>
+
+                </div>
+
+                <!-- Right Sidebar: Settings -->
+                <aside class="form-sidebar">
+                    
+                    <!-- Category & Community Selection Card -->
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-title">
+                            <i class="bi bi-folder-fill"></i> หมวดหมู่และชุมชน
+                        </h3>
+                        <p class="sidebar-description">
+                            <i class="bi bi-info-circle"></i> 
+                            กรุณาเลือกอย่างน้อย 1 อย่าง
+                        </p>
+
+                        <!-- Hidden inputs -->
+                        <input type="hidden" asp-for="CategoryId" id="categoryIdInput" />
+                        <input type="hidden" asp-for="CommunityId" id="communityIdInput" />
+
+                        <!-- Category Selector Button -->
+                        <div class="form-group">
+                            <label class="form-label">หมวดหมู่</label>
+                            <button type="button" class="selector-btn" onclick="openCategoryModal()">
+                                <i class="bi bi-folder"></i>
+                                <span id="categoryDisplay">เลือกหมวดหมู่</span>
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Community Selector Button -->
+                        @if (!Model.IsFromCommunity)
+                        {
+                            <div class="form-group">
+                                <label class="form-label">ชุมชน</label>
+                                <button type="button" class="selector-btn" onclick="openCommunityModal()">
+                                    <i class="bi bi-people"></i>
+                                    <span id="communityDisplay">เลือกชุมชน</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                                <span asp-validation-for="CommunityId" class="text-danger"></span>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Community Locked Display -->
+                            <div class="form-group">
+                                <label class="form-label">ชุมชน</label>
+                                <div class="community-locked">
+                                    <i class="bi bi-people-fill"></i>
+                                    <span>@Model.CommunityName</span>
+                                    <i class="bi bi-lock-fill"></i>
+                                </div>
+                                <p class="form-help">โพสต์นี้จะถูกสร้างในชุมชน <strong>@Model.CommunityName</strong></p>
+                            </div>
+                        }
+
+                        <!-- Validation Message -->
+                        <div class="validation-message" id="selectionValidation" style="display: none;">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span>กรุณาเลือกหมวดหมู่ หรือ ชุมชน</span>
+                        </div>
+                    </div>
+
+                    <!-- Featured Image Card -->
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-title">
+                            <i class="bi bi-image-fill"></i> รูปภาพประกอบ
+                        </h3>
+                        
+                        <!-- Hidden field for URL -->
+                        <input type="hidden" asp-for="FeaturedImageUrl" id="featuredImageUrlInput" />
+
+                        <!-- Custom Upload Button -->
+                        <div class="custom-file-upload">
+                            <input type="file"
+                                   name="FeaturedImageFile"
+                                   class="file-input-hidden"
+                                   accept="image/*"
+                                   id="featuredImageFileInput" />
+
+                            <label for="featuredImageFileInput" class="file-upload-label">
+                                <div class="file-upload-icon">
+                                    <i class="bi bi-cloud-upload"></i>
+                                </div>
+                                <div class="file-upload-text">
+                                    <span class="upload-title">คลิกเพื่ออัปโหลดรูปภาพ</span>
+                                    <span class="upload-subtitle">หรือลากไฟล์มาวางที่นี่</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <small class="form-help">JPG, PNG, GIF, WebP (สูงสุด 5MB)</small>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" class="image-preview-box" style="display: none;">
+                            <div class="preview-header">
+                                <span class="preview-label">
+                                    <i class="bi bi-image"></i> ตัวอย่างรูปภาพ
+                                </span>
+                            </div>
+                            <img id="previewImage" src="#" alt="Preview" />
+                            <button type="button" class="btn-remove-image" onclick="removeImage()">
+                                <i class="bi bi-trash"></i> ลบรูป
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Publish Settings Card -->
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-title">
+                            <i class="bi bi-gear-fill"></i> การตั้งค่า
+                        </h3>
+
+                        <div class="form-check-group">
+                            <div class="form-check">
+                                <input asp-for="IsPublished" 
+                                       class="form-check-input" 
+                                       type="checkbox" 
+                                       id="isPublished" />
+                                <label class="form-check-label" for="isPublished">
+                                    <i class="bi bi-eye-fill"></i> เผยแพร่ทันที
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input asp-for="IsFeatured" 
+                                       class="form-check-input" 
+                                       type="checkbox" 
+                                       id="isFeatured" />
+                                <label class="form-check-label" for="isFeatured">
+                                    <i class="bi bi-star-fill"></i> โพสต์แนะนำ
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                </aside>
+
+            </div>
+
+            <!-- Submit Buttons (ด้านล่างของฟอร์ม) -->
+            <div class="form-actions-bottom">
+                <button type="submit" class="btn btn-primary btn-create">
+                    <i class="bi bi-check-circle-fill"></i> สร้างโพสต์
+                </button>
+                <button type="button" onclick="window.history.back()" class="btn btn-secondary btn-cancel">
+                    <i class="bi bi-x-circle-fill"></i> ยกเลิก
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Category Selection Modal -->
+<div class="selector-modal" id="categoryModal">
+    <div class="selector-modal-overlay" onclick="closeCategoryModal()"></div>
+    <div class="selector-modal-content">
+        <div class="selector-modal-header">
+            <h3>เลือกหมวดหมู่</h3>
+            <button type="button" class="selector-modal-close" onclick="closeCategoryModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="selector-modal-body">
+            <!-- Search Box -->
+            <div class="selector-search">
+                <i class="bi bi-search"></i>
+                <input type="text"
+                       id="categorySearchInput"
+                       placeholder="ค้นหาหมวดหมู่..."
+                       oninput="searchCategories(this.value)" />
+                <button type="button" onclick="clearCategorySearch()" class="search-clear">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+
+            <!-- Categories List -->
+            <div class="selector-list" id="categoryList">
+                @foreach (var parent in Model.Categories.Where(c => c.ParentCategoryId == null))
+                {
+                    <div class="selector-group">
+                        <button type="button" 
+                                class="selector-item parent"
+                                data-id="@parent.Id"
+                                data-name="@parent.Name"
+                                onclick="selectCategory(@parent.Id, '@parent.Name')">
+                            <div class="selector-item-icon" style="background: @parent.Color">
+                                <i class="bi bi-folder-fill"></i>
+                            </div>
+                            <span>@parent.Name</span>
+                            <i class="bi bi-check-circle-fill selector-check"></i>
+                        </button>
+                        
+                        @if (Model.Categories.Any(c => c.ParentCategoryId == parent.Id))
+                        {
+                            <div class="selector-children">
+                                @foreach (var child in Model.Categories.Where(c => c.ParentCategoryId == parent.Id))
+                                {
+                                    <button type="button"
+                                            class="selector-item child"
+                                            data-id="@child.Id"
+                                            data-name="@child.Name"
+                                            data-parent="@parent.Name"
+                                            onclick="selectCategory(@child.Id, '@child.Name', '@parent.Name')">
+                                        <div class="selector-item-icon" style="background: @child.Color">
+                                            <i class="bi bi-folder"></i>
+                                        </div>
+                                        <span>@child.Name</span>
+                                        <i class="bi bi-check-circle-fill selector-check"></i>
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Community Selection Modal -->
+<div class="selector-modal" id="communityModal">
+    <div class="selector-modal-overlay" onclick="closeCommunityModal()"></div>
+    <div class="selector-modal-content">
+        <div class="selector-modal-header">
+            <h3>เลือกชุมชน</h3>
+            <button type="button" class="selector-modal-close" onclick="closeCommunityModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="selector-modal-body">
+            <!-- Search Box -->
+            <div class="selector-search">
+                <i class="bi bi-search"></i>
+                <input type="text"
+                       id="communitySearchInput"
+                       placeholder="ค้นหาชุมชน..."
+                       oninput="searchCommunities(this.value)" />
+                <button type="button" onclick="clearCommunitySearch()" class="search-clear">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+
+            <!-- Communities List -->
+            <div class="selector-list" id="communityList">
+                @foreach (var community in Model.Communities)
+                {
+                    <button type="button"
+                            class="selector-item"
+                            data-id="@community.Id"
+                            data-name="@community.Name"
+                            onclick="selectCommunity(@community.Id, '@community.Name')">
+                        @if (!string.IsNullOrEmpty(community.ImageUrl))
+                        {
+                            <img src="@community.ImageUrl" alt="@community.Name" class="selector-item-avatar" />
+                        }
+                        else
+                        {
+                            <div class="selector-item-icon">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                        }
+                        <div class="selector-item-content">
+                            <span class="selector-item-name">
+                                @community.Name
+                                @if (community.IsPrivate)
+                                {
+                                    <i class="bi bi-lock-fill" style="font-size: 0.75rem; opacity: 0.6;"></i>
+                                }
+                            </span>
+                            <span class="selector-item-meta">@community.MemberCount สมาชิก</span>
+                        </div>
+                        <i class="bi bi-check-circle-fill selector-check"></i>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <!-- Quill CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="~/css/post-create.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/tag-input.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/quill-editor.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <!-- Quill JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="~/js/quill-editor.js" asp-append-version="true"></script>
+    <script src="~/js/tag-input.js" asp-append-version="true"></script>
+    <script src="~/js/post-create.js" asp-append-version="true"></script>
+}

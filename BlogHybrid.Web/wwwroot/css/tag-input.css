@@ -1,0 +1,480 @@
+﻿/* ================================================
+   Modern Tag Input Component
+   Interactive tag pills with autocomplete
+   ================================================ */
+
+/* ========================================
+   Tag Input Container
+   ======================================== */
+.tag-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.tag-input-wrapper {
+    min-height: 100px;
+    padding: 0.75rem;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    cursor: text;
+    transition: all var(--transition-base);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+    .tag-input-wrapper:hover {
+        border-color: var(--primary);
+    }
+
+    .tag-input-wrapper.focused {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .tag-input-wrapper.error {
+        border-color: var(--danger);
+    }
+
+        .tag-input-wrapper.error.focused {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+/* ========================================
+   Tag Pills
+   ======================================== */
+.tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--primary);
+    color: white;
+    border-radius: 9999px;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    animation: tagSlideIn 0.2s ease;
+    max-width: 200px;
+}
+
+@keyframes tagSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.tag-pill-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tag-pill-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    flex-shrink: 0;
+}
+
+    .tag-pill-remove:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    .tag-pill-remove i {
+        font-size: 0.625rem;
+    }
+
+/* Color variants for different tags (optional) */
+.tag-pill.variant-1 {
+    background: #3b82f6;
+}
+
+.tag-pill.variant-2 {
+    background: #10b981;
+}
+
+.tag-pill.variant-3 {
+    background: #f59e0b;
+}
+
+.tag-pill.variant-4 {
+    background: #ef4444;
+}
+
+.tag-pill.variant-5 {
+    background: #8b5cf6;
+}
+
+.tag-pill.variant-6 {
+    background: #ec4899;
+}
+
+/* ========================================
+   Tag Input Field
+   ======================================== */
+.tag-input-field {
+    flex: 1;
+    min-width: 150px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    padding: 0.5rem 0;
+}
+
+    .tag-input-field::placeholder {
+        color: var(--text-tertiary);
+    }
+
+/* ========================================
+   Tag Counter & Helper
+   ======================================== */
+.tag-input-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+}
+
+.tag-counter {
+    font-weight: var(--font-medium);
+}
+
+    .tag-counter.warning {
+        color: var(--warning);
+    }
+
+    .tag-counter.error {
+        color: var(--danger);
+    }
+
+.tag-helper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    .tag-helper i {
+        font-size: 0.875rem;
+    }
+
+/* ========================================
+   Tag Suggestions (Autocomplete)
+   ======================================== */
+.tag-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.5rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+}
+
+    .tag-suggestions.active {
+        display: block;
+        animation: suggestionSlideIn 0.2s ease;
+    }
+
+@keyframes suggestionSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tag-suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--border-secondary);
+}
+
+    .tag-suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    .tag-suggestion-item:hover,
+    .tag-suggestion-item.highlighted {
+        background: var(--primary-light);
+    }
+
+.tag-suggestion-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.tag-suggestion-content {
+    flex: 1;
+}
+
+.tag-suggestion-name {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-primary);
+}
+
+.tag-suggestion-count {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+
+/* ========================================
+   Empty State
+   ======================================== */
+.tag-input-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    text-align: center;
+}
+
+    .tag-input-empty i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.5;
+    }
+
+/* ========================================
+   Keyboard Hints
+   ======================================== */
+.tag-keyboard-hints {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+
+.tag-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+    .tag-hint kbd {
+        padding: 0.125rem 0.375rem;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        border-radius: var(--radius-sm);
+        font-family: monospace;
+        font-size: 0.75rem;
+    }
+
+/* ========================================
+   Loading State
+   ======================================== */
+.tag-input-loading {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-primary);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
+/* ========================================
+   Popular Tags Section
+   ======================================== */
+.popular-tags-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-secondary);
+}
+
+.popular-tags-title {
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.popular-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.popular-tag-btn {
+    padding: 0.375rem 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 9999px;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+    .popular-tag-btn:hover {
+        background: var(--primary-light);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .popular-tag-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+    .tag-input-wrapper {
+        min-height: 80px;
+        padding: 0.5rem;
+    }
+
+    .tag-pill {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.625rem;
+    }
+
+    .tag-input-field {
+        min-width: 100px;
+        font-size: 0.875rem;
+    }
+
+    .tag-keyboard-hints {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .popular-tags-list {
+        gap: 0.375rem;
+    }
+}
+
+/* ========================================
+   Dark Mode
+   ======================================== */
+[data-theme="dark"] .tag-input-wrapper {
+    background: var(--bg-secondary);
+}
+
+    [data-theme="dark"] .tag-input-wrapper.focused {
+        box-shadow: 0 0 0 3px rgba(255, 105, 31, 0.2);
+    }
+
+[data-theme="dark"] .tag-suggestions {
+    background: var(--bg-secondary);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .popular-tag-btn {
+    background: var(--bg-tertiary);
+    border-color: var(--border-primary);
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+@media print {
+    .tag-input-footer,
+    .tag-keyboard-hints,
+    .popular-tags-section,
+    .tag-suggestions {
+        display: none;
+    }
+
+    .tag-pill-remove {
+        display: none;
+    }
+
+    .tag-input-wrapper {
+        border: 1px solid #ddd;
+        min-height: auto;
+    }
+}
+
+/* ========================================
+   Accessibility
+   ======================================== */
+.tag-pill-remove:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+.tag-input-field:focus-visible {
+    outline: none;
+}
+
+.tag-suggestion-item:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+}
+
+/* ========================================
+   Animation Variants
+   ======================================== */
+.tag-pill.removing {
+    animation: tagSlideOut 0.2s ease forwards;
+}
+
+@keyframes tagSlideOut {
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+        max-width: 0;
+        padding: 0;
+        margin: 0;
+    }
+}

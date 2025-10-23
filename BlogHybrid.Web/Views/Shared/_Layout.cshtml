@@ -72,10 +72,10 @@
                 <!-- Create Buttons -->
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <button class="modern-create-btn" onclick="handleCreatePost()">
+                     <button class="modern-create-btn" onclick="handleCreatePost()">                         
                         <i class="bi bi-plus-circle"></i>
-                        <span class="modern-btn-text">สร้างโพสต์</span>
-                    </button>
+                        <span class="modern-btn-text">สร้างโพสต์</span>                      
+                     </button> 
                     <a href="/create-community" class="modern-btn-outline modern-create-community-btn">
                         <i class="bi bi-people"></i>
                         <span class="modern-btn-text">สร้างชุมชน</span>
@@ -246,7 +246,8 @@
     <script>
         // Handle Create Post for logged-in users
         function handleCreatePost() {
-            showToast('ฟีเจอร์กำลังพัฒนา กรุณารอติดตาม!', 'info');
+            // showToast('ฟีเจอร์กำลังพัฒนา กรุณารอติดตาม!', 'info');
+            window.location.href = '@Url.Action("Create", "Post", new { area = "" })';
         }
 
         // ⭐ Toggle User Menu Dropdown (ปรับปรุงแล้ว)
