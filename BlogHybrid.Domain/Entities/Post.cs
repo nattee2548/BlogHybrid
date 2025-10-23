@@ -26,7 +26,7 @@ namespace BlogHybrid.Domain.Entities
 
         // Foreign Keys
         public string AuthorId { get; set; } = string.Empty;
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
         public int? CommunityId { get; set; } // ⭐ NEW - nullable (post อาจไม่อยู่ใน community)
 
         // Navigation properties
