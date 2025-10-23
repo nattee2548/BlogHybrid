@@ -1,4 +1,4 @@
-﻿/* ================================================
+/* ================================================
    Modern Tag Input Component JavaScript
    Interactive tag management with autocomplete
    ================================================ */
@@ -116,10 +116,15 @@ class TagInput {
         this.field.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ',') {
                 e.preventDefault();
-                this.addTag(this.currentInput.trim());
+                const trimmedInput = this.currentInput.trim();
+                if (trimmedInput) {
+                    this.addTag(trimmedInput);
+                }
                 this.field.value = '';
                 this.currentInput = '';
                 this.hideSuggestions();
+                // ไม่ blur - ให้พิมพ์ต่อได้เลย
+                this.field.focus();
             } else if (e.key === 'Backspace' && this.currentInput === '') {
                 e.preventDefault();
                 this.removeLastTag();
@@ -131,6 +136,7 @@ class TagInput {
                 this.navigateSuggestions(-1);
             } else if (e.key === 'Escape') {
                 this.hideSuggestions();
+                this.field.blur();
             }
         });
 
@@ -169,16 +175,16 @@ class TagInput {
         }
 
         // Normalize tag
-        const normalizedTag = this.caseSensitive
-            ? tagText.trim()
+        const normalizedTag = this.caseSensitive 
+            ? tagText.trim() 
             : tagText.trim().toLowerCase();
 
         // Check duplicates
         if (!this.allowDuplicates) {
-            const exists = this.tags.some(tag =>
+            const exists = this.tags.some(tag => 
                 this.caseSensitive ? tag === normalizedTag : tag.toLowerCase() === normalizedTag
             );
-
+            
             if (exists) {
                 this.showError('Tag already exists');
                 return;
@@ -194,6 +200,13 @@ class TagInput {
         if (updateInput) {
             this.updateHiddenInput();
         }
+
+        // Focus field after adding tag
+        setTimeout(() => {
+            if (this.field) {
+                this.field.focus();
+            }
+        }, 50);
 
         // Callback
         if (this.onTagAdd) {
@@ -238,10 +251,10 @@ class TagInput {
 
     renderTags() {
         const tagsHTML = this.tags.map((tag, index) => {
-            const colorClass = this.colorful
-                ? `variant-${(index % 6) + 1}`
+            const colorClass = this.colorful 
+                ? `variant-${(index % 6) + 1}` 
                 : '';
-
+            
             return `
                 <div class="tag-pill ${colorClass}">
                     <span class="tag-pill-text">${this.escapeHtml(tag)}</span>
@@ -257,7 +270,7 @@ class TagInput {
 
         // Update wrapper
         this.wrapper.innerHTML = tagsHTML + this.field.outerHTML;
-
+        
         // Re-bind field reference
         this.field = document.getElementById('tagInputField');
 
@@ -279,7 +292,7 @@ class TagInput {
         this.counter.textContent = `${this.tags.length} / ${this.maxTags}`;
 
         this.counter.classList.remove('warning', 'error');
-
+        
         if (remaining === 0) {
             this.counter.classList.add('error');
             this.wrapper.classList.add('error');
@@ -295,10 +308,10 @@ class TagInput {
         const popularButtons = document.querySelectorAll('.popular-tag-btn');
         popularButtons.forEach(btn => {
             const tag = btn.dataset.tag;
-            const isAdded = this.tags.some(t =>
+            const isAdded = this.tags.some(t => 
                 this.caseSensitive ? t === tag : t.toLowerCase() === tag.toLowerCase()
             );
-
+            
             if (isAdded || this.tags.length >= this.maxTags) {
                 btn.classList.add('disabled');
                 btn.disabled = true;
@@ -324,8 +337,8 @@ class TagInput {
         const query = this.currentInput.toLowerCase();
         const filtered = this.suggestions.filter(suggestion => {
             const name = suggestion.name || suggestion;
-            return name.toLowerCase().includes(query) &&
-                !this.tags.some(tag => tag.toLowerCase() === name.toLowerCase());
+            return name.toLowerCase().includes(query) && 
+                   !this.tags.some(tag => tag.toLowerCase() === name.toLowerCase());
         });
 
         if (filtered.length === 0) {
@@ -336,7 +349,7 @@ class TagInput {
         const suggestionsHTML = filtered.slice(0, 5).map((suggestion, index) => {
             const name = suggestion.name || suggestion;
             const count = suggestion.count || '';
-
+            
             return `
                 <div class="tag-suggestion-item ${index === this.suggestionIndex ? 'highlighted' : ''}" 
                      data-index="${index}"
@@ -389,7 +402,7 @@ class TagInput {
             if (index === this.suggestionIndex) {
                 item.classList.add('highlighted');
                 item.scrollIntoView({ block: 'nearest' });
-
+                
                 // Update input with suggestion
                 const tag = item.dataset.tag;
                 this.field.value = tag;
@@ -409,9 +422,9 @@ class TagInput {
             <i class="bi bi-exclamation-triangle-fill"></i>
             <span>${message}</span>
         `;
-
+        
         document.body.appendChild(toast);
-
+        
         setTimeout(() => {
             toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 300);
@@ -450,14 +463,14 @@ class TagInput {
 // ========================================
 // Auto-initialize if data attributes present
 // ========================================
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     const tagInputs = document.querySelectorAll('[data-tag-input]');
-
+    
     tagInputs.forEach(container => {
         const hiddenInput = document.getElementById(container.dataset.input);
         const maxTags = parseInt(container.dataset.maxTags) || 10;
         const colorful = container.dataset.colorful !== 'false';
-
+        
         // Parse suggestions if provided
         let suggestions = [];
         if (container.dataset.suggestions) {

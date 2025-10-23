@@ -89,22 +89,19 @@
                     return false;
                 }
 
-                // Show loading state
-                if (submitButton) {
-                    submitButton.classList.add('loading');
-                    submitButton.disabled = true;
-                }
+                // Show modern loading spinner
+                showLoadingSpinner('กำลังสร้างโพสต์', 'กรุณารอสักครู่...');
 
                 // Upload image if file is selected
                 if (uploadedImageFile) {
                     try {
+                        updateLoadingMessage('กำลังอัปโหลดรูปภาพ...');
                         const imageUrl = await uploadImage(uploadedImageFile);
                         featuredImageUrlInput.value = imageUrl;
                     } catch (error) {
                         console.error('Error uploading image:', error);
+                        hideLoadingSpinner();
                         showToast('ไม่สามารถอัปโหลดรูปภาพได้', 'error');
-                        submitButton.classList.remove('loading');
-                        submitButton.disabled = false;
                         return false;
                     }
                 }
@@ -112,6 +109,8 @@
                 // Update hidden inputs
                 categoryIdInput.value = selectedCategoryId || '';
                 communityIdInput.value = selectedCommunityId || '';
+
+                updateLoadingMessage('กำลังบันทึกข้อมูล...');
 
                 // Submit form
                 form.submit();
@@ -545,6 +544,108 @@
             helper.style.color = tagCount > 10 ? 'var(--danger)' : 'var(--text-tertiary)';
         });
     }
+
+    // ========================================
+    // Modern Loading Spinner
+    // ========================================
+    let loadingOverlay = null;
+
+    function showLoadingSpinner(title = 'กำลังโหลด', message = 'กรุณารอสักครู่...') {
+        // Create overlay if not exists
+        if (!loadingOverlay) {
+            loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'loading-overlay';
+            loadingOverlay.innerHTML = `
+                <div class="loading-content">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-dot"></div>
+                    </div>
+                    <div class="loading-text">
+                        <h3 class="loading-title" id="loadingTitle">${title}</h3>
+                        <p class="loading-message" id="loadingMessage">${message}</p>
+                    </div>
+                    <div class="loading-progress">
+                        <div class="loading-progress-bar"></div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(loadingOverlay);
+        }
+
+        // Update text
+        const titleEl = loadingOverlay.querySelector('#loadingTitle');
+        const messageEl = loadingOverlay.querySelector('#loadingMessage');
+        if (titleEl) titleEl.textContent = title;
+        if (messageEl) messageEl.textContent = message;
+
+        // Show overlay
+        loadingOverlay.classList.add('active');
+        document.body.classList.add('loading-active');
+    }
+
+    function updateLoadingMessage(message) {
+        if (loadingOverlay) {
+            const messageEl = loadingOverlay.querySelector('#loadingMessage');
+            if (messageEl) {
+                messageEl.textContent = message;
+            }
+        }
+    }
+
+    function hideLoadingSpinner() {
+        if (loadingOverlay) {
+            loadingOverlay.classList.remove('active');
+            document.body.classList.remove('loading-active');
+        }
+    }
+
+    function showLoadingSuccess(title = 'สำเร็จ!', message = 'ดำเนินการเสร็จสิ้น') {
+        if (loadingOverlay) {
+            const content = loadingOverlay.querySelector('.loading-content');
+            content.classList.add('success');
+            
+            const titleEl = loadingOverlay.querySelector('#loadingTitle');
+            const messageEl = loadingOverlay.querySelector('#loadingMessage');
+            if (titleEl) titleEl.textContent = title;
+            if (messageEl) messageEl.textContent = message;
+
+            setTimeout(() => {
+                hideLoadingSpinner();
+                setTimeout(() => {
+                    content.classList.remove('success');
+                }, 300);
+            }, 1500);
+        }
+    }
+
+    function showLoadingError(title = 'เกิดข้อผิดพลาด', message = 'กรุณาลองใหม่อีกครั้ง') {
+        if (loadingOverlay) {
+            const content = loadingOverlay.querySelector('.loading-content');
+            content.classList.add('error');
+            
+            const titleEl = loadingOverlay.querySelector('#loadingTitle');
+            const messageEl = loadingOverlay.querySelector('#loadingMessage');
+            if (titleEl) titleEl.textContent = title;
+            if (messageEl) messageEl.textContent = message;
+
+            setTimeout(() => {
+                hideLoadingSpinner();
+                setTimeout(() => {
+                    content.classList.remove('error');
+                }, 300);
+            }, 2000);
+        }
+    }
+
+    // Export functions to window
+    window.showLoadingSpinner = showLoadingSpinner;
+    window.updateLoadingMessage = updateLoadingMessage;
+    window.hideLoadingSpinner = hideLoadingSpinner;
+    window.showLoadingSuccess = showLoadingSuccess;
+    window.showLoadingError = showLoadingError;
 
     // ========================================
     // Toast Notification
