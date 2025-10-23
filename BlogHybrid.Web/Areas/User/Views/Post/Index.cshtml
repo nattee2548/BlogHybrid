@@ -1,0 +1,355 @@
+@model BlogHybrid.Web.Areas.User.Models.MyPostsViewModel
+@{
+    ViewData["Title"] = "โพสต์ของฉัน";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user/my-posts.css" asp-append-version="true" />
+}
+
+<div class="main-container" style="padding: 80px 0 40px;">
+    <div class="container" style="max-width: 1400px;">
+
+        <!-- User Navigation Tabs -->
+        <div class="user-nav-tabs">
+            <a asp-area="User" asp-controller="Profile" asp-action="Index" class="user-nav-tab">
+                <i class="bi bi-person"></i> โปรไฟล์
+            </a>
+            <a asp-area="User" asp-controller="Posts" asp-action="Index" class="user-nav-tab active">
+                <i class="bi bi-file-earmark-text"></i> โพสต์ของฉัน
+            </a>
+            <a asp-area="User" asp-controller="Communities" asp-action="Index" class="user-nav-tab">
+                <i class="bi bi-people"></i> ชุมชนของฉัน
+            </a>
+            <a asp-area="User" asp-controller="Profile" asp-action="Edit" class="user-nav-tab">
+                <i class="bi bi-gear"></i> ตั้งค่า
+            </a>
+        </div>
+
+        <!-- Header & Statistics -->
+        <div class="my-posts-header">
+            <div class="header-top">
+                <div class="header-title">
+                    <h1>
+                        <i class="bi bi-file-earmark-text"></i>
+                        โพสต์ของฉัน
+                    </h1>
+                    <p>จัดการโพสต์ทั้งหมดของคุณ</p>
+                </div>
+                <a asp-area="" asp-controller="Post" asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> สร้างโพสต์ใหม่
+                </a>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-primary">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.Statistics.TotalPosts</div>
+                        <div class="stat-label">โพสต์ทั้งหมด</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.Statistics.PublishedCount</div>
+                        <div class="stat-label">เผยแพร่แล้ว</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-secondary">
+                        <i class="bi bi-file-earmark"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.Statistics.DraftCount</div>
+                        <div class="stat-label">แบบร่าง</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-warning">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.Statistics.FeaturedCount</div>
+                        <div class="stat-label">โพสต์แนะนำ</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-info">
+                        <i class="bi bi-eye"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.Statistics.TotalViews.ToString("N0")</div>
+                        <div class="stat-label">ยอดดูทั้งหมด</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-danger">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.Statistics.TotalLikes.ToString("N0")</div>
+                        <div class="stat-label">ถูกใจทั้งหมด</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="posts-toolbar">
+            <div class="toolbar-left">
+                <!-- Status Filter -->
+                <div class="filter-group">
+                    <label>สถานะ:</label>
+                    <div class="filter-buttons">
+                        <a href="?status=all&search=@Model.SearchTerm" 
+                           class="filter-btn @(Model.StatusFilter == "all" ? "active" : "")">
+                            <i class="bi bi-list"></i> ทั้งหมด
+                            <span class="badge">@Model.Statistics.TotalPosts</span>
+                        </a>
+                        <a href="?status=published&search=@Model.SearchTerm" 
+                           class="filter-btn @(Model.StatusFilter == "published" ? "active" : "")">
+                            <i class="bi bi-check-circle"></i> เผยแพร่
+                            <span class="badge">@Model.Statistics.PublishedCount</span>
+                        </a>
+                        <a href="?status=draft&search=@Model.SearchTerm" 
+                           class="filter-btn @(Model.StatusFilter == "draft" ? "active" : "")">
+                            <i class="bi bi-file-earmark"></i> แบบร่าง
+                            <span class="badge">@Model.Statistics.DraftCount</span>
+                        </a>
+                        <a href="?status=featured&search=@Model.SearchTerm" 
+                           class="filter-btn @(Model.StatusFilter == "featured" ? "active" : "")">
+                            <i class="bi bi-star-fill"></i> แนะนำ
+                            <span class="badge">@Model.Statistics.FeaturedCount</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <!-- Search -->
+                <form method="get" class="search-form">
+                    <input type="hidden" name="status" value="@Model.StatusFilter" />
+                    <input type="text" 
+                           name="search" 
+                           value="@Model.SearchTerm" 
+                           placeholder="ค้นหาโพสต์..." 
+                           class="search-input" />
+                    <button type="submit" class="search-btn">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Posts Grid or Empty State -->
+        @if (Model.Posts.Any())
+        {
+            <!-- Posts Grid -->
+            <div class="my-posts-grid">
+                @foreach (var post in Model.Posts)
+                {
+                    <div class="post-card">
+                        <!-- Featured Badge -->
+                        @if (post.IsFeatured)
+                        {
+                            <div class="featured-badge">
+                                <i class="bi bi-star-fill"></i> แนะนำ
+                            </div>
+                        }
+
+                        <!-- Image -->
+                        <div class="post-image">
+                            @if (!string.IsNullOrEmpty(post.FeaturedImageUrl))
+                            {
+                                <img src="@post.FeaturedImageUrl" alt="@post.Title" />
+                            }
+                            else
+                            {
+                                <div class="post-image-placeholder">
+                                    <i class="bi bi-image"></i>
+                                </div>
+                            }
+                            <!-- Status Badge -->
+                            <div class="status-badge status-badge-@post.StatusColor">
+                                @post.StatusBadge
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="post-content">
+                            <h3 class="post-title">
+                                <a asp-area="" asp-controller="Post" asp-action="Details" asp-route-slug="@post.Slug">
+                                    @post.Title
+                                </a>
+                            </h3>
+
+                            @if (!string.IsNullOrEmpty(post.Excerpt))
+                            {
+                                <p class="post-excerpt">@post.TruncatedExcerpt</p>
+                            }
+
+                            <!-- Meta Info -->
+                            <div class="post-meta">
+                                <span class="meta-item">
+                                    <i class="bi bi-folder"></i> @post.CategoryName
+                                </span>
+                                @if (post.CommunityId.HasValue)
+                                {
+                                    <span class="meta-item">
+                                        <i class="bi bi-people"></i> @post.CommunityName
+                                    </span>
+                                }
+                                <span class="meta-item">
+                                    <i class="bi bi-calendar"></i> @post.DisplayDate
+                                </span>
+                            </div>
+
+                            <!-- Tags -->
+                            @if (post.Tags.Any())
+                            {
+                                <div class="post-tags">
+                                    @foreach (var tag in post.Tags.Take(3))
+                                    {
+                                        <span class="tag">@tag</span>
+                                    }
+                                    @if (post.Tags.Count > 3)
+                                    {
+                                        <span class="tag">+@(post.Tags.Count - 3)</span>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Stats -->
+                            <div class="post-stats">
+                                <span class="stat-item">
+                                    <i class="bi bi-eye"></i> @post.ViewCount.ToString("N0")
+                                </span>
+                                <span class="stat-item">
+                                    <i class="bi bi-heart"></i> @post.LikeCount.ToString("N0")
+                                </span>
+                                <span class="stat-item">
+                                    <i class="bi bi-chat"></i> @post.CommentCount.ToString("N0")
+                                </span>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="post-actions">
+                                <a asp-area="" asp-controller="Post" asp-action="Edit" asp-route-id="@post.Id" 
+                                   class="btn-action btn-edit" title="แก้ไข">
+                                    <i class="bi bi-pencil"></i> แก้ไข
+                                </a>
+                                <a asp-area="" asp-controller="Post" asp-action="Details" asp-route-slug="@post.Slug" 
+                                   class="btn-action btn-view" title="ดู" target="_blank">
+                                    <i class="bi bi-eye"></i> ดู
+                                </a>
+                                <button type="button" 
+                                        class="btn-action btn-delete" 
+                                        onclick="confirmDelete(@post.Id, '@post.Title')" 
+                                        title="ลบ">
+                                    <i class="bi bi-trash"></i> ลบ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="pagination-container">
+                    <ul class="pagination">
+                        <!-- Previous -->
+                        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                            <a class="page-link" 
+                               href="?page=@(Model.PageNumber - 1)&search=@Model.SearchTerm&status=@Model.StatusFilter">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        <!-- Pages -->
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                <a class="page-link" 
+                                   href="?page=@i&search=@Model.SearchTerm&status=@Model.StatusFilter">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        <!-- Next -->
+                        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                            <a class="page-link" 
+                               href="?page=@(Model.PageNumber + 1)&search=@Model.SearchTerm&status=@Model.StatusFilter">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <h3>ไม่พบโพสต์</h3>
+                @if (!string.IsNullOrEmpty(Model.SearchTerm) || Model.StatusFilter != "all")
+                {
+                    <p>ไม่พบโพสต์ที่ตรงกับเงื่อนไขการค้นหา</p>
+                    <a href="?" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> แสดงทั้งหมด
+                    </a>
+                }
+                else
+                {
+                    <p>คุณยังไม่มีโพสต์ เริ่มสร้างโพสต์แรกของคุณเลย!</p>
+                    <a asp-area="" asp-controller="Post" asp-action="Create" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> สร้างโพสต์ใหม่
+                    </a>
+                }
+            </div>
+        }
+
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <h3><i class="bi bi-exclamation-triangle"></i> ยืนยันการลบ</h3>
+        <p>คุณแน่ใจหรือไม่ว่าต้องการลบโพสต์ <strong id="postTitle"></strong>?</p>
+        <p class="text-danger">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+        <form id="deleteForm" method="post" asp-area="" asp-controller="Post" asp-action="Delete">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="postId" />
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                    <i class="bi bi-x"></i> ยกเลิก
+                </button>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> ลบโพสต์
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/user/my-posts.js" asp-append-version="true"></script>
+}

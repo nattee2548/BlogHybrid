@@ -29,8 +29,8 @@
 
   <ItemGroup>
     <Folder Include="Areas\User\Views\Settings\" />
-    <Folder Include="Areas\User\Views\Posts\" />
     <Folder Include="Areas\User\Views\Shared\" />
+    <Folder Include="Views\Post\" />
     <Folder Include="wwwroot\css\admin\" />
     <Folder Include="wwwroot\js\admin\" />
   </ItemGroup>

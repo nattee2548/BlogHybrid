@@ -2,31 +2,115 @@ using BlogHybrid.Application.Commands.Post;
 using BlogHybrid.Application.Interfaces.Services;
 using BlogHybrid.Application.Queries.Category;
 using BlogHybrid.Application.Queries.Community;
+using BlogHybrid.Application.Queries.Post;
+using BlogHybrid.Domain.Entities;
+using BlogHybrid.Web.Areas.User.Models;
 using BlogHybrid.Web.Models.Post;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace BlogHybrid.Web.Controllers
+namespace BlogHybrid.Web.Areas.User.Controllers
 {
+    [Area("User")]
     [Authorize]
     public class PostController : Controller
     {
         private readonly IMediator _mediator;
         private readonly ILogger<PostController> _logger;
         private readonly IImageService _imageService;
-
+        private readonly UserManager<ApplicationUser> _userManager;
         public PostController(
             IMediator mediator,
             ILogger<PostController> logger,
-            IImageService imageService)
+            IImageService imageService,
+            SignInManager<ApplicationUser> signInManager)
         {
             _mediator = mediator;
             _logger = logger;
             _imageService = imageService;
+            _userManager = signInManager.UserManager;
         }
+        // GET: /User/Posts
+        public async Task<IActionResult> Index(
+            int page = 1,
+            string? search = null,
+            string? status = "all")
+        {
+            try
+            {
+                var userId = _userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("Login", "Account", new { area = "" });
+                }
 
+                var query = new GetUserPostsQuery
+                {
+                    UserId = userId,
+                    PageNumber = page,
+                    PageSize = 12,
+                    SearchTerm = search,
+                    StatusFilter = status,
+                    SortBy = "CreatedAt",
+                    SortDirection = "desc"
+                };
+
+                var result = await _mediator.Send(query);
+
+                var viewModel = new MyPostsViewModel
+                {
+                    Posts = result.Posts.Select(p => new MyPostItemViewModel
+                    {
+                        Id = p.Id,
+                        Title = p.Title,
+                        Slug = p.Slug,
+                        Excerpt = p.Excerpt,
+                        FeaturedImageUrl = p.FeaturedImageUrl,
+                        IsPublished = p.IsPublished,
+                        IsFeatured = p.IsFeatured,
+                        CreatedAt = p.CreatedAt,
+                        PublishedAt = p.PublishedAt,
+                        UpdatedAt = p.UpdatedAt,
+                        CategoryId = p.CategoryId,
+                        CategoryName = p.CategoryName,
+                        CommunityId = p.CommunityId,
+                        CommunityName = p.CommunityName,
+                        ViewCount = p.ViewCount,
+                        LikeCount = p.LikeCount,
+                        CommentCount = p.CommentCount,
+                        Tags = p.Tags
+                    }).ToList(),
+                    TotalCount = result.TotalCount,
+                    PageNumber = result.PageNumber,
+                    PageSize = result.PageSize,
+                    TotalPages = result.TotalPages,
+                    HasPreviousPage = result.HasPreviousPage,
+                    HasNextPage = result.HasNextPage,
+                    SearchTerm = search,
+                    StatusFilter = status ?? "all",
+                    Statistics = new PostStatisticsViewModel
+                    {
+                        PublishedCount = result.PublishedCount,
+                        DraftCount = result.DraftCount,
+                        FeaturedCount = result.FeaturedCount,
+                        TotalViews = result.TotalViews,
+                        TotalLikes = result.TotalLikes,
+                        TotalComments = result.TotalComments
+                    }
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading user posts");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการโหลดโพสต์";
+                return RedirectToAction("Index", "Profile");
+            }
+        }
         // ===================================
         // API: Upload Image
         // ===================================
