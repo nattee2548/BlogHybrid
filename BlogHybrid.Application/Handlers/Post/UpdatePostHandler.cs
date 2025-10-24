@@ -1,11 +1,6 @@
-﻿// ===================================================
-// UpdatePostCommandHandler.cs - FIXED VERSION
-// Location: BlogHybrid.Application/Handlers/Post/
-// ===================================================
-
-using BlogHybrid.Application.Commands.Post;
+﻿using BlogHybrid.Application.Commands.Post;
 using BlogHybrid.Application.Interfaces.Repositories;
-using BlogHybrid.Domain.Entities;  // ⭐ เพิ่ม using นี้
+using BlogHybrid.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -29,8 +24,8 @@ namespace BlogHybrid.Application.Handlers.Post
         {
             try
             {
-                // ดึงโพสต์ที่ต้องการแก้ไข
-                var post = await _unitOfWork.Posts.GetByIdAsync(request.Id);
+                // ✅ FIX: ใช้ GetByIdWithDetailsAsync เพื่อโหลด PostTags
+                var post = await _unitOfWork.Posts.GetByIdWithDetailsAsync(request.Id);
 
                 if (post == null)
                 {
@@ -41,7 +36,7 @@ namespace BlogHybrid.Application.Handlers.Post
                     };
                 }
 
-                // ตรวจสอบว่าเป็นเจ้าของโพสต์หรือไม่
+                // ตรวจสอบสิทธิ์
                 if (post.AuthorId != request.AuthorId)
                 {
                     return new UpdatePostResult
@@ -51,7 +46,7 @@ namespace BlogHybrid.Application.Handlers.Post
                     };
                 }
 
-                // อัปเดตข้อมูล
+                // อัปเดตข้อมูลพื้นฐาน
                 post.Title = request.Title;
                 post.Content = request.Content;
                 post.Excerpt = request.Excerpt;
@@ -66,30 +61,37 @@ namespace BlogHybrid.Application.Handlers.Post
                 var newSlug = GenerateSlug(request.Title);
                 if (post.Slug != newSlug)
                 {
-                    // ตรวจสอบว่า Slug ซ้ำหรือไม่
-                    var existingPosts = await _unitOfWork.Posts.GetAllAsync();
-                    var existingPost = existingPosts.FirstOrDefault(p => p.Slug == newSlug && p.Id != request.Id);
+                    var allPosts = await _unitOfWork.Posts.GetAllAsync();
+                    var existingPost = allPosts.FirstOrDefault(p => p.Slug == newSlug && p.Id != request.Id);
 
                     if (existingPost != null)
                     {
-                        // เพิ่มเลขท้าย
                         newSlug = $"{newSlug}-{DateTime.UtcNow.Ticks}";
                     }
 
                     post.Slug = newSlug;
                 }
 
-                // ⭐ อัปเดต Tags - ใช้วิธีง่ายๆ โดยลบและสร้างใหม่
+                // ✅ FIX: ลบและเพิ่ม Tags ใหม่ทั้งหมด
+                // ลบ PostTags เดิมทั้งหมดด้วย DbContext
+                var existingPostTags = await _unitOfWork.DbContext.Set<PostTag>()
+                    .Where(pt => pt.PostId == post.Id)
+                    .ToListAsync(cancellationToken);
+
+                if (existingPostTags.Any())
+                {
+                    _unitOfWork.DbContext.Set<PostTag>().RemoveRange(existingPostTags);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                }
+
+                // เพิ่ม Tags ใหม่
                 if (!string.IsNullOrWhiteSpace(request.Tags))
                 {
-                    // ลบ Tags เดิมทั้งหมด (จะทำผ่าน Navigation Property)
-                    post.PostTags.Clear();
-
-                    // เพิ่ม Tags ใหม่
                     var tagNames = request.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries)
                         .Select(t => t.Trim())
                         .Where(t => !string.IsNullOrEmpty(t))
                         .Distinct()
+                        .Take(10)
                         .ToList();
 
                     foreach (var tagName in tagNames)
@@ -102,7 +104,7 @@ namespace BlogHybrid.Application.Handlers.Post
                         // ถ้าไม่มี ให้สร้างใหม่
                         if (tag == null)
                         {
-                            tag = new Domain.Entities.Tag  // ⭐ ใช้ Full namespace
+                            tag = new Domain.Entities.Tag
                             {
                                 Name = tagName,
                                 Slug = GenerateSlug(tagName),
@@ -112,21 +114,17 @@ namespace BlogHybrid.Application.Handlers.Post
                             await _unitOfWork.SaveChangesAsync(cancellationToken);
                         }
 
-                        // เพิ่ม PostTag
-                        post.PostTags.Add(new PostTag
+                        // เพิ่ม PostTag ใหม่
+                        var postTag = new PostTag
                         {
                             PostId = post.Id,
                             TagId = tag.Id
-                        });
+                        };
+                        await _unitOfWork.DbContext.Set<PostTag>().AddAsync(postTag, cancellationToken);
                     }
                 }
-                else
-                {
-                    // ถ้าไม่มี Tags ใหม่ ให้ลบทั้งหมด
-                    post.PostTags.Clear();
-                }
 
-                // บันทึก - ไม่ต้อง Update อีกรอบ เพราะ EF Core tracking อยู่แล้ว
+                // บันทึกการเปลี่ยนแปลง
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 _logger.LogInformation($"Post updated successfully: ID={post.Id}, Title={post.Title}");
@@ -144,7 +142,7 @@ namespace BlogHybrid.Application.Handlers.Post
                 return new UpdatePostResult
                 {
                     Success = false,
-                    Errors = new List<string> { "เกิดข้อผิดพลาดในการอัปเดตโพสต์" }
+                    Errors = new List<string> { $"เกิดข้อผิดพลาด: {ex.Message}" }
                 };
             }
         }
@@ -154,19 +152,10 @@ namespace BlogHybrid.Application.Handlers.Post
             if (string.IsNullOrWhiteSpace(title))
                 return string.Empty;
 
-            // แปลงเป็นตัวพิมพ์เล็ก
             var slug = title.ToLowerInvariant();
-
-            // แทนที่ช่องว่างด้วย -
             slug = System.Text.RegularExpressions.Regex.Replace(slug, @"\s+", "-");
-
-            // ลบตัวอักษรพิเศษ
             slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9ก-๙\-]", "");
-
-            // ลบ - ที่ซ้ำกัน
             slug = System.Text.RegularExpressions.Regex.Replace(slug, @"\-{2,}", "-");
-
-            // ลบ - ที่ขึ้นต้นและลงท้าย
             slug = slug.Trim('-');
 
             return slug;
