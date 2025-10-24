@@ -34,10 +34,11 @@ namespace BlogHybrid.Application.Handlers.Post
                     .Include(p => p.Community)
                     .Include(p => p.PostTags)
                         .ThenInclude(pt => pt.Tag)
-                    .Include(p => p.Comments.Where(c => c.IsApproved && c.ParentCommentId == null)) // เฉพาะ root comments
+                    // Include Comments ทั้งหมดที่ IsApproved พร้อม Author และ CommentLikes
+                    .Include(p => p.Comments.Where(c => c.IsApproved))
                         .ThenInclude(c => c.Author)
-                    .Include(p => p.Comments.Where(c => c.IsApproved && c.ParentCommentId != null)) // replies
-                        .ThenInclude(c => c.Author)
+                    .Include(p => p.Comments.Where(c => c.IsApproved))
+                        .ThenInclude(c => c.CommentLikes)
                     .Include(p => p.PostLikes)
                     .Where(p => p.Slug == request.Slug && p.IsPublished && !p.IsDeleted)
                     .FirstOrDefaultAsync(cancellationToken);
@@ -107,7 +108,7 @@ namespace BlogHybrid.Application.Handlers.Post
                     CanEdit = canEdit,
                     CanDelete = canDelete,
 
-                    // Comments (จัด hierarchical)
+                    // Comments (จัด hierarchical) - ใช้เฉพาะ comments ที่ IsApproved
                     Comments = BuildCommentTree(post.Comments.Where(c => c.IsApproved).ToList(), request.CurrentUserId)
                 };
 
@@ -180,7 +181,7 @@ namespace BlogHybrid.Application.Handlers.Post
                 CanEdit = canEdit,
                 CanDelete = canDelete,
 
-                // Recursively get replies
+                // Recursively get replies (เฉพาะ replies ที่มี parent เป็น comment นี้)
                 Replies = allComments
                     .Where(c => c.ParentCommentId == comment.Id)
                     .OrderBy(c => c.CreatedAt)
