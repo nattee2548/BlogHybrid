@@ -1,430 +1,323 @@
+@model BlogHybrid.Web.Models.HomeViewModel
 @{
     ViewData["Title"] = "หน้าแรก";
 }
-@{
-    ViewData["Title"] = "หน้าแรก";
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
 }
 
-<!-- Feed Header -->
-<div class="feed-header">
-    <div class="feed-tabs">
-        <button class="feed-tab active">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-            </svg>
-            <span>หน้าแรก</span>
-        </button>
-        <button class="feed-tab">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
-            </svg>
-            <span>มาแรง</span>
-        </button>
-        <button class="feed-tab">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-            </svg>
-            <span>ติดตาม</span>
-        </button>
-    </div>
-
-    <button class="feed-filter">
-        <svg viewBox="0 0 20 20" fill="currentColor" style="width: 16px; height: 16px;">
-            <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" />
-        </svg>
-        <span>ใหม่สุด</span>
-    </button>
-</div>
-
-<!-- Create Post Box (สำหรับ Login User) -->
-@if (User.Identity.IsAuthenticated)
-{
-    <div class="create-post-box">
-        <div class="create-post-header">
-            <img src="https://ui-avatars.com/api/?name=@User.Identity.Name&background=ff4500" alt="User" class="create-post-avatar" />
-            <input type="text" class="create-post-input" placeholder="คุณกำลังคิดอะไรอยู่?" onclick="alert('ฟีเจอร์นี้กำลังพัฒนา')" />
-        </div>
-        <div class="create-post-actions">
-            <button class="create-post-btn">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                </svg>
-                <span>รูปภาพ</span>
-            </button>
-            <button class="create-post-btn">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
-                </svg>
-                <span>โพล</span>
-            </button>
-            <button class="create-post-btn">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
-                </svg>
-                <span>ลิงก์</span>
-            </button>
-        </div>
-    </div>
-}
-
-<!-- Posts Feed -->
-<div class="posts-feed">
-    <!-- Post 1 -->
-    <article class="modern-post-card">
-        <div class="post-vote">
-            <button class="vote-btn upvote">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 4l-8 8h5v8h6v-8h5z" />
-                </svg>
-            </button>
-            <span class="vote-count">1.2k</span>
-            <button class="vote-btn downvote">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 20l8-8h-5V4H9v8H4z" />
-                </svg>
-            </button>
-        </div>
-
-        <div class="post-main">
-            <div class="post-header">
-                <img src="https://ui-avatars.com/api/?name=Programming&background=667eea" alt="Community" class="post-community-icon" />
-                <div class="post-meta">
-                    <a href="#" class="post-community">💻 Programming</a>
-                    <span class="post-separator">•</span>
-                    <span class="post-author">โพสต์โดย <a href="#">@@developer_th</a></span>
-                    <span class="post-separator">•</span>
-                    <span class="post-time">2 ชั่วโมงที่แล้ว</span>
+<div class="home-container">
+    <!-- Hero Section with Featured Posts (แสดงเฉพาะหน้าแรก) -->
+    @if (Model.FeaturedPosts.Any() && Model.PageNumber == 1 && !Model.HasFilters)
+    {
+        <section class="featured-section">
+            <div class="container">
+                <h2 class="featured-title">
+                    <i class="bi bi-star-fill"></i> โพสต์แนะนำ
+                </h2>
+                <div class="featured-grid">
+                    @foreach (var post in Model.FeaturedPosts)
+                    {
+                        <a href="@Url.Action("Details", "Post", new { slug = post.Slug })" class="featured-card">
+                            @if (!string.IsNullOrEmpty(post.FeaturedImageUrl))
+                            {
+                                <div class="featured-image">
+                                    <img src="@post.FeaturedImageUrl" alt="@post.Title" />
+                                    <div class="featured-badge">
+                                        <i class="bi bi-star-fill"></i> แนะนำ
+                                    </div>
+                                </div>
+                            }
+                            <div class="featured-content">
+                                <h3 class="featured-post-title">@post.Title</h3>
+                                @if (!string.IsNullOrEmpty(post.Excerpt))
+                                {
+                                    <p class="featured-excerpt">@post.Excerpt</p>
+                                }
+                                <div class="featured-meta">
+                                    <span class="meta-author">
+                                        @if (!string.IsNullOrEmpty(post.AuthorProfileImageUrl))
+                                        {
+                                            <img src="@post.AuthorProfileImageUrl" alt="@post.AuthorName" class="author-avatar-sm" />
+                                        }
+                                        else
+                                        {
+                                            <div class="author-avatar-sm">
+                                                <i class="bi bi-person-fill"></i>
+                                            </div>
+                                        }
+                                        @post.AuthorName
+                                    </span>
+                                    <span class="meta-date">@post.TimeAgo</span>
+                                    <span class="meta-views">
+                                        <i class="bi bi-eye"></i> @post.ViewCount
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    }
                 </div>
             </div>
+        </section>
+    }
 
-            <h2 class="post-title">
-                <a href="#">วิธีเริ่มต้นเรียน Web Development ในปี 2025 สำหรับมือใหม่</a>
-            </h2>
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content-grid">
+            <!-- Sidebar Filters (Left) -->
+            <aside class="sidebar-filters">
+                <div class="filter-card">
+                    <h3 class="filter-title">
+                        <i class="bi bi-funnel"></i> กรองโพสต์
+                    </h3>
 
-            <div class="post-content">
-                <p>สวัสดีครับ! วันนี้ผมจะมาแชร์ประสบการณ์การเรียน Web Development จากมือใหม่หัดโค้ดมาเป็น Full Stack Developer ในเวลาแค่ 6 เดือน พร้อมแนะนำ Roadmap ที่ใช้ได้จริง...</p>
-            </div>
+                    <!-- Search -->
+                    <form asp-action="Index" method="get" class="filter-search">
+                        <div class="search-input-group">
+                            <i class="bi bi-search"></i>
+                            <input type="text" 
+                                   name="search" 
+                                   value="@Model.SearchTerm" 
+                                   placeholder="ค้นหาโพสต์..." 
+                                   class="search-input" />
+                            @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                            {
+                                <button type="button" onclick="clearSearch()" class="search-clear">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            }
+                        </div>
+                        <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+                        <input type="hidden" name="communityId" value="@Model.CommunityId" />
+                        <input type="hidden" name="sort" value="@Model.Sort" />
+                        <button type="submit" class="btn-search">ค้นหา</button>
+                    </form>
 
-            <div class="post-tags">
-                <a href="#" class="post-tag">#webdev</a>
-                <a href="#" class="post-tag">#javascript</a>
-                <a href="#" class="post-tag">#tutorial</a>
-            </div>
+                    <!-- Sort Options -->
+                    <div class="filter-section">
+                        <label class="filter-label">เรียงตาม</label>
+                        <div class="filter-options">
+                            <a href="@Url.Action("Index", new { search = Model.SearchTerm, categoryId = Model.CategoryId, sort = "latest" })" 
+                               class="filter-option @(Model.Sort == "latest" ? "active" : "")">
+                                <i class="bi bi-clock"></i> ล่าสุด
+                            </a>
+                            <a href="@Url.Action("Index", new { search = Model.SearchTerm, categoryId = Model.CategoryId, sort = "popular" })" 
+                               class="filter-option @(Model.Sort == "popular" ? "active" : "")">
+                                <i class="bi bi-fire"></i> ยอดนิยม
+                            </a>
+                            <a href="@Url.Action("Index", new { search = Model.SearchTerm, categoryId = Model.CategoryId, sort = "liked" })" 
+                               class="filter-option @(Model.Sort == "liked" ? "active" : "")">
+                                <i class="bi bi-heart-fill"></i> ถูกใจมากสุด
+                            </a>
+                        </div>
+                    </div>
 
-            <div class="post-actions">
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-                    </svg>
-                    <span>234 ความคิดเห็น</span>
-                </button>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
-                    </svg>
-                    <span>แชร์</span>
-                </button>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
-                    </svg>
-                    <span>บันทึก</span>
-                </button>
-                <div class="post-action-spacer"></div>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </article>
-
-    <!-- Post 2 with Image -->
-    <article class="modern-post-card">
-        <div class="post-vote">
-            <button class="vote-btn upvote voted">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 4l-8 8h5v8h6v-8h5z" />
-                </svg>
-            </button>
-            <span class="vote-count">856</span>
-            <button class="vote-btn downvote">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 20l8-8h-5V4H9v8H4z" />
-                </svg>
-            </button>
-        </div>
-
-        <div class="post-main">
-            <div class="post-header">
-                <img src="https://ui-avatars.com/api/?name=Design&background=ec4899" alt="Community" class="post-community-icon" />
-                <div class="post-meta">
-                    <a href="#" class="post-community">🎨 Design</a>
-                    <span class="post-separator">•</span>
-                    <span class="post-author">โพสต์โดย <a href="#">@@designer_pro</a></span>
-                    <span class="post-separator">•</span>
-                    <span class="post-time">4 ชั่วโมงที่แล้ว</span>
+                    <!-- Clear Filters -->
+                    @if (Model.HasFilters)
+                    {
+                        <a href="@Url.Action("Index")" class="btn-clear-filters">
+                            <i class="bi bi-x-circle"></i> ล้างตัวกรอง
+                        </a>
+                    }
                 </div>
-            </div>
+            </aside>
 
-            <h2 class="post-title">
-                <a href="#">UI/UX Trends ที่ต้องรู้สำหรับปี 2025 [พร้อมตัวอย่าง]</a>
-            </h2>
-
-            <div class="post-image">
-                <img src="https://via.placeholder.com/800x400/667eea/ffffff?text=UI/UX+Design+2025" alt="Post thumbnail" />
-            </div>
-
-            <div class="post-content">
-                <p>รวม 10 เทรนด์ UI/UX ที่กำลังมาแรงในปี 2025 พร้อมตัวอย่างการใช้งานจริง เหมาะสำหรับ Designer และ Developer ทุกคน</p>
-            </div>
-
-            <div class="post-tags">
-                <a href="#" class="post-tag">#design</a>
-                <a href="#" class="post-tag">#uiux</a>
-                <a href="#" class="post-tag">#trends</a>
-            </div>
-
-            <div class="post-actions">
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-                    </svg>
-                    <span>89 ความคิดเห็น</span>
-                </button>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
-                    </svg>
-                    <span>แชร์</span>
-                </button>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
-                    </svg>
-                    <span>บันทึก</span>
-                </button>
-                <div class="post-action-spacer"></div>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </article>
-
-    <!-- Post 3 -->
-    <article class="modern-post-card">
-        <div class="post-vote">
-            <button class="vote-btn upvote">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 4l-8 8h5v8h6v-8h5z" />
-                </svg>
-            </button>
-            <span class="vote-count">423</span>
-            <button class="vote-btn downvote">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 20l8-8h-5V4H9v8H4z" />
-                </svg>
-            </button>
-        </div>
-
-        <div class="post-main">
-            <div class="post-header">
-                <img src="https://ui-avatars.com/api/?name=DevOps&background=10b981" alt="Community" class="post-community-icon" />
-                <div class="post-meta">
-                    <a href="#" class="post-community">🚀 DevOps</a>
-                    <span class="post-separator">•</span>
-                    <span class="post-author">โพสต์โดย <a href="#">@@devops_master</a></span>
-                    <span class="post-separator">•</span>
-                    <span class="post-time">6 ชั่วโมงที่แล้ว</span>
+            <!-- Posts Grid (Right) -->
+            <main class="posts-section">
+                <!-- Header -->
+                <div class="posts-header">
+                    <h1 class="posts-title">
+                        @if (Model.HasFilters)
+                        {
+                            <text>ผลการค้นหา</text>
+                        }
+                        else
+                        {
+                            <text>โพสต์ทั้งหมด</text>
+                        }
+                    </h1>
+                    <p class="posts-count">พบ @Model.TotalCount โพสต์</p>
                 </div>
-            </div>
 
-            <h2 class="post-title">
-                <a href="#">Docker vs Kubernetes: เลือกใช้อันไหนดีสำหรับโปรเจคของคุณ?</a>
-            </h2>
+                <!-- Posts Grid -->
+                @if (Model.Posts.Any())
+                {
+                    <div class="posts-grid">
+                        @foreach (var post in Model.Posts)
+                        {
+                            <article class="post-card">
+                                <!-- Featured Image -->
+                                @if (!string.IsNullOrEmpty(post.FeaturedImageUrl))
+                                {
+                                    <a href="@Url.Action("Details", "Post", new { slug = post.Slug })" class="post-image-link">
+                                        <img src="@post.FeaturedImageUrl" alt="@post.Title" class="post-image" />
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="@Url.Action("Details", "Post", new { slug = post.Slug })" class="post-image-link post-image-placeholder">
+                                        <i class="bi bi-image"></i>
+                                    </a>
+                                }
 
-            <div class="post-content">
-                <p>มาทำความเข้าใจความแตกต่างระหว่าง Docker กับ Kubernetes พร้อมแนะนำว่าควรเลือกใช้เครื่องมือไหนตามขนาดและความซับซ้อนของโปรเจค</p>
-            </div>
+                                <!-- Content -->
+                                <div class="post-content">
+                                    <!-- Category Badge -->
+                                    @if (!string.IsNullOrEmpty(post.CategoryName))
+                                    {
+                                        <a href="@Url.Action("Index", new { categoryId = post.CategoryId })" 
+                                           class="post-category" 
+                                           style="background: @(post.CategoryColor)20; color: @post.CategoryColor;">
+                                            <i class="bi bi-folder"></i> @post.CategoryName
+                                        </a>
+                                    }
 
-            <div class="post-tags">
-                <a href="#" class="post-tag">#docker</a>
-                <a href="#" class="post-tag">#kubernetes</a>
-                <a href="#" class="post-tag">#devops</a>
-            </div>
+                                    <!-- Title -->
+                                    <h3 class="post-title">
+                                        <a href="@Url.Action("Details", "Post", new { slug = post.Slug })">
+                                            @post.Title
+                                        </a>
+                                    </h3>
 
-            <div class="post-actions">
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-                    </svg>
-                    <span>156 ความคิดเห็น</span>
-                </button>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
-                    </svg>
-                    <span>แชร์</span>
-                </button>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
-                    </svg>
-                    <span>บันทึก</span>
-                </button>
-                <div class="post-action-spacer"></div>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                    </svg>
-                </button>
-            </div>
+                                    <!-- Excerpt -->
+                                    @if (!string.IsNullOrEmpty(post.Excerpt))
+                                    {
+                                        <p class="post-excerpt">@post.Excerpt</p>
+                                    }
+
+                                    <!-- Tags -->
+                                    @if (post.Tags.Any())
+                                    {
+                                        <div class="post-tags">
+                                            @foreach (var tag in post.Tags.Take(3))
+                                            {
+                                                <a href="@Url.Action("Index", new { tag = tag })" class="post-tag">
+                                                    #@tag
+                                                </a>
+                                            }
+                                            @if (post.Tags.Count > 3)
+                                            {
+                                                <span class="post-tag-more">+@(post.Tags.Count - 3)</span>
+                                            }
+                                        </div>
+                                    }
+
+                                    <!-- Footer Meta -->
+                                    <div class="post-footer">
+                                        <div class="post-author">
+                                            @if (!string.IsNullOrEmpty(post.AuthorProfileImageUrl))
+                                            {
+                                                <img src="@post.AuthorProfileImageUrl" alt="@post.AuthorName" class="author-avatar" />
+                                            }
+                                            else
+                                            {
+                                                <div class="author-avatar">
+                                                    <i class="bi bi-person-fill"></i>
+                                                </div>
+                                            }
+                                            <span class="author-name">@post.AuthorName</span>
+                                        </div>
+                                        <div class="post-stats">
+                                            <span class="stat-item">
+                                                <i class="bi bi-eye"></i> @post.ViewCount
+                                            </span>
+                                            <span class="stat-item">
+                                                <i class="bi bi-heart"></i> @post.LikeCount
+                                            </span>
+                                            <span class="stat-item">
+                                                <i class="bi bi-chat"></i> @post.CommentCount
+                                            </span>
+                                        </div>
+                                        <span class="post-date">@post.TimeAgo</span>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+
+                    <!-- Pagination -->
+                    @if (Model.TotalPages > 1)
+                    {
+                        <nav class="pagination-nav">
+                            <ul class="pagination">
+                                @if (Model.HasPreviousPage)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", new { 
+                                            page = Model.PageNumber - 1, 
+                                            search = Model.SearchTerm,
+                                            categoryId = Model.CategoryId,
+                                            sort = Model.Sort 
+                                        })">
+                                            <i class="bi bi-chevron-left"></i> ก่อนหน้า
+                                        </a>
+                                    </li>
+                                }
+
+                                @for (int i = 1; i <= Model.TotalPages; i++)
+                                {
+                                    if (i == 1 || i == Model.TotalPages || (i >= Model.PageNumber - 2 && i <= Model.PageNumber + 2))
+                                    {
+                                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("Index", new { 
+                                                page = i, 
+                                                search = Model.SearchTerm,
+                                                categoryId = Model.CategoryId,
+                                                sort = Model.Sort 
+                                            })">@i</a>
+                                        </li>
+                                    }
+                                    else if (i == Model.PageNumber - 3 || i == Model.PageNumber + 3)
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    }
+                                }
+
+                                @if (Model.HasNextPage)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", new { 
+                                            page = Model.PageNumber + 1, 
+                                            search = Model.SearchTerm,
+                                            categoryId = Model.CategoryId,
+                                            sort = Model.Sort 
+                                        })">
+                                            ถัดไป <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                }
+                else
+                {
+                    <!-- No Results -->
+                    <div class="no-results">
+                        <i class="bi bi-inbox"></i>
+                        <h3>ไม่พบโพสต์</h3>
+                        <p>ลองค้นหาด้วยคำค้นอื่นหรือล้างตัวกรอง</p>
+                        @if (Model.HasFilters)
+                        {
+                            <a href="@Url.Action("Index")" class="btn btn-primary">
+                                <i class="bi bi-arrow-left"></i> กลับหน้าแรก
+                            </a>
+                        }
+                    </div>
+                }
+            </main>
         </div>
-    </article>
-
-    <!-- Post 4 - Question -->
-    <article class="modern-post-card">
-        <div class="post-vote">
-            <button class="vote-btn upvote">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 4l-8 8h5v8h6v-8h5z" />
-                </svg>
-            </button>
-            <span class="vote-count">89</span>
-            <button class="vote-btn downvote">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 20l8-8h-5V4H9v8H4z" />
-                </svg>
-            </button>
-        </div>
-
-        <div class="post-main">
-            <div class="post-header">
-                <span class="post-flair question">❓ คำถาม</span>
-                <img src="https://ui-avatars.com/api/?name=Help&background=f59e0b" alt="Community" class="post-community-icon" />
-                <div class="post-meta">
-                    <a href="#" class="post-community">💡 AskDev</a>
-                    <span class="post-separator">•</span>
-                    <span class="post-author">โพสต์โดย <a href="#">@@newbie_coder</a></span>
-                    <span class="post-separator">•</span>
-                    <span class="post-time">1 วันที่แล้ว</span>
-                </div>
-            </div>
-
-            <h2 class="post-title">
-                <a href="#">ขอคำแนะนำหน่อยครับ: ควรเริ่มเรียน React หรือ Vue.js ดีครับ?</a>
-            </h2>
-
-            <div class="post-content">
-                <p>ผมเป็นมือใหม่ที่เพิ่งเรียน JavaScript จบ กำลังจะเริ่มเรียน Framework แต่ไม่รู้ว่าควรเลือก React หรือ Vue ดี อยากได้คำแนะนำจากพี่ๆ ที่มีประสบการณ์ครับ</p>
-            </div>
-
-            <div class="post-tags">
-                <a href="#" class="post-tag">#question</a>
-                <a href="#" class="post-tag">#react</a>
-                <a href="#" class="post-tag">#vuejs</a>
-            </div>
-
-            <div class="post-actions">
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-                    </svg>
-                    <span>67 ความคิดเห็น</span>
-                </button>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
-                    </svg>
-                    <span>แชร์</span>
-                </button>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
-                    </svg>
-                    <span>บันทึก</span>
-                </button>
-                <div class="post-action-spacer"></div>
-                <button class="post-action">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </article>
-
-    <!-- Load More Button -->
-    <div style="text-align: center; padding: var(--space-6) 0;">
-        <button class="load-more-btn" onclick="alert('Loading more posts...')">
-            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; margin-right: 8px;">
-                <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
-            </svg>
-            โหลดโพสต์เพิ่มเติม
-        </button>
     </div>
 </div>
 
-<style>
-    /* Additional Styles for Homepage */
-    .post-flair {
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 8px;
-        background: var(--warning-bg);
-        color: var(--warning);
-        border-radius: var(--radius);
-        font-size: var(--text-xs);
-        font-weight: var(--font-bold);
-        margin-right: var(--space-2);
-    }
-
-        .post-flair.question {
-            background: var(--info-bg);
-            color: var(--info);
+@section Scripts {
+    <script>
+        function clearSearch() {
+            document.querySelector('input[name="search"]').value = '';
+            document.querySelector('.filter-search').submit();
         }
-
-    .load-more-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: var(--space-3) var(--space-6);
-        background: var(--card-bg);
-        border: 2px solid var(--border-primary);
-        border-radius: var(--radius-full);
-        font-weight: var(--font-semibold);
-        color: var(--text-primary);
-        cursor: pointer;
-        transition: all var(--transition-base);
-    }
-
-        .load-more-btn:hover {
-            background: var(--bg-hover);
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-
-    .post-image {
-        margin: var(--space-3) 0;
-        border-radius: var(--radius-md);
-        overflow: hidden;
-        background: var(--bg-secondary);
-    }
-
-        .post-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: transform var(--transition-base);
-        }
-
-    .modern-post-card:hover .post-image img {
-        transform: scale(1.02);
-    }
-</style>
+    </script>
+}

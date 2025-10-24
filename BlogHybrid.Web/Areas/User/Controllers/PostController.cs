@@ -329,9 +329,9 @@ namespace BlogHybrid.Web.Areas.User.Controllers
 
                     // TODO: Redirect to post details page
                     // return RedirectToAction("Details", new { slug = result.Slug });
-                    
+                    return RedirectToAction("Index", "Post", new { area = "User" });
                     // ชั่วคราว redirect กลับไปหน้าแรก
-                    return RedirectToAction("Index", "Home");
+                    //return RedirectToAction("Index", "Home");
                 }
 
                 // ===================================
@@ -677,6 +677,113 @@ namespace BlogHybrid.Web.Areas.User.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+
+        // GET: /User/Posts/Details/{id}
+        [HttpGet("posts/details/{id}")]
+        public async Task<IActionResult> Details(int id)
+        {
+            try
+            {
+                var userId = _userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account", new { area = "" });
+                }
+
+                // ดึงโพสต์พร้อมข้อมูลที่เกี่ยวข้อง
+                var post = await _unitOfWork.Posts.GetByIdWithDetailsAsync(id);
+
+                if (post == null || post.IsDeleted)
+                {
+                    TempData["ErrorMessage"] = "ไม่พบโพสต์ที่ต้องการ";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // ตรวจสอบสิทธิ์ - เฉพาะเจ้าของโพสต์
+                if (post.AuthorId != userId)
+                {
+                    TempData["ErrorMessage"] = "คุณไม่มีสิทธิ์เข้าถึงโพสต์นี้";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // สร้าง ViewModel
+                var viewModel = new PostDetailsViewModel
+                {
+                    Id = post.Id,
+                    Title = post.Title,
+                    Slug = post.Slug,
+                    Content = post.Content,
+                    Excerpt = post.Excerpt,
+                    FeaturedImageUrl = post.FeaturedImageUrl,
+                    IsPublished = post.IsPublished,
+                    IsFeatured = post.IsFeatured,
+                    CreatedAt = post.CreatedAt,
+                    PublishedAt = post.PublishedAt,
+                    UpdatedAt = post.UpdatedAt,
+                    CategoryId = post.CategoryId,
+                    CategoryName = post.Category?.Name,
+                    CommunityId = post.CommunityId,
+                    CommunityName = post.Community?.Name,
+                    ViewCount = post.ViewCount,
+                    LikeCount = post.LikeCount,
+                    CommentCount = post.CommentCount,
+                    Tags = post.PostTags?.Select(pt => pt.Tag.Name).ToList() ?? new List<string>()
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error loading post details for ID: {id}");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการโหลดข้อมูลโพสต์";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: /User/Posts/Delete/{id}
+        [HttpPost("posts/delete/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var userId = _userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account", new { area = "" });
+                }
+
+                var command = new DeletePostCommand
+                {
+                    Id = id,
+                    CurrentUserId = userId
+                };
+
+                var result = await _mediator.Send(command);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = "ลบโพสต์สำเร็จ";
+                    _logger.LogInformation($"Post deleted successfully: ID={id}, UserId={userId}");
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = result.Errors.FirstOrDefault() ?? "ไม่สามารถลบโพสต์ได้";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting post ID: {id}");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการลบโพสต์";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
+
 
 
 

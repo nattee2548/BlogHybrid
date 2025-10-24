@@ -39,10 +39,10 @@
         <!-- Form -->
         <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="create-post-form" id="editPostForm">
             @Html.AntiForgeryToken()
-            
+
             <!-- Hidden fields -->
             <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="CurrentFeaturedImageUrl" />          
+            <input type="hidden" asp-for="CurrentFeaturedImageUrl" />
 
             <!-- Main Form Content (Single Column) -->
             <div class="form-sections-single">
@@ -185,60 +185,64 @@
                     </div>
                 </div>
 
-                <!-- 6. รูปภาพประกอบ (หน้าปก) -->
+                <!-- 6. รูปภาพประกอบ -->
                 <div class="form-section">
                     <h2 class="section-title">
-                        <i class="bi bi-image-fill"></i> รูปภาพประกอบ (หน้าปก)
+                        <i class="bi bi-image-fill"></i> รูปภาพประกอบ
                     </h2>
+                    <div class="form-group">
+                        <label class="form-label">
+                            รูปภาพหน้าปก <span class="optional-text">(ไม่บังคับ)</span>
+                        </label>
 
-                    <!-- Hidden field for URL -->
-                    <input type="hidden" asp-for="FeaturedImageUrl" id="featuredImageUrlInput" />
+                        <!-- Current Image Display -->
+                        @if (!string.IsNullOrEmpty(Model.FeaturedImageUrl))
+                        {
+                            <div class="current-image-display" id="currentImageDisplay">
+                                <div class="current-image-label">
+                                    <i class="bi bi-image"></i> รูปภาพปัจจุบัน
+                                </div>
+                                <img src="@Model.FeaturedImageUrl" alt="Current featured image" class="current-image-preview" />
+                                <button type="button" class="btn-remove-current" onclick="removeCurrentImage()">
+                                    <i class="bi bi-trash"></i> ลบรูปปัจจุบัน
+                                </button>
+                            </div>
+                        }
 
-                    <!-- Custom Upload Button -->
-                    <div class="custom-file-upload">
+                        <!-- File Input -->
                         <input type="file"
                                name="FeaturedImageFile"
+                               id="featuredImageFileInput"
                                class="file-input-hidden"
                                accept="image/*"
-                               id="featuredImageFileInput" />
+                               onchange="previewNewImage(event)" />
 
                         <label for="featuredImageFileInput" class="file-upload-label">
                             <div class="file-upload-icon">
                                 <i class="bi bi-cloud-upload"></i>
                             </div>
                             <div class="file-upload-text">
-                                <span class="upload-title">คลิกเพื่ออัปโหลดรูปภาพ</span>
-                                <span class="upload-subtitle">หรือลากไฟล์มาวางที่นี่</span>
+                                <span class="file-upload-title">อัปโหลดรูปภาพใหม่</span>
+                                <span class="file-upload-hint">คลิกเพื่อเลือกไฟล์หรือลากไฟล์มาวาง</span>
+                                <span class="file-upload-format">รองรับ JPG, PNG, GIF, WebP | ขนาดไม่เกิน 5MB</span>
                             </div>
                         </label>
-                    </div>
 
-                    <small class="form-help">JPG, PNG, GIF, WebP (สูงสุด 5MB)</small>
-
-                    <!-- Current Image Preview (if exists) -->
-                    @if (!string.IsNullOrEmpty(Model.CurrentFeaturedImageUrl))
-                    {
-                        <div class="image-preview-box current-image" style="margin-top: 1rem;">
-                            <div class="preview-header">
-                                <span class="preview-label">
-                                    <i class="bi bi-image"></i> รูปภาพปัจจุบัน
-                                </span>
+                        <!-- New Image Preview -->
+                        <div id="newImagePreview" style="display: none;" class="image-preview">
+                            <div class="image-preview-label">
+                                <i class="bi bi-image"></i> รูปภาพใหม่ที่จะอัปโหลด
                             </div>
-                            <img src="@Model.CurrentFeaturedImageUrl" alt="Current Image" />
+                            <img id="newPreviewImage" src="" alt="New preview" />
+                            <button type="button" class="btn-remove-preview" onclick="removeNewImage()">
+                                <i class="bi bi-x-circle"></i> ยกเลิก
+                            </button>
                         </div>
-                    }
 
-                    <!-- New Image Preview -->
-                    <div id="imagePreview" class="image-preview-box" style="display: none; margin-top: 1rem;">
-                        <div class="preview-header">
-                            <span class="preview-label">
-                                <i class="bi bi-image"></i> ตัวอย่างรูปภาพใหม่
-                            </span>
-                        </div>
-                        <img id="previewImage" src="#" alt="Preview" />
-                        <button type="button" class="btn-remove-image" onclick="removeImage()">
-                            <i class="bi bi-trash"></i> ลบรูป
-                        </button>
+                        <!-- Hidden field สำหรับ URL (ถ้ามี) -->
+                        <input type="hidden" asp-for="FeaturedImageUrl" id="featuredImageUrlInput" />
+
+                        <p class="form-help">รูปภาพควรมีขนาดอย่างน้อย 1200x630 พิกเซล เพื่อความคมชัดบน Social Media</p>
                     </div>
                 </div>
 
@@ -248,38 +252,24 @@
                         <i class="bi bi-gear-fill"></i> ตั้งค่าโพสต์
                     </h2>
 
-                    <div class="settings-grid">
-                        <!-- Published Status -->
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <div class="setting-icon">
-                                    <i class="bi bi-eye-fill"></i>
-                                </div>
-                                <div class="setting-text">
-                                    <h4 class="setting-title">เผยแพร่โพสต์</h4>
-                                    <p class="setting-description">แสดงโพสต์ให้ผู้อื่นเห็น</p>
-                                </div>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" asp-for="IsPublished" />
-                                <span class="toggle-slider"></span>
+                    <div class="form-check-group">
+                        <div class="form-check">
+                            <input asp-for="IsPublished"
+                                   class="form-check-input"
+                                   type="checkbox"
+                                   id="isPublished" />
+                            <label class="form-check-label" for="isPublished">
+                                <i class="bi bi-eye-fill"></i> เผยแพร่ทันที
                             </label>
                         </div>
 
-                        <!-- Featured Status -->
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <div class="setting-icon featured">
-                                    <i class="bi bi-star-fill"></i>
-                                </div>
-                                <div class="setting-text">
-                                    <h4 class="setting-title">โพสต์แนะนำ</h4>
-                                    <p class="setting-description">ปักหมุดโพสต์ไว้ด้านบน</p>
-                                </div>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" asp-for="IsFeatured" />
-                                <span class="toggle-slider"></span>
+                        <div class="form-check">
+                            <input asp-for="IsFeatured"
+                                   class="form-check-input"
+                                   type="checkbox"
+                                   id="isFeatured" />
+                            <label class="form-check-label" for="isFeatured">
+                                <i class="bi bi-star-fill"></i> โพสต์แนะนำ
                             </label>
                         </div>
                     </div>
@@ -311,61 +301,61 @@
     <div class="selector-modal-overlay" onclick="closeCategoryModal()"></div>
     <div class="selector-modal-content">
         <div class="selector-modal-header">
-            <h3><i class="bi bi-folder"></i> เลือกหมวดหมู่</h3>
+            <h3>เลือกหมวดหมู่</h3>
             <button type="button" class="selector-modal-close" onclick="closeCategoryModal()">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
-
-        <div class="selector-modal-search">
-            <i class="bi bi-search"></i>
-            <input type="text" id="categorySearch" placeholder="ค้นหาหมวดหมู่..." />
-        </div>
-
         <div class="selector-modal-body">
-            <div class="selector-items-grid" id="categoriesList">
+            <!-- Search Box -->
+            <div class="selector-search">
+                <i class="bi bi-search"></i>
+                <input type="text"
+                       id="categorySearchInput"
+                       placeholder="ค้นหาหมวดหมู่..."
+                       oninput="searchCategories(this.value)" />
+                <button type="button" onclick="clearCategorySearch()" class="search-clear">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+
+            <!-- Categories List -->
+            <div class="selector-list" id="categoryList">
                 @if (ViewBag.Categories != null)
                 {
-                    void RenderCategory(dynamic category, int level = 0)
+                    void RenderCategories(dynamic categories, int level = 0)
                     {
-                        <button type="button"
-                                class="selector-item @(Model.CategoryId == category.Id ? "selected" : "")"
-                                data-name="@category.Name"
-                                style="padding-left: @(level * 2 + 1)rem;"
-                                onclick="selectCategory(@category.Id, '@category.Name')">
-                            <div class="selector-item-icon" style="background-color: @(category.Color ?? "#666");">
-                                @if (!string.IsNullOrEmpty(category.ImageUrl))
-                                {
-                                    <img src="@category.ImageUrl" alt="@category.Name" />
-                                }
-                                else
-                                {
-                                    <i class="bi bi-folder-fill"></i>
-                                }
-                            </div>
-                            <div class="selector-item-content">
-                                <span class="selector-item-name">@category.Name</span>
-                                @if (category.PostCount > 0)
-                                {
-                                    <span class="selector-item-meta">@category.PostCount โพสต์</span>
-                                }
-                            </div>
-                            <i class="bi bi-check-circle-fill selector-check"></i>
-                        </button>
-
-                        @if (category.SubCategories != null && category.SubCategories.Count > 0)
+                        foreach (var category in categories)
                         {
-                            foreach (var child in category.SubCategories)
-                            {
-                                RenderCategory(child, level + 1);
-                            }
+                            var isParent = category.SubCategories != null && category.SubCategories.Count > 0;
+                            var cssClass = isParent ? "parent" : (level > 0 ? "child" : "");
+
+                            <div class="selector-group">
+                                <button type="button"
+                                        class="selector-item @cssClass @(Model.CategoryId == category.Id ? "selected" : "")"
+                                        data-id="@category.Id"
+                                        data-name="@category.Name"
+                                        onclick="selectCategory(@category.Id, '@category.Name')">
+                                    <div class="selector-item-icon" style="background: @(category.Color ?? "#ff4500")">
+                                        <i class="bi bi-folder@(isParent ? "-fill" : "")"></i>
+                                    </div>
+                                    <span>@category.Name</span>
+                                    <i class="bi bi-check-circle-fill selector-check"></i>
+                                </button>
+
+                                @if (isParent)
+                                {
+                                    <div class="selector-children">
+                                        @{
+                                            RenderCategories(category.SubCategories, level + 1);
+                                        }
+                                    </div>
+                                }
+                            </div>
                         }
                     }
 
-                    foreach (var category in ViewBag.Categories)
-                    {
-                        RenderCategory(category);
-                    }
+                    RenderCategories(ViewBag.Categories);
                 }
             </div>
         </div>
@@ -377,25 +367,29 @@
     <div class="selector-modal-overlay" onclick="closeCommunityModal()"></div>
     <div class="selector-modal-content">
         <div class="selector-modal-header">
-            <h3><i class="bi bi-people"></i> เลือกชุมชน</h3>
+            <h3>เลือกชุมชน</h3>
             <button type="button" class="selector-modal-close" onclick="closeCommunityModal()">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
-
-        <div class="selector-modal-search">
-            <i class="bi bi-search"></i>
-            <input type="text" id="communitySearch" placeholder="ค้นหาชุมชน..." />
-        </div>
-
         <div class="selector-modal-body">
-            <div class="selector-items-list" id="communitiesList">
+            <!-- Search Box -->
+            <div class="selector-search">
+                <i class="bi bi-search"></i>
+                <input type="text"
+                       id="communitySearch"
+                       placeholder="ค้นหาชุมชน..." />
+            </div>
+
+            <!-- Communities List -->
+            <div class="selector-list" id="communitiesList">
                 @if (ViewBag.Communities != null)
                 {
                     foreach (var community in ViewBag.Communities)
                     {
                         <button type="button"
                                 class="selector-item @(Model.CommunityId == community.Id ? "selected" : "")"
+                                data-id="@community.Id"
                                 data-name="@community.Name"
                                 onclick="selectCommunity(@community.Id, '@community.Name')">
                             @if (!string.IsNullOrEmpty(community.ImageUrl))
@@ -451,66 +445,114 @@
 
     <script>
         // ===================================
+        // Category Search Functions
+        // ===================================
+        function searchCategories(searchTerm) {
+            searchTerm = searchTerm.toLowerCase();
+            const items = document.querySelectorAll('#categoryList .selector-item');
+
+            items.forEach(item => {
+                const name = item.dataset.name.toLowerCase();
+                item.style.display = name.includes(searchTerm) ? '' : 'none';
+            });
+
+            // Show/hide groups
+            document.querySelectorAll('#categoryList .selector-group').forEach(group => {
+                const visibleItems = group.querySelectorAll('.selector-item:not([style*="display: none"])');
+                group.style.display = visibleItems.length > 0 ? '' : 'none';
+            });
+        }
+
+        function clearCategorySearch() {
+            const searchInput = document.getElementById('categorySearchInput');
+            if (searchInput) {
+                searchInput.value = '';
+                searchCategories('');
+            }
+        }
+
+        // ===================================
+        // Community Search Functions
+        // ===================================
+        function searchCommunities(searchTerm) {
+            searchTerm = searchTerm.toLowerCase();
+            const items = document.querySelectorAll('#communitiesList .selector-item');
+
+            items.forEach(item => {
+                const name = item.dataset.name.toLowerCase();
+                item.style.display = name.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        function clearCommunitySearch() {
+            const searchInput = document.getElementById('communitySearch');
+            if (searchInput) {
+                searchInput.value = '';
+                searchCommunities('');
+            }
+        }
+
+        // ===================================
         // Load Existing Data on Page Load
         // ===================================
         document.addEventListener('DOMContentLoaded', function() {
-    // Auto-hide toast after 5 seconds
-    setTimeout(() => {
-        document.querySelectorAll(".toast-notification").forEach(t => t.style.display = "none");
-    }, 5000);
+            // Auto-hide toast after 5 seconds
+            setTimeout(() => {
+                document.querySelectorAll(".toast-notification").forEach(t => t.style.display = "none");
+            }, 5000);
+
             console.log('🔄 Loading existing post data...');
 
             // 1. Load Content into Quill Editor
             @if (!string.IsNullOrEmpty(Model.Content))
             {
-                <text>
-                setTimeout(() => {
-                    if (window.quillEditor) {
-                        console.log('✅ Loading content into Quill');
-                        window.quillEditor.root.innerHTML = `@Html.Raw(Model.Content)`;
-                    }
-                }, 100);
-                </text>
+                    <text>
+                    setTimeout(() => {
+                        if (window.quillEditor) {
+                            console.log('✅ Loading content into Quill');
+                            window.quillEditor.root.innerHTML = `@Html.Raw(Model.Content)`;
+                        }
+                    }, 100);
+                    </text>
             }
 
             // 2. Load Tags
             @if (!string.IsNullOrEmpty(Model.Tags))
             {
-                <text>
-                const loadTags = () => {
-                    const tagInputContainer = document.querySelector('[data-tag-input]');
-                    if (tagInputContainer && tagInputContainer._tagInputInstance) {
-                        console.log('✅ Loading tags');
-                        const existingTags = '@Model.Tags'.split(',');
-                        existingTags.forEach(tag => {
-                            const trimmedTag = tag.trim();
-                            if (trimmedTag) {
-                                tagInputContainer._tagInputInstance.addTag(trimmedTag, false);
-                            }
-                        });
-                        return true;
+                    <text>
+                    const loadTags = () => {
+                        const tagInputContainer = document.querySelector('[data-tag-input]');
+                        if (tagInputContainer && tagInputContainer._tagInputInstance) {
+                            console.log('✅ Loading tags');
+                            const existingTags = '@Model.Tags'.split(',');
+                            existingTags.forEach(tag => {
+                                const trimmedTag = tag.trim();
+                                if (trimmedTag) {
+                                    tagInputContainer._tagInputInstance.addTag(trimmedTag, false);
+                                }
+                            });
+                            return true;
+                        }
+                        return false;
+                    };
+
+                    if (!loadTags()) {
+                        setTimeout(loadTags, 100);
                     }
-                    return false;
-                };
-                
-                if (!loadTags()) {
-                    setTimeout(loadTags, 100);
-                }
-                </text>
+                    </text>
             }
 
             // 3. Load Featured Image Preview
             @if (!string.IsNullOrEmpty(Model.FeaturedImageUrl))
             {
-                <text>
-                setTimeout(() => {
-                    const featuredImageUrlInput = document.getElementById('featuredImageUrlInput');
-                    if (featuredImageUrlInput && featuredImageUrlInput.value) {
-                        console.log('✅ Setting featured image');
-                        // Featured image จะแสดงเป็น "รูปภาพปัจจุบัน" อยู่แล้ว
-                    }
-                }, 100);
-                </text>
+                    <text>
+                    setTimeout(() => {
+                        const featuredImageUrlInput = document.getElementById('featuredImageUrlInput');
+                        if (featuredImageUrlInput && featuredImageUrlInput.value) {
+                            console.log('✅ Setting featured image');
+                        }
+                    }, 100);
+                    </text>
             }
 
             // Scroll to top
@@ -535,26 +577,26 @@
         function selectCategory(id, name) {
             document.getElementById('categoryIdInput').value = id;
             document.getElementById('categoryDisplay').textContent = name;
-            
+
             // Remove selected class from all items
-            document.querySelectorAll('#categoriesList .selector-item').forEach(item => {
+            document.querySelectorAll('#categoryList .selector-item').forEach(item => {
                 item.classList.remove('selected');
             });
-            
+
             // Add selected class to clicked item
             event.target.closest('.selector-item').classList.add('selected');
-            
+
             closeCategoryModal();
         }
 
         // Category Search
-        document.getElementById('categorySearch')?.addEventListener('input', function(e) {
+        document.getElementById('categorySearchInput')?.addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
-            const items = document.querySelectorAll('#categoriesList .selector-item');
-            
+            const items = document.querySelectorAll('#categoryList .selector-item');
+
             items.forEach(item => {
                 const name = item.dataset.name.toLowerCase();
-                item.style.display = name.includes(searchTerm) ? 'flex' : 'none';
+                item.style.display = name.includes(searchTerm) ? '' : 'none';
             });
         });
 
@@ -572,15 +614,15 @@
         function selectCommunity(id, name) {
             document.getElementById('communityIdInput').value = id;
             document.getElementById('communityDisplay').textContent = name;
-            
+
             // Remove selected class from all items
             document.querySelectorAll('#communitiesList .selector-item').forEach(item => {
                 item.classList.remove('selected');
             });
-            
+
             // Add selected class to clicked item
             event.target.closest('.selector-item').classList.add('selected');
-            
+
             closeCommunityModal();
         }
 
@@ -588,29 +630,50 @@
         document.getElementById('communitySearch')?.addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const items = document.querySelectorAll('#communitiesList .selector-item');
-            
+
             items.forEach(item => {
                 const name = item.dataset.name.toLowerCase();
-                item.style.display = name.includes(searchTerm) ? 'flex' : 'none';
+                item.style.display = name.includes(searchTerm) ? '' : 'none';
             });
         });
 
         // ===================================
-        // Image Upload & Preview
+        // Image Upload & Preview Functions
         // ===================================
-        function removeImage() {
-            document.getElementById('featuredImageFileInput').value = '';
+        function removeCurrentImage() {
+            document.getElementById('currentImageDisplay').style.display = 'none';
             document.getElementById('featuredImageUrlInput').value = '';
-            document.getElementById('imagePreview').style.display = 'none';
-            document.getElementById('previewImage').src = '';
+        }
+
+        function previewNewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('newPreviewImage').src = e.target.result;
+                    document.getElementById('newImagePreview').style.display = 'block';
+                    // ซ่อนรูปปัจจุบันถ้ามี
+                    const currentDisplay = document.getElementById('currentImageDisplay');
+                    if (currentDisplay) {
+                        currentDisplay.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeNewImage() {
+            document.getElementById('featuredImageFileInput').value = '';
+            document.getElementById('newImagePreview').style.display = 'none';
+            // แสดงรูปปัจจุบันกลับมา
+            const currentDisplay = document.getElementById('currentImageDisplay');
+            if (currentDisplay) {
+                currentDisplay.style.display = 'block';
+            }
         }
 
         // Close modals on ESC key
         document.addEventListener('keydown', function(e) {
-    // Auto-hide toast after 5 seconds
-    setTimeout(() => {
-        document.querySelectorAll(".toast-notification").forEach(t => t.style.display = "none");
-    }, 5000);
             if (e.key === 'Escape') {
                 closeCategoryModal();
                 closeCommunityModal();

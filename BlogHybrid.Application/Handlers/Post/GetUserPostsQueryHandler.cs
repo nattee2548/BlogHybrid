@@ -23,7 +23,7 @@ namespace BlogHybrid.Application.Handlers.Post
         {
             // Get all posts by user
             var query = _unitOfWork.Posts.GetQueryable()
-                .Where(p => p.AuthorId == request.UserId)
+                .Where(p => p.AuthorId == request.UserId && !p.IsDeleted)
                 .Include(p => p.Category)
                 .Include(p => p.Community)
                 .Include(p => p.PostTags)

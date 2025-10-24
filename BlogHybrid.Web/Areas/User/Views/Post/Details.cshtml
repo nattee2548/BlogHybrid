@@ -1,0 +1,249 @@
+@model BlogHybrid.Web.Areas.User.Models.PostDetailsViewModel
+@{
+    ViewData["Title"] = "รายละเอียดโพสต์";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user/post-details.css" asp-append-version="true" />
+}
+
+<!-- Toast Notifications -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-notification toast-success" style="display:flex">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@TempData["SuccessMessage"]</span>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-notification toast-error" style="display:flex">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@TempData["ErrorMessage"]</span>
+    </div>
+}
+
+<div class="main-container" style="padding: 80px 0 40px;">
+    <div class="container" style="max-width: 1200px;">
+
+        <!-- Back Button -->
+        <div class="back-nav">
+            <a asp-area="User" asp-controller="Post" asp-action="Index" class="back-link">
+                <i class="bi bi-arrow-left"></i> กลับไปโพสต์ของฉัน
+            </a>
+        </div>
+
+        <!-- Post Details Card -->
+        <div class="post-details-card">
+            
+            <!-- Header -->
+            <div class="post-header">
+                <div class="post-header-left">
+                    <h1 class="post-title">@Model.Title</h1>
+                    <div class="post-meta">
+                        <span class="meta-item">
+                            <i class="bi bi-calendar"></i>
+                            สร้างเมื่อ @Model.DisplayDate
+                        </span>
+                        @if (Model.UpdatedAt.HasValue && Model.UpdatedAt != Model.CreatedAt)
+                        {
+                            <span class="meta-item">
+                                <i class="bi bi-pencil"></i>
+                                แก้ไขล่าสุด @Model.UpdatedAt.Value.ToString("dd MMMM yyyy HH:mm")
+                            </span>
+                        }
+                        <span class="status-badge status-@Model.StatusColor">
+                            <i class="bi bi-@(Model.IsPublished ? "eye" : "eye-slash")"></i>
+                            @Model.StatusBadge
+                        </span>
+                        @if (Model.IsFeatured)
+                        {
+                            <span class="status-badge status-featured">
+                                <i class="bi bi-star-fill"></i> โพสต์แนะนำ
+                            </span>
+                        }
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="post-header-actions">
+                    <a asp-area="User" asp-controller="Post" asp-action="Edit" asp-route-id="@Model.Id" 
+                       class="btn btn-edit">
+                        <i class="bi bi-pencil"></i> แก้ไขโพสต์
+                    </a>
+                    <button type="button" class="btn btn-delete" onclick="openDeleteModal()">
+                        <i class="bi bi-trash"></i> ลบ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Featured Image -->
+            @if (!string.IsNullOrEmpty(Model.FeaturedImageUrl))
+            {
+                <div class="post-featured-image">
+                    <img src="@Model.FeaturedImageUrl" alt="@Model.Title" />
+                </div>
+            }
+
+            <!-- Content Sections -->
+            <div class="post-content-sections">
+                
+                <!-- Category & Community -->
+                <div class="post-info-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-info-circle"></i> ข้อมูลโพสต์
+                    </h3>
+                    <div class="info-grid">
+                        @if (!string.IsNullOrEmpty(Model.CategoryName))
+                        {
+                            <div class="info-item">
+                                <span class="info-label">
+                                    <i class="bi bi-folder"></i> หมวดหมู่
+                                </span>
+                                <span class="info-value">@Model.CategoryName</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.CommunityName))
+                        {
+                            <div class="info-item">
+                                <span class="info-label">
+                                    <i class="bi bi-people"></i> ชุมชน
+                                </span>
+                                <span class="info-value">@Model.CommunityName</span>
+                            </div>
+                        }
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-eye"></i> จำนวนการเข้าชม
+                            </span>
+                            <span class="info-value">@Model.ViewCount ครั้ง</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-heart"></i> ถูกใจ
+                            </span>
+                            <span class="info-value">@Model.LikeCount ครั้ง</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-chat"></i> ความคิดเห็น
+                            </span>
+                            <span class="info-value">@Model.CommentCount ครั้ง</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Excerpt -->
+                @if (!string.IsNullOrEmpty(Model.Excerpt))
+                {
+                    <div class="post-excerpt-section">
+                        <h3 class="section-title">
+                            <i class="bi bi-card-text"></i> คำอธิบายย่อ
+                        </h3>
+                        <p class="post-excerpt">@Model.Excerpt</p>
+                    </div>
+                }
+
+                <!-- Content -->
+                <div class="post-content-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-file-text"></i> เนื้อหาโพสต์
+                    </h3>
+                    <div class="post-content">
+                        @Html.Raw(Model.Content)
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                @if (Model.Tags.Any())
+                {
+                    <div class="post-tags-section">
+                        <h3 class="section-title">
+                            <i class="bi bi-tags"></i> แท็ก
+                        </h3>
+                        <div class="tags-list">
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <span class="tag">
+                                    <i class="bi bi-tag"></i> @tag
+                                </span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="post-footer">
+                <a asp-area="User" asp-controller="Post" asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> กลับไปโพสต์ของฉัน
+                </a>
+                <div class="footer-right">
+                    <a asp-area="User" asp-controller="Post" asp-action="Edit" asp-route-id="@Model.Id" 
+                       class="btn btn-edit">
+                        <i class="bi bi-pencil"></i> แก้ไขโพสต์
+                    </a>
+                    <button type="button" class="btn btn-delete" onclick="openDeleteModal()">
+                        <i class="bi bi-trash"></i> ลบ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="delete-modal" id="deleteModal">
+    <div class="delete-modal-overlay" onclick="closeDeleteModal()"></div>
+    <div class="delete-modal-content">
+        <div class="delete-modal-icon">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <h2 class="delete-modal-title">ยืนยันการลบโพสต์</h2>
+        <p class="delete-modal-message">
+            คุณแน่ใจหรือไม่ที่จะลบโพสต์ "<strong>@Model.Title</strong>"?
+            <br/>
+            <span class="delete-modal-warning">การกระทำนี้ไม่สามารถยกเลิกได้</span>
+        </p>
+        <div class="delete-modal-actions">
+            <button type="button" class="btn btn-cancel" onclick="closeDeleteModal()">
+                <i class="bi bi-x-lg"></i> ยกเลิก
+            </button>
+            <form asp-area="User" asp-controller="Post" asp-action="Delete" asp-route-id="@Model.Id" 
+                  method="post" style="display: inline;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-delete-confirm">
+                    <i class="bi bi-trash"></i> ยืนยันการลบ
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toast auto-hide
+        setTimeout(() => {
+            document.querySelectorAll('.toast-notification').forEach(t => t.style.display = 'none');
+        }, 5000);
+
+        // Delete Modal
+        function openDeleteModal() {
+            document.getElementById('deleteModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDeleteModal();
+            }
+        });
+    </script>
+}
