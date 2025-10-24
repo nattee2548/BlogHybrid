@@ -1,0 +1,341 @@
+@model BlogHybrid.Application.DTOs.Post.PostDetailDto
+
+@{
+    ViewData["Title"] = Model.Title;
+    
+    // คำนวณ time ago
+    var timeDiff = DateTime.UtcNow - Model.CreatedAt;
+    string timeAgo;
+    
+    if (timeDiff.TotalDays < 1)
+    {
+        timeAgo = $"{(int)timeDiff.TotalHours} ชั่วโมงที่แล้ว";
+    }
+    else if (timeDiff.TotalDays < 7)
+    {
+        timeAgo = $"{(int)timeDiff.TotalDays} วันที่แล้ว";
+    }
+    else if (timeDiff.TotalDays < 30)
+    {
+        timeAgo = $"{(int)(timeDiff.TotalDays / 7)} สัปดาห์ที่แล้ว";
+    }
+    else
+    {
+        timeAgo = Model.CreatedAt.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("th-TH"));
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/post-detail.css" asp-append-version="true" />
+}
+
+@{
+    var scrollToCommentId = TempData["ScrollToCommentId"] as int?;
+}
+
+<!-- Toast Notifications -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-notification toast-success show">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@TempData["SuccessMessage"]</span>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-notification toast-error show">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@TempData["ErrorMessage"]</span>
+    </div>
+}
+
+@if (scrollToCommentId.HasValue)
+{
+    <div class="post-detail-page" data-scroll-to-comment="@scrollToCommentId.Value">
+}
+else
+{
+    <div class="post-detail-page">
+}
+    <div class="container">
+        <div class="post-detail-layout">
+            
+            <!-- Main Content -->
+            <main class="post-detail-main">
+                
+                <!-- Breadcrumb -->
+                <nav class="post-breadcrumb">
+                    <a asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-house-door"></i> หน้าแรก
+                    </a>
+                    @if (Model.CategoryId.HasValue)
+                    {
+                        <i class="bi bi-chevron-right"></i>
+                        <a asp-controller="Home" asp-action="Index" asp-route-categoryId="@Model.CategoryId">
+                            @Model.CategoryName
+                        </a>
+                    }
+                    @if (Model.CommunityId.HasValue)
+                    {
+                        <i class="bi bi-chevron-right"></i>
+                        <a asp-controller="Community" asp-action="Details" asp-route-slug="@Model.CommunitySlug">
+                            <i class="bi bi-people"></i> @Model.CommunityName
+                        </a>
+                    }
+                </nav>
+
+                <!-- Post Header -->
+                <article class="post-detail-article">
+                    
+                    <!-- Category Badge -->
+                    @if (!string.IsNullOrEmpty(Model.CategoryName))
+                    {
+                        <a asp-controller="Home" asp-action="Index" asp-route-categoryId="@Model.CategoryId"
+                           class="post-category-badge" 
+                           style="background: @(Model.CategoryColor)20; color: @Model.CategoryColor; border-color: @Model.CategoryColor;">
+                            <i class="bi bi-folder"></i> @Model.CategoryName
+                        </a>
+                    }
+
+                    <!-- Title -->
+                    <h1 class="post-title">@Model.Title</h1>
+
+                    <!-- Meta Info -->
+                    <div class="post-meta">
+                        <div class="author-info">
+                            @if (!string.IsNullOrEmpty(Model.AuthorProfileImageUrl))
+                            {
+                                <img src="@Model.AuthorProfileImageUrl" alt="@Model.AuthorDisplayName" class="author-avatar" />
+                            }
+                            else
+                            {
+                                <div class="author-avatar-placeholder">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                            }
+                            <div class="author-details">
+                                <a href="#" class="author-name">@Model.AuthorDisplayName</a>
+                                <div class="post-date">
+                                    <i class="bi bi-clock"></i> @timeAgo
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post-stats">
+                            <span class="stat-item">
+                                <i class="bi bi-eye"></i> @Model.ViewCount.ToString("N0")
+                            </span>
+                            <span class="stat-item">
+                                <i class="bi bi-heart"></i> @Model.LikeCount.ToString("N0")
+                            </span>
+                            <span class="stat-item">
+                                <i class="bi bi-chat"></i> @Model.CommentCount.ToString("N0")
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Featured Image -->
+                    @if (!string.IsNullOrEmpty(Model.FeaturedImageUrl))
+                    {
+                        <div class="post-featured-image">
+                            <img src="@Model.FeaturedImageUrl" alt="@Model.Title" />
+                        </div>
+                    }
+
+                    <!-- Content -->
+                    <div class="post-content">
+                        @Html.Raw(Model.Content)
+                    </div>
+
+                    <!-- Tags -->
+                    @if (Model.Tags.Any())
+                    {
+                        <div class="post-tags">
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <a asp-controller="Home" asp-action="Index" asp-route-tag="@tag" class="post-tag">
+                                    <i class="bi bi-tag"></i> @tag
+                                </a>
+                            }
+                        </div>
+                    }
+
+                    <!-- Action Buttons -->
+                    <div class="post-actions">
+                        <button class="action-btn like-btn @(Model.IsLikedByCurrentUser ? "liked" : "")" 
+                                onclick="toggleLike(@Model.Id)">
+                            <i class="bi @(Model.IsLikedByCurrentUser ? "bi-heart-fill" : "bi-heart")"></i>
+                            <span>ถูกใจ (@Model.LikeCount)</span>
+                        </button>
+                        
+                        <button class="action-btn share-btn" onclick="sharePost()">
+                            <i class="bi bi-share"></i>
+                            <span>แชร์</span>
+                        </button>
+
+                        @if (Model.CanEdit)
+                        {
+                            <a asp-area="User" asp-controller="Posts" asp-action="Edit" asp-route-id="@Model.Id" 
+                               class="action-btn edit-btn">
+                                <i class="bi bi-pencil"></i>
+                                <span>แก้ไข</span>
+                            </a>
+                        }
+                    </div>
+                </article>
+
+                <!-- Comments Section -->
+                <section class="comments-section" id="comments">
+                    <div class="comments-header">
+                        <h2>
+                            <i class="bi bi-chat-dots"></i>
+                            ความคิดเห็น (@Model.CommentCount)
+                        </h2>
+                    </div>
+
+                    <!-- Add Comment Form -->
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="add-comment-form">
+                            <form asp-controller="Post" asp-action="AddComment" method="post">
+                                <input type="hidden" name="postId" value="@Model.Id" />
+                                <input type="hidden" name="returnSlug" value="@Model.Slug" />
+                                <div class="form-group">
+                                    <textarea name="content" 
+                                              class="form-control comment-textarea" 
+                                              placeholder="แสดงความคิดเห็น..." 
+                                              rows="4" 
+                                              required></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-send"></i> ส่งความคิดเห็น
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="login-prompt">
+                            <i class="bi bi-info-circle"></i>
+                            <p>
+                                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Request.Path">เข้าสู่ระบบ</a>
+                                เพื่อแสดงความคิดเห็น
+                            </p>
+                        </div>
+                    }
+
+                    <!-- Comments List -->
+                    @if (Model.Comments.Any())
+                    {
+                        ViewData["PostId"] = Model.Id;
+                        ViewData["PostSlug"] = Model.Slug;
+                        
+                        <div class="comments-list">
+                            @foreach (var comment in Model.Comments)
+                            {
+                                @await Html.PartialAsync("_CommentItem", comment)
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-comments">
+                            <i class="bi bi-chat-dots"></i>
+                            <p>ยังไม่มีความคิดเห็น เป็นคนแรกที่แสดงความคิดเห็น!</p>
+                        </div>
+                    }
+                </section>
+            </main>
+
+            <!-- Sidebar -->
+            <aside class="post-detail-sidebar">
+                
+                <!-- Author Card -->
+                <div class="sidebar-card author-card">
+                    <div class="card-header">
+                        <h3><i class="bi bi-person"></i> เกี่ยวกับผู้เขียน</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="author-profile">
+                            @if (!string.IsNullOrEmpty(Model.AuthorProfileImageUrl))
+                            {
+                                <img src="@Model.AuthorProfileImageUrl" alt="@Model.AuthorDisplayName" class="profile-avatar" />
+                            }
+                            else
+                            {
+                                <div class="profile-avatar-placeholder">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                            }
+                            <h4>@Model.AuthorDisplayName</h4>
+                            <p class="username">@@@Model.AuthorUserName</p>
+                            @if (!string.IsNullOrEmpty(Model.AuthorBio))
+                            {
+                                <p class="bio">@Model.AuthorBio</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Community Card (if in community) -->
+                @if (Model.CommunityId.HasValue)
+                {
+                    <div class="sidebar-card community-card">
+                        <div class="card-header">
+                            <h3><i class="bi bi-people"></i> ชุมชน</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="community-info">
+                                @if (!string.IsNullOrEmpty(Model.CommunityImageUrl))
+                                {
+                                    <img src="@Model.CommunityImageUrl" alt="@Model.CommunityName" class="community-avatar" />
+                                }
+                                else
+                                {
+                                    <div class="community-avatar-placeholder">
+                                        <i class="bi bi-people-fill"></i>
+                                    </div>
+                                }
+                                <h4>@Model.CommunityName</h4>
+                                <a asp-controller="Community" asp-action="Details" asp-route-slug="@Model.CommunitySlug"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-box-arrow-up-right"></i> ดูชุมชน
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Share Card -->
+                <div class="sidebar-card share-card">
+                    <div class="card-header">
+                        <h3><i class="bi bi-share"></i> แชร์โพสต์</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="share-buttons">
+                            <button class="share-btn-social facebook" onclick="shareToFacebook()">
+                                <i class="bi bi-facebook"></i> Facebook
+                            </button>
+                            <button class="share-btn-social twitter" onclick="shareToTwitter()">
+                                <i class="bi bi-twitter"></i> Twitter
+                            </button>
+                            <button class="share-btn-social line" onclick="shareToLine()">
+                                <i class="bi bi-line"></i> LINE
+                            </button>
+                            <button class="share-btn-social link" onclick="copyLink()">
+                                <i class="bi bi-link-45deg"></i> คัดลอกลิงก์
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+
+    @section Scripts {
+            <script src="~/js/post-detail.js" asp-append-version="true"></script>
+    }

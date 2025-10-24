@@ -1,0 +1,133 @@
+@model BlogHybrid.Application.DTOs.Post.CommentDto
+@{
+    // คำนวณ time ago
+    var timeDiff = DateTime.UtcNow - Model.CreatedAt;
+    string timeAgo;
+    
+    if (timeDiff.TotalMinutes < 60)
+    {
+        timeAgo = $"{(int)timeDiff.TotalMinutes} นาทีที่แล้ว";
+    }
+    else if (timeDiff.TotalMinutes < 1440) // 24 hours
+    {
+        timeAgo = $"{(int)timeDiff.TotalHours} ชั่วโมงที่แล้ว";
+    }
+    else if (timeDiff.TotalMinutes < 10080) // 7 days
+    {
+        timeAgo = $"{(int)timeDiff.TotalDays} วันที่แล้ว";
+    }
+    else
+    {
+        timeAgo = Model.CreatedAt.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("th-TH"));
+    }
+}
+
+<div class="comment-item @(Model.ParentCommentId != null ? "comment-reply" : "")" id="comment-@Model.Id">
+    <div class="comment-avatar">
+        @if (!string.IsNullOrEmpty(Model.AuthorProfileImageUrl))
+        {
+            <img src="@Model.AuthorProfileImageUrl" alt="@Model.AuthorDisplayName" />
+        }
+        else
+        {
+            <div class="avatar-placeholder">
+                <i class="bi bi-person-circle"></i>
+            </div>
+        }
+    </div>
+    
+    <div class="comment-content">
+        <div class="comment-header">
+            <div class="comment-author">
+                <a href="#" class="author-name">@Model.AuthorDisplayName</a>
+                <span class="comment-date">@timeAgo</span>
+            </div>
+            
+            @if (Model.CanEdit || Model.CanDelete)
+            {
+                <div class="comment-actions-menu">
+                    <button class="btn-menu" onclick="toggleCommentMenu(@Model.Id)">
+                        <i class="bi bi-three-dots"></i>
+                    </button>
+                    <div class="menu-dropdown" id="menu-@Model.Id">
+                        @if (Model.CanEdit)
+                        {
+                            <button onclick="editComment(@Model.Id)">
+                                <i class="bi bi-pencil"></i> แก้ไข
+                            </button>
+                        }
+                        @if (Model.CanDelete)
+                        {
+                            <button onclick="deleteComment(@Model.Id)" class="text-danger">
+                                <i class="bi bi-trash"></i> ลบ
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <div class="comment-text">
+            @Model.Content
+        </div>
+        
+        <div class="comment-footer">
+            <button class="comment-action-btn like-btn @(Model.IsLikedByCurrentUser ? "liked" : "")" 
+                    onclick="toggleCommentLike(@Model.Id)">
+                <i class="bi @(Model.IsLikedByCurrentUser ? "bi-heart-fill" : "bi-heart")"></i>
+                @if (Model.LikeCount > 0)
+                {
+                    <span>@Model.LikeCount</span>
+                }
+            </button>
+            
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <button class="comment-action-btn reply-btn" 
+                        onclick="toggleReplyForm(@Model.Id)">
+                    <i class="bi bi-reply"></i> ตอบกลับ
+                </button>
+            }
+        </div>
+
+        <!-- Reply Form (Hidden by default) -->
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            var postId = ViewData["PostId"] as int? ?? 0;
+            var postSlug = ViewData["PostSlug"] as string ?? string.Empty;
+            
+            <div class="reply-form" id="reply-form-@Model.Id" style="display: none;">
+                <form asp-controller="Post" asp-action="AddComment" method="post" class="comment-reply-form">
+                    <input type="hidden" name="postId" value="@postId" />
+                    <input type="hidden" name="parentCommentId" value="@Model.Id" />
+                    <input type="hidden" name="returnSlug" value="@postSlug" />
+                    <textarea name="content" 
+                              class="form-control reply-textarea" 
+                              placeholder="ตอบกลับ @Model.AuthorDisplayName..." 
+                              rows="3" 
+                              required></textarea>
+                    <div class="reply-actions">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                onclick="toggleReplyForm(@Model.Id)">
+                            ยกเลิก
+                        </button>
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="bi bi-send"></i> ส่ง
+                        </button>
+                    </div>
+                </form>
+            </div>
+        }
+        
+        <!-- Replies (Recursive) -->
+        @if (Model.Replies.Any())
+        {
+            <div class="comment-replies">
+                @foreach (var reply in Model.Replies)
+                {
+                    @await Html.PartialAsync("_CommentItem", reply)
+                }
+            </div>
+        }
+    </div>
+</div>

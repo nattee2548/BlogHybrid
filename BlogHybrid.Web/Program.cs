@@ -175,6 +175,11 @@ app.MapAreaControllerRoute(
     pattern: "Admin/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
+    name: "post",
+    pattern: "post/{slug}",
+    defaults: new { controller = "Post", action = "Details" });
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
