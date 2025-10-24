@@ -50,14 +50,7 @@
     </div>
 }
 
-@if (scrollToCommentId.HasValue)
-{
-    <div class="post-detail-page" data-scroll-to-comment="@scrollToCommentId.Value">
-}
-else
-{
-    <div class="post-detail-page">
-}
+<div class="post-detail-page" data-scroll-to-comment="@(scrollToCommentId?.ToString() ?? "")">
     <div class="container">
         <div class="post-detail-layout">
             
@@ -221,7 +214,7 @@ else
                         <div class="login-prompt">
                             <i class="bi bi-info-circle"></i>
                             <p>
-                                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Request.Path">เข้าสู่ระบบ</a>
+                                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">เข้าสู่ระบบ</a>
                                 เพื่อแสดงความคิดเห็น
                             </p>
                         </div>
@@ -336,6 +329,6 @@ else
     </div>
 </div>
 
-    @section Scripts {
-            <script src="~/js/post-detail.js" asp-append-version="true"></script>
-    }
+@section Scripts {
+    <script src="~/js/post-detail.js" asp-append-version="true"></script>
+}
