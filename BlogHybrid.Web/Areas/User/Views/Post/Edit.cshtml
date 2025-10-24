@@ -1,0 +1,570 @@
+@model BlogHybrid.Web.Areas.User.Models.EditPostViewModel
+@{
+    ViewData["Title"] = "แก้ไขโพสต์";
+}
+
+<!-- Toast Notification -->
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="toast-notification toast-error" id="errorToast" style="display: none;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@ViewBag.ErrorMessage</span>
+    </div>
+}
+
+<!-- ✅ Styles Section - เพิ่มไฟล์ CSS ครบถ้วน -->
+@section Styles {
+    <!-- Quill Editor -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" />
+    
+    <!-- Post Create Styles -->
+    <link rel="stylesheet" href="~/css/quill-editor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/tag-input.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/post-create.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/loading-spinner.css" asp-append-version="true" />
+}
+
+<div class="create-post-container">
+    <div class="create-post-content">
+        <!-- Header -->
+        <div class="create-header">
+            <h1><i class="bi bi-pencil-fill"></i> แก้ไขโพสต์</h1>
+            <button type="button" onclick="window.history.back()" class="btn-close-page">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="create-post-form" id="editPostForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <!-- Validation Summary -->
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <!-- Main Form Content (Single Column) -->
+            <div class="form-sections-single">
+
+                <!-- 1. หัวข้อโพสต์ -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="bi bi-pencil-fill"></i> หัวข้อโพสต์
+                    </h2>
+                    <div class="form-group">
+                        <label asp-for="Title" class="form-label required">หัวข้อโพสต์</label>
+                        <input asp-for="Title"
+                               class="form-control form-control-lg"
+                               placeholder="เช่น วิธีการทำ... แนะนำ... รีวิว..."
+                               maxlength="200"
+                               required />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                        <p class="form-help">หัวข้อที่ดีควรชัดเจน น่าสนใจ และสื่อความหมาย (3-200 ตัวอักษร)</p>
+                    </div>
+                </div>
+
+                <!-- 2. หมวดหมู่และชุมชน -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="bi bi-folder-fill"></i> หมวดหมู่และชุมชน
+                    </h2>
+                    
+                    <div class="form-row">
+                        <!-- Category Selection -->
+                        <div class="form-group">
+                            <label asp-for="CategoryId" class="form-label">
+                                หมวดหมู่ <span class="optional-text">(ไม่บังคับ)</span>
+                            </label>
+                            <button type="button" class="selector-button" onclick="openCategoryModal()">
+                                <span id="selectedCategoryText">
+                                    @(Model.CategoryId.HasValue ? ViewBag.SelectedCategoryName : "เลือกหมวดหมู่")
+                                </span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <input type="hidden" asp-for="CategoryId" id="categoryIdInput" />
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Community Selection -->
+                        <div class="form-group">
+                            <label asp-for="CommunityId" class="form-label">
+                                ชุมชน <span class="optional-text">(ไม่บังคับ)</span>
+                            </label>
+                            <button type="button" class="selector-button" onclick="openCommunityModal()">
+                                <span id="selectedCommunityText">
+                                    @(Model.CommunityId.HasValue ? ViewBag.SelectedCommunityName : "เลือกชุมชน")
+                                </span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <input type="hidden" asp-for="CommunityId" id="communityIdInput" />
+                            <span asp-validation-for="CommunityId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <p class="form-help">
+                        <i class="bi bi-info-circle"></i> 
+                        กรุณาเลือกอย่างน้อย 1 อย่าง (หมวดหมู่ หรือ ชุมชน หรือทั้งคู่)
+                    </p>
+                </div>
+
+                <!-- 3. เนื้อหาโพสต์ -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="bi bi-file-text-fill"></i> เนื้อหาโพสต์
+                    </h2>
+                    <div class="form-group">
+                        <label asp-for="Content" class="form-label required">เนื้อหา</label>
+                        
+                        <!-- Hidden input for form submission -->
+                        <input type="hidden" asp-for="Content" id="contentHiddenInput" />
+                        
+                        <!-- Quill Editor -->
+                        <div id="quillEditor"></div>
+                        
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                        <p class="form-help">เขียนเนื้อหาที่มีคุณค่าและน่าสนใจ รองรับการจัดรูปแบบข้อความ</p>
+                    </div>
+                </div>
+
+                <!-- 4. คำอธิบายย่อ -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="bi bi-card-text"></i> คำอธิบายย่อ
+                    </h2>
+                    <div class="form-group">
+                        <label asp-for="Excerpt" class="form-label">
+                            คำอธิบายย่อ <span class="optional-text">(ไม่บังคับ)</span>
+                        </label>
+                        <textarea asp-for="Excerpt"
+                                  class="form-control form-textarea"
+                                  rows="3"
+                                  maxlength="500"
+                                  placeholder="สรุปเนื้อหาสั้นๆ สำหรับแสดงในหน้ารายการ (ถ้าไม่ระบุจะสร้างอัตโนมัติ)"></textarea>
+                        <span asp-validation-for="Excerpt" class="text-danger"></span>
+                        <p class="form-help">สูงสุด 500 ตัวอักษร</p>
+                    </div>
+                </div>
+
+                <!-- 5. แท็ก -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="bi bi-tags-fill"></i> แท็ก
+                    </h2>
+                    <div class="form-group">
+                        <label asp-for="Tags" class="form-label">
+                            แท็ก <span class="optional-text">(ไม่บังคับ)</span>
+                        </label>
+
+                        <!-- Hidden input for form submission -->
+                        <input type="hidden" asp-for="Tags" id="tagsHiddenInput" />
+
+                        <!-- Modern Tag Input Component -->
+                        <div id="tagInputContainer"
+                             data-tag-input
+                             data-input="tagsHiddenInput"
+                             data-max-tags="10"
+                             data-colorful="true"
+                             data-placeholder="Type and press Enter or Comma to add..."
+                             data-popular-tags='["programming", "javascript", "tutorial", "react", "python", "web", "mobile", "design"]'>
+                        </div>
+
+                        <span asp-validation-for="Tags" class="text-danger"></span>
+                        <p class="form-help">แท็กช่วยให้ผู้อื่นค้นหาโพสต์ของคุณได้ง่ายขึ้น (สูงสุด 10 แท็ก)</p>
+                    </div>
+                </div>
+
+                <!-- 6. รูปภาพหลัก -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="bi bi-image-fill"></i> รูปภาพหลัก
+                    </h2>
+                    <div class="form-group">
+                        <label asp-for="FeaturedImageUrl" class="form-label">
+                            URL รูปภาพ <span class="optional-text">(ไม่บังคับ)</span>
+                        </label>
+                        <input asp-for="FeaturedImageUrl"
+                               class="form-control"
+                               id="imageUrlInput"
+                               placeholder="https://example.com/image.jpg หรืออัปโหลดผ่าน Cloudflare R2" />
+                        <span asp-validation-for="FeaturedImageUrl" class="text-danger"></span>
+
+                        <!-- File Upload Button -->
+                        <div class="upload-section">
+                            <button type="button" onclick="document.getElementById('imageUpload').click()" class="btn-upload">
+                                <i class="bi bi-cloud-upload"></i> อัปโหลดรูปภาพ
+                            </button>
+                            <input type="file" id="imageUpload" accept="image/*" style="display: none;" />
+                            <span id="uploadStatus" class="upload-status"></span>
+                        </div>
+
+                        <!-- Current Image Preview (if exists) -->
+                        @if (!string.IsNullOrEmpty(Model.CurrentFeaturedImageUrl))
+                        {
+                            <div class="current-image-section">
+                                <p class="form-help"><strong>รูปภาพปัจจุบัน:</strong></p>
+                                <div class="current-image-preview">
+                                    <img src="@Model.CurrentFeaturedImageUrl" alt="Current featured image" />
+                                </div>
+                            </div>
+                        }
+
+                        <!-- New Image Preview -->
+                        <div id="imagePreview" class="image-preview" style="display: none;">
+                            <p class="form-help"><strong>ตัวอย่างรูปภาพใหม่:</strong></p>
+                            <img id="previewImage" src="" alt="Preview" />
+                            <button type="button" class="btn-remove-preview" onclick="removeImagePreview()">
+                                <i class="bi bi-x-circle"></i> ลบรูป
+                            </button>
+                        </div>
+
+                        <p class="form-help">
+                            รองรับไฟล์ JPG, PNG, GIF, WebP ขนาดไม่เกิน 5MB
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 7. ✅ การตั้งค่า - ใช้ CSS และ Structure เดียวกับหน้า Create -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="bi bi-gear-fill"></i> การตั้งค่า
+                    </h2>
+
+                    <div class="form-check-group">
+                        <div class="form-check">
+                            <input asp-for="IsPublished"
+                                   class="form-check-input"
+                                   type="checkbox"
+                                   id="isPublished" />
+                            <label class="form-check-label" for="isPublished">
+                                <i class="bi bi-eye-fill"></i> เผยแพร่ทันที
+                            </label>
+                        </div>
+
+                        <div class="form-check">
+                            <input asp-for="IsFeatured"
+                                   class="form-check-input"
+                                   type="checkbox"
+                                   id="isFeatured" />
+                            <label class="form-check-label" for="isFeatured">
+                                <i class="bi bi-star-fill"></i> โพสต์แนะนำ
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ✅ Submit Buttons - ใช้ CSS และ Structure เดียวกับหน้า Create -->
+            <div class="form-actions-bottom">
+                <button type="submit" class="btn btn-primary btn-create">
+                    <i class="bi bi-check-circle-fill"></i> บันทึกการแก้ไข
+                </button>
+                <button type="button" onclick="window.history.back()" class="btn btn-secondary btn-cancel">
+                    <i class="bi bi-x-circle-fill"></i> ยกเลิก
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Category Selection Modal -->
+<div class="selector-modal" id="categoryModal">
+    <div class="selector-modal-overlay" onclick="closeCategoryModal()"></div>
+    <div class="selector-modal-content">
+        <div class="selector-modal-header">
+            <h3>เลือกหมวดหมู่</h3>
+            <button type="button" class="selector-modal-close" onclick="closeCategoryModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="selector-modal-body">
+            <!-- Search Box -->
+            <div class="selector-search">
+                <i class="bi bi-search"></i>
+                <input type="text" id="categorySearch" placeholder="ค้นหาหมวดหมู่..." />
+            </div>
+
+            <!-- Categories List -->
+            <div class="selector-list" id="categoriesList">
+                @if (ViewBag.Categories != null)
+                {
+                    foreach (var category in ViewBag.Categories)
+                    {
+                        <div class="selector-item" data-id="@category.Id" data-name="@category.Name" onclick="selectCategory(@category.Id, '@category.Name')">
+                            <div class="selector-item-icon" style="background-color: @category.Color">
+                                <i class="bi bi-folder-fill"></i>
+                            </div>
+                            <div class="selector-item-info">
+                                <h4>@category.Name</h4>
+                                @if (!string.IsNullOrEmpty(category.Description))
+                                {
+                                    <p>@category.Description</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Community Selection Modal -->
+<div class="selector-modal" id="communityModal">
+    <div class="selector-modal-overlay" onclick="closeCommunityModal()"></div>
+    <div class="selector-modal-content">
+        <div class="selector-modal-header">
+            <h3>เลือกชุมชน</h3>
+            <button type="button" class="selector-modal-close" onclick="closeCommunityModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="selector-modal-body">
+            <!-- Search Box -->
+            <div class="selector-search">
+                <i class="bi bi-search"></i>
+                <input type="text" id="communitySearch" placeholder="ค้นหาชุมชน..." />
+            </div>
+
+            <!-- Communities List -->
+            <div class="selector-list" id="communitiesList">
+                @if (ViewBag.Communities != null)
+                {
+                    foreach (var community in ViewBag.Communities)
+                    {
+                        <div class="selector-item" data-id="@community.Id" data-name="@community.Name" onclick="selectCommunity(@community.Id, '@community.Name')">
+                            <div class="selector-item-icon">
+                                @if (!string.IsNullOrEmpty(community.ImageUrl))
+                                {
+                                    <img src="@community.ImageUrl" alt="@community.Name" />
+                                }
+                                else
+                                {
+                                    <i class="bi bi-people-fill"></i>
+                                }
+                            </div>
+                            <div class="selector-item-info">
+                                <h4>@community.Name</h4>
+                                @if (!string.IsNullOrEmpty(community.Description))
+                                {
+                                    <p>@community.Description</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ Scripts Section - เพิ่ม JavaScript ครบถ้วน -->
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <!-- Quill Editor -->
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script src="~/js/quill-editor.js" asp-append-version="true"></script>
+    <script src="~/js/tag-input.js" asp-append-version="true"></script>
+    <script src="~/js/post-create.js" asp-append-version="true"></script>
+    
+    <script>
+        // ===================================
+        // Initialize Existing Data
+        // ===================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Load existing content into Quill
+            const existingContent = `@Html.Raw(Model.Content ?? "")`;
+            if (window.quillEditor && existingContent) {
+                window.quillEditor.root.innerHTML = existingContent;
+            }
+            
+            // 2. Load existing tags
+            @if (!string.IsNullOrEmpty(Model.Tags))
+            {
+                <text>
+                const existingTags = '@Model.Tags'.split(',');
+                const tagInputContainer = document.querySelector('[data-tag-input]');
+                
+                // เพิ่ม delay เล็กน้อยแต่ไม่ scroll
+                const loadTags = () => {
+                    if (tagInputContainer && tagInputContainer._tagInputInstance) {
+                        existingTags.forEach(tag => {
+                            const trimmedTag = tag.trim();
+                            if (trimmedTag) {
+                                tagInputContainer._tagInputInstance.addTag(trimmedTag, false);
+                            }
+                        });
+                        return true;
+                    }
+                    return false;
+                };
+                
+                // ลอง load ทันที ถ้าไม่ได้รอนิดหน่อย
+                if (!loadTags()) {
+                    setTimeout(loadTags, 100);
+                }
+                </text>
+            }
+
+            // 3. Show image preview if URL exists
+            const imageUrlInput = document.getElementById('imageUrlInput');
+            if (imageUrlInput && imageUrlInput.value) {
+                updateImagePreview(imageUrlInput.value);
+            }
+
+            // ⭐ FIX: Scroll to top after everything loads
+            // ป้องกันไม่ให้หน้าเลื่อนไปตรง tag input
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+            }, 150);
+        });
+
+        // ===================================
+        // Category Modal Functions
+        // ===================================
+        function openCategoryModal() {
+            document.getElementById('categoryModal').classList.add('active');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.remove('active');
+        }
+
+        function selectCategory(id, name) {
+            document.getElementById('categoryIdInput').value = id;
+            document.getElementById('selectedCategoryText').textContent = name;
+            closeCategoryModal();
+        }
+
+        // Category Search
+        document.getElementById('categorySearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('#categoriesList .selector-item');
+            
+            items.forEach(item => {
+                const name = item.dataset.name.toLowerCase();
+                item.style.display = name.includes(searchTerm) ? 'flex' : 'none';
+            });
+        });
+
+        // ===================================
+        // Community Modal Functions
+        // ===================================
+        function openCommunityModal() {
+            document.getElementById('communityModal').classList.add('active');
+        }
+
+        function closeCommunityModal() {
+            document.getElementById('communityModal').classList.remove('active');
+        }
+
+        function selectCommunity(id, name) {
+            document.getElementById('communityIdInput').value = id;
+            document.getElementById('selectedCommunityText').textContent = name;
+            closeCommunityModal();
+        }
+
+        // Community Search
+        document.getElementById('communitySearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('#communitiesList .selector-item');
+            
+            items.forEach(item => {
+                const name = item.dataset.name.toLowerCase();
+                item.style.display = name.includes(searchTerm) ? 'flex' : 'none';
+            });
+        });
+
+        // ===================================
+        // Image Preview Functions
+        // ===================================
+        function updateImagePreview(url) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImage');
+            
+            if (url && url.trim() !== '') {
+                previewImg.src = url;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        function removeImagePreview() {
+            document.getElementById('imageUrlInput').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+
+        // Image URL input change
+        document.getElementById('imageUrlInput')?.addEventListener('input', function(e) {
+            updateImagePreview(e.target.value);
+        });
+
+        // ===================================
+        // Image Upload (Cloudflare R2)
+        // ===================================
+        document.getElementById('imageUpload')?.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                alert('กรุณาเลือกไฟล์รูปภาพ (JPG, PNG, GIF, WebP)');
+                return;
+            }
+
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('ขนาดไฟล์ต้องไม่เกิน 5MB');
+                return;
+            }
+
+            const uploadStatus = document.getElementById('uploadStatus');
+            uploadStatus.textContent = 'กำลังอัปโหลด...';
+            uploadStatus.className = 'upload-status uploading';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('type', 'post');
+
+                const response = await fetch('/api/upload/image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('imageUrlInput').value = result.url;
+                    updateImagePreview(result.url);
+                    uploadStatus.textContent = 'อัปโหลดสำเร็จ!';
+                    uploadStatus.className = 'upload-status success';
+                } else {
+                    throw new Error(result.message || 'อัปโหลดล้มเหลว');
+                }
+            } catch (error) {
+                uploadStatus.textContent = 'อัปโหลดล้มเหลว: ' + error.message;
+                uploadStatus.className = 'upload-status error';
+            }
+
+            // Clear status after 3 seconds
+            setTimeout(() => {
+                uploadStatus.textContent = '';
+                uploadStatus.className = 'upload-status';
+            }, 3000);
+        });
+
+        // ===================================
+        // Show Error Toast (if exists)
+        // ===================================
+        const errorToast = document.getElementById('errorToast');
+        if (errorToast) {
+            errorToast.style.display = 'flex';
+            setTimeout(() => {
+                errorToast.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+}

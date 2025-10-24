@@ -37,26 +37,26 @@
                     </h1>
                     <p>จัดการโพสต์ทั้งหมดของคุณ</p>
                 </div>
-                <a asp-area="" asp-controller="Post" asp-action="Create" class="btn btn-primary">
+                <a asp-area="User" asp-controller="Posts" asp-action="Create" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> สร้างโพสต์ใหม่
                 </a>
             </div>
 
-            <!-- Statistics Cards -->
+            <!-- Statistics Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon stat-icon-primary">
                         <i class="bi bi-file-earmark-text"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-value">@Model.Statistics.TotalPosts</div>
+                        <div class="stat-value">@Model.TotalCount</div>
                         <div class="stat-label">โพสต์ทั้งหมด</div>
                     </div>
                 </div>
 
                 <div class="stat-card">
                     <div class="stat-icon stat-icon-success">
-                        <i class="bi bi-check-circle"></i>
+                        <i class="bi bi-eye"></i>
                     </div>
                     <div class="stat-content">
                         <div class="stat-value">@Model.Statistics.PublishedCount</div>
@@ -76,7 +76,7 @@
 
                 <div class="stat-card">
                     <div class="stat-icon stat-icon-warning">
-                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star"></i>
                     </div>
                     <div class="stat-content">
                         <div class="stat-value">@Model.Statistics.FeaturedCount</div>
@@ -86,7 +86,7 @@
 
                 <div class="stat-card">
                     <div class="stat-icon stat-icon-info">
-                        <i class="bi bi-eye"></i>
+                        <i class="bi bi-graph-up"></i>
                     </div>
                     <div class="stat-content">
                         <div class="stat-value">@Model.Statistics.TotalViews.ToString("N0")</div>
@@ -96,49 +96,54 @@
 
                 <div class="stat-card">
                     <div class="stat-icon stat-icon-danger">
-                        <i class="bi bi-heart-fill"></i>
+                        <i class="bi bi-heart"></i>
                     </div>
                     <div class="stat-content">
                         <div class="stat-value">@Model.Statistics.TotalLikes.ToString("N0")</div>
-                        <div class="stat-label">ถูกใจทั้งหมด</div>
+                        <div class="stat-label">ยอดไลค์ทั้งหมด</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Filters & Search -->
+        <!-- Toolbar: Filters, View Toggle & Search -->
         <div class="posts-toolbar">
             <div class="toolbar-left">
-                <!-- Status Filter -->
                 <div class="filter-group">
                     <label>สถานะ:</label>
                     <div class="filter-buttons">
                         <a href="?status=all&search=@Model.SearchTerm" 
                            class="filter-btn @(Model.StatusFilter == "all" ? "active" : "")">
-                            <i class="bi bi-list"></i> ทั้งหมด
-                            <span class="badge">@Model.Statistics.TotalPosts</span>
+                            ทั้งหมด (@Model.TotalCount)
                         </a>
                         <a href="?status=published&search=@Model.SearchTerm" 
                            class="filter-btn @(Model.StatusFilter == "published" ? "active" : "")">
-                            <i class="bi bi-check-circle"></i> เผยแพร่
-                            <span class="badge">@Model.Statistics.PublishedCount</span>
+                            เผยแพร่ (@Model.Statistics.PublishedCount)
                         </a>
                         <a href="?status=draft&search=@Model.SearchTerm" 
                            class="filter-btn @(Model.StatusFilter == "draft" ? "active" : "")">
-                            <i class="bi bi-file-earmark"></i> แบบร่าง
-                            <span class="badge">@Model.Statistics.DraftCount</span>
+                            แบบร่าง (@Model.Statistics.DraftCount)
                         </a>
                         <a href="?status=featured&search=@Model.SearchTerm" 
                            class="filter-btn @(Model.StatusFilter == "featured" ? "active" : "")">
-                            <i class="bi bi-star-fill"></i> แนะนำ
-                            <span class="badge">@Model.Statistics.FeaturedCount</span>
+                            แนะนำ (@Model.Statistics.FeaturedCount)
                         </a>
                     </div>
                 </div>
             </div>
 
             <div class="toolbar-right">
-                <!-- Search -->
+                <!-- ✅ View Toggle (Default = List) -->
+                <div class="view-toggle">
+                    <button type="button" class="view-toggle-btn" data-view="grid" title="แสดงแบบการ์ด">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                    </button>
+                    <button type="button" class="view-toggle-btn active" data-view="list" title="แสดงแบบรายการ">
+                        <i class="bi bi-list-ul"></i>
+                    </button>
+                </div>
+
+                <!-- Search Form -->
                 <form method="get" class="search-form">
                     <input type="hidden" name="status" value="@Model.StatusFilter" />
                     <input type="text" 
@@ -153,24 +158,15 @@
             </div>
         </div>
 
-        <!-- Posts Grid or Empty State -->
+        <!-- Posts Container (Default = List View) -->
         @if (Model.Posts.Any())
         {
-            <!-- Posts Grid -->
-            <div class="my-posts-grid">
+            <div class="my-posts-container" data-view="list">
                 @foreach (var post in Model.Posts)
                 {
-                    <div class="post-card">
-                        <!-- Featured Badge -->
-                        @if (post.IsFeatured)
-                        {
-                            <div class="featured-badge">
-                                <i class="bi bi-star-fill"></i> แนะนำ
-                            </div>
-                        }
-
+                    <div class="post-item">
                         <!-- Image -->
-                        <div class="post-image">
+                        <div class="post-item-image">
                             @if (!string.IsNullOrEmpty(post.FeaturedImageUrl))
                             {
                                 <img src="@post.FeaturedImageUrl" alt="@post.Title" />
@@ -181,86 +177,124 @@
                                     <i class="bi bi-image"></i>
                                 </div>
                             }
-                            <!-- Status Badge -->
-                            <div class="status-badge status-badge-@post.StatusColor">
-                                @post.StatusBadge
-                            </div>
+                            
+                            <!-- Status Badge on Image -->
+                            @if (post.IsFeatured)
+                            {
+                                <span class="featured-badge-small">
+                                    <i class="bi bi-star-fill"></i>
+                                </span>
+                            }
                         </div>
 
                         <!-- Content -->
-                        <div class="post-content">
-                            <h3 class="post-title">
-                                <a asp-area="" asp-controller="Post" asp-action="Details" asp-route-slug="@post.Slug">
-                                    @post.Title
-                                </a>
-                            </h3>
+                        <div class="post-item-content">
+                            <!-- Title & Meta Row -->
+                            <div class="post-item-header">
+                                <div class="post-item-title-group">
+                                    <h3 class="post-item-title">@post.Title</h3>
+                                    
+                                    <!-- Badges -->
+                                    <div class="post-item-badges">
+                                        @if (!string.IsNullOrEmpty(post.CategoryName))
+                                        {
+                                            <span class="badge badge-category">
+                                                <i class="bi bi-folder"></i> @post.CategoryName
+                                            </span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(post.CommunityName))
+                                        {
+                                            <span class="badge badge-community">
+                                                <i class="bi bi-people"></i> @post.CommunityName
+                                            </span>
+                                        }
+                                        <span class="badge @(post.IsPublished ? "badge-published" : "badge-draft")">
+                                            @if (post.IsPublished)
+                                            {
+                                                <i class="bi bi-eye"></i>
+                                                <span>เผยแพร่</span>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-file-earmark"></i>
+                                                <span>แบบร่าง</span>
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Date -->
+                                <div class="post-item-date">
+                                    <i class="bi bi-calendar"></i>
+                                    @post.CreatedAt.ToString("dd MMM yyyy")
+                                </div>
+                            </div>
 
+                            <!-- Excerpt -->
                             @if (!string.IsNullOrEmpty(post.Excerpt))
                             {
-                                <p class="post-excerpt">@post.TruncatedExcerpt</p>
+                                <p class="post-item-excerpt">@post.Excerpt</p>
                             }
-
-                            <!-- Meta Info -->
-                            <div class="post-meta">
-                                <span class="meta-item">
-                                    <i class="bi bi-folder"></i> @post.CategoryName
-                                </span>
-                                @if (post.CommunityId.HasValue)
-                                {
-                                    <span class="meta-item">
-                                        <i class="bi bi-people"></i> @post.CommunityName
-                                    </span>
-                                }
-                                <span class="meta-item">
-                                    <i class="bi bi-calendar"></i> @post.DisplayDate
-                                </span>
-                            </div>
 
                             <!-- Tags -->
                             @if (post.Tags.Any())
                             {
-                                <div class="post-tags">
-                                    @foreach (var tag in post.Tags.Take(3))
+                                <div class="post-item-tags">
+                                    @foreach (var tag in post.Tags.Take(5))
                                     {
-                                        <span class="tag">@tag</span>
+                                        <span class="tag-small">
+                                            <i class="bi bi-tag"></i> @tag
+                                        </span>
                                     }
-                                    @if (post.Tags.Count > 3)
+                                    @if (post.Tags.Count > 5)
                                     {
-                                        <span class="tag">+@(post.Tags.Count - 3)</span>
+                                        <span class="tag-small">+@(post.Tags.Count - 5)</span>
                                     }
                                 </div>
                             }
+                        </div>
 
-                            <!-- Stats -->
-                            <div class="post-stats">
-                                <span class="stat-item">
-                                    <i class="bi bi-eye"></i> @post.ViewCount.ToString("N0")
-                                </span>
-                                <span class="stat-item">
-                                    <i class="bi bi-heart"></i> @post.LikeCount.ToString("N0")
-                                </span>
-                                <span class="stat-item">
-                                    <i class="bi bi-chat"></i> @post.CommentCount.ToString("N0")
-                                </span>
-                            </div>
+                        <!-- Stats -->
+                        <div class="post-item-stats">
+                            <span class="stat-item-small">
+                                <i class="bi bi-eye"></i>
+                                <span>@post.ViewCount.ToString("N0")</span>
+                            </span>
+                            <span class="stat-item-small">
+                                <i class="bi bi-heart"></i>
+                                <span>@post.LikeCount.ToString("N0")</span>
+                            </span>
+                            <span class="stat-item-small">
+                                <i class="bi bi-chat"></i>
+                                <span>@post.CommentCount.ToString("N0")</span>
+                            </span>
+                        </div>
 
-                            <!-- Actions -->
-                            <div class="post-actions">
-                                <a asp-area="" asp-controller="Post" asp-action="Edit" asp-route-id="@post.Id" 
-                                   class="btn-action btn-edit" title="แก้ไข">
-                                    <i class="bi bi-pencil"></i> แก้ไข
-                                </a>
-                                <a asp-area="" asp-controller="Post" asp-action="Details" asp-route-slug="@post.Slug" 
-                                   class="btn-action btn-view" title="ดู" target="_blank">
-                                    <i class="bi bi-eye"></i> ดู
-                                </a>
-                                <button type="button" 
-                                        class="btn-action btn-delete" 
-                                        onclick="confirmDelete(@post.Id, '@post.Title')" 
-                                        title="ลบ">
-                                    <i class="bi bi-trash"></i> ลบ
-                                </button>
-                            </div>
+                        <!-- Actions -->
+                        <div class="post-item-actions">
+                            <a asp-area="User" 
+                               asp-controller="Post" 
+                               asp-action="Edit" 
+                               asp-route-id="@post.Id" 
+                               class="btn-action-small btn-edit" 
+                               title="แก้ไข">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <a asp-area="" 
+                               asp-controller="Post" 
+                               asp-action="Details" 
+                               asp-route-slug="@post.Slug" 
+                               class="btn-action-small btn-view" 
+                               title="ดู" 
+                               target="_blank">
+                                <i class="bi bi-eye-fill"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn-action-small btn-delete" 
+                                    onclick="confirmDelete(@post.Id, '@Html.Raw(post.Title.Replace("'", "\\'"))')" 
+                                    title="ลบ">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
                         </div>
                     </div>
                 }
@@ -271,7 +305,6 @@
             {
                 <nav class="pagination-container">
                     <ul class="pagination">
-                        <!-- Previous -->
                         <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
                             <a class="page-link" 
                                href="?page=@(Model.PageNumber - 1)&search=@Model.SearchTerm&status=@Model.StatusFilter">
@@ -279,7 +312,6 @@
                             </a>
                         </li>
 
-                        <!-- Pages -->
                         @for (int i = 1; i <= Model.TotalPages; i++)
                         {
                             <li class="page-item @(i == Model.PageNumber ? "active" : "")">
@@ -290,7 +322,6 @@
                             </li>
                         }
 
-                        <!-- Next -->
                         <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
                             <a class="page-link" 
                                href="?page=@(Model.PageNumber + 1)&search=@Model.SearchTerm&status=@Model.StatusFilter">
@@ -319,7 +350,7 @@
                 else
                 {
                     <p>คุณยังไม่มีโพสต์ เริ่มสร้างโพสต์แรกของคุณเลย!</p>
-                    <a asp-area="" asp-controller="Post" asp-action="Create" class="btn btn-primary">
+                    <a asp-area="User" asp-controller="Posts" asp-action="Create" class="btn btn-primary">
                         <i class="bi bi-plus-circle"></i> สร้างโพสต์ใหม่
                     </a>
                 }
@@ -335,7 +366,7 @@
         <h3><i class="bi bi-exclamation-triangle"></i> ยืนยันการลบ</h3>
         <p>คุณแน่ใจหรือไม่ว่าต้องการลบโพสต์ <strong id="postTitle"></strong>?</p>
         <p class="text-danger">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
-        <form id="deleteForm" method="post" asp-area="" asp-controller="Post" asp-action="Delete">
+        <form id="deleteForm" method="post" asp-area="User" asp-controller="Posts" asp-action="Delete">
             @Html.AntiForgeryToken()
             <input type="hidden" name="id" id="postId" />
             <div class="modal-actions">

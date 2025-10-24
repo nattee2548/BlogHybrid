@@ -23,7 +23,8 @@ namespace BlogHybrid.Domain.Entities
         public int ViewCount { get; set; } = 0;
         public int LikeCount { get; set; } = 0;
         public int CommentCount { get; set; } = 0;
-
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
         // Foreign Keys
         public string AuthorId { get; set; } = string.Empty;
         public int? CategoryId { get; set; }

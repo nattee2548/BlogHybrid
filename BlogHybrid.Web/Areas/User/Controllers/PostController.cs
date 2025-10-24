@@ -1,4 +1,5 @@
 using BlogHybrid.Application.Commands.Post;
+using BlogHybrid.Application.Interfaces.Repositories;
 using BlogHybrid.Application.Interfaces.Services;
 using BlogHybrid.Application.Queries.Category;
 using BlogHybrid.Application.Queries.Community;
@@ -22,16 +23,19 @@ namespace BlogHybrid.Web.Areas.User.Controllers
         private readonly ILogger<PostController> _logger;
         private readonly IImageService _imageService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUnitOfWork _unitOfWork;
         public PostController(
             IMediator mediator,
             ILogger<PostController> logger,
             IImageService imageService,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            IUnitOfWork unitOfWork)
         {
             _mediator = mediator;
             _logger = logger;
             _imageService = imageService;
             _userManager = signInManager.UserManager;
+            _unitOfWork = unitOfWork;
         }
         // GET: /User/Posts
         public async Task<IActionResult> Index(
@@ -355,6 +359,229 @@ namespace BlogHybrid.Web.Areas.User.Controllers
                 }
                 
                 return View(model);
+            }
+        }
+
+
+        // ============================================================
+        // GET: /User/Posts/Edit/{id}
+        // ============================================================
+        [HttpGet("posts/edit/{id}")]
+        public async Task<IActionResult> Edit(int id)
+        {
+            try
+            {
+                var userId = _userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account", new { area = "" });
+                }
+
+                // ⭐ FIX Error 1: ใช้ Repository แทน GetPostByIdQuery
+                var post = await _unitOfWork.Posts.GetByIdWithDetailsAsync(id);
+
+                if (post == null)
+                {
+                    TempData["ErrorMessage"] = "ไม่พบโพสต์ที่ต้องการแก้ไข";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // ตรวจสอบว่าเป็นเจ้าของโพสต์หรือไม่
+                if (post.AuthorId != userId)
+                {
+                    TempData["ErrorMessage"] = "คุณไม่มีสิทธิ์แก้ไขโพสต์นี้";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // สร้าง ViewModel
+                var viewModel = new EditPostViewModel
+                {
+                    Id = post.Id,
+                    Title = post.Title,
+                    Content = post.Content,
+                    Excerpt = post.Excerpt,
+                    FeaturedImageUrl = post.FeaturedImageUrl,
+                    CurrentFeaturedImageUrl = post.FeaturedImageUrl,
+                    CategoryId = post.CategoryId,
+                    CommunityId = post.CommunityId,
+                    Tags = string.Join(", ", post.PostTags.Select(pt => pt.Tag.Name)),
+                    IsPublished = post.IsPublished,
+                    IsFeatured = post.IsFeatured
+                };
+
+                var categoriesQuery = new GetActiveCategoriesQuery { };
+                var categories = await _mediator.Send(categoriesQuery);
+                ViewBag.Categories = categories;
+
+                // โหลด Communities
+                var communitiesQuery = new GetUserCommunitiesQuery { UserId = userId };
+                var communities = await _mediator.Send(communitiesQuery);
+                ViewBag.Communities = communities;
+
+                // ⭐ Set ชื่อหมวดหมู่และชุมชนที่เลือกไว้
+                // ลองทั้ง 2 วิธี: navigation property และ query จาก list
+                if (post.CategoryId.HasValue)
+                {
+                    // วิธีที่ 1: ลองใช้ navigation property ก่อน
+                    if (post.Category != null)
+                    {
+                        ViewBag.SelectedCategoryName = post.Category.Name;
+                        _logger.LogInformation($"Category loaded from navigation: {post.Category.Name}");
+                    }
+                    else
+                    {
+                        // วิธีที่ 2: หาจาก list (fallback)
+                        var selectedCategory = categories.FirstOrDefault(c => c.Id == post.CategoryId.Value);
+                        ViewBag.SelectedCategoryName = selectedCategory?.Name ?? "เลือกหมวดหมู่";
+                        _logger.LogWarning($"Category not loaded, CategoryId: {post.CategoryId.Value}, Found in list: {selectedCategory != null}");
+                    }
+                }
+
+                if (post.CommunityId.HasValue)
+                {
+                    // วิธีที่ 1: ลองใช้ navigation property ก่อน
+                    if (post.Community != null)
+                    {
+                        ViewBag.SelectedCommunityName = post.Community.Name;
+                        _logger.LogInformation($"Community loaded from navigation: {post.Community.Name}");
+                    }
+                    else
+                    {
+                        // วิธีที่ 2: หาจาก list (fallback)
+                        var selectedCommunity = communities.FirstOrDefault(c => c.Id == post.CommunityId.Value);
+                        ViewBag.SelectedCommunityName = selectedCommunity?.Name ?? "เลือกชุมชน";
+                        _logger.LogWarning($"Community not loaded, CommunityId: {post.CommunityId.Value}, Found in list: {selectedCommunity != null}");
+                    }
+                }
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error loading edit form for post ID: {id}");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการโหลดหน้าแก้ไข";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+
+        // ============================================================
+        // POST: /User/Posts/Edit/{id}
+        // ============================================================
+        [HttpPost("posts/edit/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, EditPostViewModel model, IFormFile? FeaturedImageFile)
+        {
+            if (id != model.Id)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // ⭐ FIX Error 2: ประกาศ userId ที่นี่
+                var userId = _userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "กรุณาเข้าสู่ระบบ";
+                    return RedirectToAction("Login", "Account", new { area = "" });
+                }
+
+                // Custom Validation
+                if (!model.CategoryId.HasValue && !model.CommunityId.HasValue)
+                {
+                    ModelState.AddModelError("", "กรุณาเลือกหมวดหมู่ หรือ ชุมชน");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    // Reload dropdowns
+                    var categoriesQuery = new GetActiveCategoriesQuery { };
+                    var categories = await _mediator.Send(categoriesQuery);
+                    ViewBag.Categories = categories;
+
+                    var communitiesQuery = new GetUserCommunitiesQuery { UserId = userId };
+                    var communities = await _mediator.Send(communitiesQuery);
+                    ViewBag.Communities = communities;
+
+                    return View(model);
+                }
+
+                // จัดการ Featured Image
+                string? featuredImageUrl = model.FeaturedImageUrl;
+
+                if (FeaturedImageFile != null)
+                {
+                    try
+                    {
+                        // ลบรูปเดิมถ้ามี
+                        if (!string.IsNullOrEmpty(model.CurrentFeaturedImageUrl))
+                        {
+                            await _imageService.DeleteAsync(model.CurrentFeaturedImageUrl);
+                        }
+
+                        // Upload รูปใหม่
+                        var uploadedPath = await _imageService.UploadAsync(FeaturedImageFile, "posts");
+                        featuredImageUrl = _imageService.GetImageUrl(uploadedPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error uploading featured image");
+                        TempData["WarningMessage"] = "อัปโหลดรูปภาพไม่สำเร็จ แต่ยังคงอัปเดตข้อมูลอื่น";
+                        featuredImageUrl = model.CurrentFeaturedImageUrl;
+                    }
+                }
+
+                // สร้าง Command
+                var command = new UpdatePostCommand
+                {
+                    Id = model.Id,
+                    Title = model.Title.Trim(),
+                    Content = model.Content.Trim(),
+                    Excerpt = model.Excerpt?.Trim(),
+                    FeaturedImageUrl = featuredImageUrl,
+                    CategoryId = model.CategoryId,
+                    CommunityId = model.CommunityId,
+                    Tags = model.Tags,
+                    IsPublished = model.IsPublished,
+                    IsFeatured = model.IsFeatured,
+                    AuthorId = userId
+                };
+
+                // ส่ง Command
+                var result = await _mediator.Send(command);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = "อัปเดตโพสต์สำเร็จ";
+                    _logger.LogInformation($"Post updated successfully: ID={model.Id}, Slug={result.Slug}");
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error);
+                    }
+
+                    // Reload dropdowns
+                    var categoriesQuery = new GetActiveCategoriesQuery { };
+                    var categories = await _mediator.Send(categoriesQuery);
+                    ViewBag.Categories = categories;
+
+                    var communitiesQuery = new GetUserCommunitiesQuery { UserId = userId };
+                    var communities = await _mediator.Send(communitiesQuery);
+                    ViewBag.Communities = communities;
+
+                    return View(model);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating post ID: {id}");
+                TempData["ErrorMessage"] = "เกิดข้อผิดพลาดในการอัปเดตโพสต์";
+                return RedirectToAction(nameof(Index));
             }
         }
 

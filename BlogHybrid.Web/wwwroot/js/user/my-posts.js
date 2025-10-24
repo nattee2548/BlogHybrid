@@ -1,9 +1,65 @@
-﻿/* ================================================
-   My Posts Page JavaScript
+/* ================================================
+   My Posts Page JavaScript (with View Toggle)
    ================================================ */
 
 (function () {
     'use strict';
+
+    // ========================================
+    // View Toggle (List/Grid)
+    // ========================================
+    const VIEW_STORAGE_KEY = 'myPostsView';
+    let currentView = localStorage.getItem(VIEW_STORAGE_KEY) || 'list'; // Default = list
+    let postsContainer = null;
+    let viewToggleButtons = null;
+
+    function initializeViewToggle() {
+        postsContainer = document.querySelector('.my-posts-container');
+        viewToggleButtons = document.querySelectorAll('.view-toggle-btn');
+
+        if (!postsContainer || !viewToggleButtons.length) return;
+
+        // Set initial view from localStorage
+        setView(currentView);
+
+        // Add click handlers
+        viewToggleButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const view = this.getAttribute('data-view');
+                setView(view);
+                
+                // Save to localStorage
+                localStorage.setItem(VIEW_STORAGE_KEY, view);
+            });
+        });
+    }
+
+    function setView(view) {
+        if (!postsContainer) return;
+
+        currentView = view;
+        postsContainer.setAttribute('data-view', view);
+
+        // Update active button
+        viewToggleButtons.forEach(btn => {
+            if (btn.getAttribute('data-view') === view) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Add animation
+        postsContainer.style.opacity = '0';
+        setTimeout(() => {
+            postsContainer.style.opacity = '1';
+        }, 50);
+    }
+
+    window.toggleView = function(view) {
+        setView(view);
+        localStorage.setItem(VIEW_STORAGE_KEY, view);
+    };
 
     // ========================================
     // Delete Post Confirmation
@@ -55,7 +111,8 @@
     // ========================================
     document.addEventListener('DOMContentLoaded', function () {
         initializeDeleteModal();
-        console.log('My Posts page loaded successfully');
+        initializeViewToggle();
+        console.log('My Posts page loaded successfully - Current view:', currentView);
     });
 
 })();
