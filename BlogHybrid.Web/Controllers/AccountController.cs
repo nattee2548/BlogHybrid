@@ -26,9 +26,23 @@ public class AccountController : Controller
         _logger = logger;
     }
 
-    #region User Login & Register (AJAX Modal)
+    #region User Login & Register (AJAX Modal + Full Page)
 
-    // POST: /Account/Login
+    // GET: /Account/Login - Full Page Login
+    [HttpGet]
+    public IActionResult Login(string? returnUrl = null)
+    {
+        // ถ้า login อยู่แล้ว redirect ไปหน้าที่เหมาะสม
+        if (_signInManager.IsSignedIn(User))
+        {
+            return RedirectToLocal(returnUrl);
+        }
+
+        ViewData["ReturnUrl"] = returnUrl;
+        return View(new LoginViewModel { ReturnUrl = returnUrl });
+    }
+
+    // POST: /Account/Login - รองรับทั้ง AJAX และ Full Page
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
@@ -43,9 +57,9 @@ public class AccountController : Controller
                 return Json(new { success = false, message = "กรุณากรอกข้อมูลให้ครบถ้วน" });
             }
 
-            TempData["ErrorMessage"] = "กรุณากรอกข้อมูลให้ครบถ้วน";
-            TempData["OpenLoginModal"] = true;
-            return RedirectToAction("Index", "Home");
+            // สำหรับ full page
+            ViewData["ReturnUrl"] = returnUrl ?? model.ReturnUrl;
+            return View(model);
         }
 
         try
@@ -69,17 +83,18 @@ public class AccountController : Controller
                     return Json(new { success = false, message = errorMessage });
                 }
 
-                TempData["ErrorMessage"] = errorMessage;
-                TempData["OpenLoginModal"] = true;
-                return RedirectToAction("Index", "Home");
+                // สำหรับ full page
+                ModelState.AddModelError(string.Empty, errorMessage);
+                ViewData["ReturnUrl"] = returnUrl ?? model.ReturnUrl;
+                return View(model);
             }
 
             _logger.LogInformation($"User logged in: {model.Email}");
 
-            var redirectUrl = "/";
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            var redirectUrl = returnUrl ?? model.ReturnUrl ?? "/";
+            if (!string.IsNullOrEmpty(redirectUrl) && !Url.IsLocalUrl(redirectUrl))
             {
-                redirectUrl = returnUrl;
+                redirectUrl = "/";
             }
 
             if (isAjax)
@@ -92,8 +107,9 @@ public class AccountController : Controller
                 });
             }
 
+            // สำหรับ full page
             TempData["SuccessMessage"] = "เข้าสู่ระบบสำเร็จ!";
-            return Redirect(redirectUrl);
+            return RedirectToLocal(redirectUrl);
         }
         catch (Exception ex)
         {
@@ -104,16 +120,31 @@ public class AccountController : Controller
                 return Json(new { success = false, message = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" });
             }
 
-            TempData["ErrorMessage"] = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
-            TempData["OpenLoginModal"] = true;
-            return RedirectToAction("Index", "Home");
+            // สำหรับ full page
+            ModelState.AddModelError(string.Empty, "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+            ViewData["ReturnUrl"] = returnUrl ?? model.ReturnUrl;
+            return View(model);
         }
     }
 
-    // POST: /Account/Register
+    // GET: /Account/Register - Full Page Register
+    [HttpGet]
+    public IActionResult Register(string? returnUrl = null)
+    {
+        // ถ้า login อยู่แล้ว redirect ไปหน้าหลัก
+        if (_signInManager.IsSignedIn(User))
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        ViewData["ReturnUrl"] = returnUrl;
+        return View(new RegisterViewModel { ReturnUrl = returnUrl });
+    }
+
+    // POST: /Account/Register - รองรับทั้ง AJAX และ Full Page
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register(RegisterViewModel model)
+    public async Task<IActionResult> Register(RegisterViewModel model, string? returnUrl = null)
     {
         bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
@@ -124,9 +155,9 @@ public class AccountController : Controller
                 return Json(new { success = false, message = "กรุณายอมรับข้อกำหนดและเงื่อนไข" });
             }
 
-            TempData["ErrorMessage"] = "กรุณายอมรับข้อกำหนดและเงื่อนไข";
-            TempData["OpenRegisterModal"] = true;
-            return RedirectToAction("Index", "Home");
+            ModelState.AddModelError(string.Empty, "กรุณายอมรับข้อกำหนดและเงื่อนไข");
+            ViewData["ReturnUrl"] = returnUrl ?? model.ReturnUrl;
+            return View(model);
         }
 
         if (!ModelState.IsValid)
@@ -143,9 +174,8 @@ public class AccountController : Controller
                 return Json(new { success = false, message = errorMessage });
             }
 
-            TempData["ErrorMessage"] = errorMessage;
-            TempData["OpenRegisterModal"] = true;
-            return RedirectToAction("Index", "Home");
+            ViewData["ReturnUrl"] = returnUrl ?? model.ReturnUrl;
+            return View(model);
         }
 
         try
@@ -175,9 +205,9 @@ public class AccountController : Controller
                     return Json(new { success = false, message = errorMessage });
                 }
 
-                TempData["ErrorMessage"] = errorMessage;
-                TempData["OpenRegisterModal"] = true;
-                return RedirectToAction("Index", "Home");
+                ModelState.AddModelError(string.Empty, errorMessage);
+                ViewData["ReturnUrl"] = returnUrl ?? model.ReturnUrl;
+                return View(model);
             }
 
             _logger.LogInformation($"New user registered: {model.Email}");
@@ -192,9 +222,9 @@ public class AccountController : Controller
                 });
             }
 
+            // สำหรับ full page - redirect ไป Login
             TempData["SuccessMessage"] = "สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ";
-            TempData["OpenLoginModal"] = true;
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Login", new { returnUrl = returnUrl ?? model.ReturnUrl });
         }
         catch (Exception ex)
         {
@@ -205,10 +235,20 @@ public class AccountController : Controller
                 return Json(new { success = false, message = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" });
             }
 
-            TempData["ErrorMessage"] = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
-            TempData["OpenRegisterModal"] = true;
-            return RedirectToAction("Index", "Home");
+            ModelState.AddModelError(string.Empty, "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+            ViewData["ReturnUrl"] = returnUrl ?? model.ReturnUrl;
+            return View(model);
         }
+    }
+
+    // Helper method สำหรับ redirect ปลอดภัย
+    private IActionResult RedirectToLocal(string? returnUrl)
+    {
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
+        return RedirectToAction("Index", "Home");
     }
 
     #endregion

@@ -1,0 +1,51 @@
+@* BlogHybrid.Web/Views/Shared/_CommentVoteSection.cshtml *@
+@using BlogHybrid.Domain.Enums
+@model BlogHybrid.Application.DTOs.Post.CommentDto
+
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+}
+
+<div class="comment-vote-section">
+    @if (isAuthenticated)
+    {
+        <button class="vote-btn upvote @(Model.CurrentUserVote == VoteType.Upvote ? "active" : "")"
+                onclick="voteComment(@Model.Id, 'Upvote')"
+                title="Upvote"
+                aria-label="Upvote this comment">
+            <i class="bi bi-arrow-up"></i>
+        </button>
+    }
+    else
+    {
+        <button class="vote-btn upvote" 
+                onclick="showLoginPrompt()"
+                title="เข้าสู่ระบบเพื่อ Upvote"
+                aria-label="Login to upvote">
+            <i class="bi bi-arrow-up"></i>
+        </button>
+    }
+
+    <span class="vote-score" aria-label="Vote score: @Model.VoteScore">
+        @Model.VoteScore
+    </span>
+
+    @if (isAuthenticated)
+    {
+        <button class="vote-btn downvote @(Model.CurrentUserVote == VoteType.Downvote ? "active" : "")"
+                onclick="voteComment(@Model.Id, 'Downvote')"
+                title="Downvote"
+                aria-label="Downvote this comment">
+            <i class="bi bi-arrow-down"></i>
+        </button>
+    }
+    else
+    {
+        <button class="vote-btn downvote" 
+                onclick="showLoginPrompt()"
+                title="เข้าสู่ระบบเพื่อ Downvote"
+                aria-label="Login to downvote">
+            <i class="bi bi-arrow-down"></i>
+        </button>
+    }
+</div>

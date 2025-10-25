@@ -31,5 +31,6 @@ namespace BlogHybrid.Web.Models.Account
 
         [Display(Name = "ยอมรับข้อกำหนดและเงื่อนไข")]
         public bool AcceptTerms { get; set; }
+        public string? ReturnUrl { get; set; }
     }
 }

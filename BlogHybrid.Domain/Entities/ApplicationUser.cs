@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.AspNetCore.Identity;
 
 namespace BlogHybrid.Domain.Entities
@@ -22,13 +18,21 @@ namespace BlogHybrid.Domain.Entities
         // Navigation properties
         public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
+        // Post interactions
         public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
+
+        // Comment interactions - Legacy
         public virtual ICollection<CommentLike> CommentLikes { get; set; } = new List<CommentLike>();
 
+        // Comment interactions - NEW
+        public virtual ICollection<CommentVote> CommentVotes { get; set; } = new List<CommentVote>();
+        public virtual ICollection<CommentReaction> CommentReactions { get; set; } = new List<CommentReaction>();
+
+        // Community
         public virtual ICollection<Community> CreatedCommunities { get; set; } = new List<Community>();
         public virtual ICollection<CommunityMember> CommunityMemberships { get; set; } = new List<CommunityMember>();
         public virtual ICollection<CommunityInvite> SentInvites { get; set; } = new List<CommunityInvite>();
         public virtual ICollection<CommunityInvite> ReceivedInvites { get; set; } = new List<CommunityInvite>();
-
     }
 }

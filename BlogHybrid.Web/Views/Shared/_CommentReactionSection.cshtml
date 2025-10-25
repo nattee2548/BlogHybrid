@@ -1,0 +1,133 @@
+@* BlogHybrid.Web/Views/Shared/_CommentReactionSection.cshtml *@
+@using BlogHybrid.Domain.Enums
+@model BlogHybrid.Application.DTOs.Post.CommentDto
+
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var hasReactions = Model.TotalReactionCount > 0;
+    
+    // กำหนด icon ตาม current user reaction
+    string reactionIcon = "bi bi-emoji-smile";
+    if (Model.CurrentUserReaction.HasValue)
+    {
+        reactionIcon = Model.CurrentUserReaction.Value switch
+        {
+            ReactionType.Like => "bi bi-hand-thumbs-up-fill",
+            ReactionType.Love => "bi bi-heart-fill",
+            ReactionType.Haha => "bi bi-emoji-laughing-fill",
+            ReactionType.Wow => "bi bi-emoji-surprised-fill",
+            ReactionType.Sad => "bi bi-emoji-frown-fill",
+            ReactionType.Angry => "bi bi-emoji-angry-fill",
+            _ => "bi bi-emoji-smile"
+        };
+    }
+}
+
+<div class="comment-reaction-section">
+    @if (isAuthenticated)
+    {
+        <button class="reaction-btn @(Model.CurrentUserReaction.HasValue ? "active" : "")"
+                onclick="showReactionPicker(@Model.Id)"
+                title="แสดงความรู้สึก"
+                aria-label="React to this comment">
+            <i class="@reactionIcon"></i>
+            @if (Model.CurrentUserReaction.HasValue)
+            {
+                <span>@Model.CurrentUserReaction.Value.ToString()</span>
+            }
+            else
+            {
+                <span>React</span>
+            }
+        </button>
+
+        <!-- Reaction Picker (Dropdown) -->
+        <div class="reaction-picker" id="reaction-picker-@Model.Id" role="menu">
+            <button class="reaction-item-btn" 
+                    onclick="reactToComment(@Model.Id, 'Like')"
+                    title="Like"
+                    role="menuitem"
+                    aria-label="React with Like">
+                👍
+            </button>
+            <button class="reaction-item-btn" 
+                    onclick="reactToComment(@Model.Id, 'Love')"
+                    title="Love"
+                    role="menuitem"
+                    aria-label="React with Love">
+                ❤️
+            </button>
+            <button class="reaction-item-btn" 
+                    onclick="reactToComment(@Model.Id, 'Haha')"
+                    title="Haha"
+                    role="menuitem"
+                    aria-label="React with Haha">
+                😂
+            </button>
+            <button class="reaction-item-btn" 
+                    onclick="reactToComment(@Model.Id, 'Wow')"
+                    title="Wow"
+                    role="menuitem"
+                    aria-label="React with Wow">
+                😮
+            </button>
+            <button class="reaction-item-btn" 
+                    onclick="reactToComment(@Model.Id, 'Sad')"
+                    title="Sad"
+                    role="menuitem"
+                    aria-label="React with Sad">
+                😢
+            </button>
+            <button class="reaction-item-btn" 
+                    onclick="reactToComment(@Model.Id, 'Angry')"
+                    title="Angry"
+                    role="menuitem"
+                    aria-label="React with Angry">
+                😡
+            </button>
+        </div>
+    }
+    else
+    {
+        <button class="reaction-btn" 
+                onclick="showLoginPrompt()"
+                title="เข้าสู่ระบบเพื่อแสดงความรู้สึก"
+                aria-label="Login to react">
+            <i class="bi bi-emoji-smile"></i>
+            <span>React</span>
+        </button>
+    }
+
+    <!-- Reaction Counts Display -->
+    @if (hasReactions)
+    {
+        <div class="reaction-counts" aria-label="Reaction counts">
+            @{
+                var reactions = new List<(string Name, string Emoji, int Count)>();
+                
+                if (Model.Reactions.LikeCount > 0) 
+                    reactions.Add(("Like", "👍", Model.Reactions.LikeCount));
+                if (Model.Reactions.LoveCount > 0) 
+                    reactions.Add(("Love", "❤️", Model.Reactions.LoveCount));
+                if (Model.Reactions.HahaCount > 0) 
+                    reactions.Add(("Haha", "😂", Model.Reactions.HahaCount));
+                if (Model.Reactions.WowCount > 0) 
+                    reactions.Add(("Wow", "😮", Model.Reactions.WowCount));
+                if (Model.Reactions.SadCount > 0) 
+                    reactions.Add(("Sad", "😢", Model.Reactions.SadCount));
+                if (Model.Reactions.AngryCount > 0) 
+                    reactions.Add(("Angry", "😡", Model.Reactions.AngryCount));
+                
+                // เรียงจากมากไปน้อย และเอาแค่ 3 อันดับแรก
+                var topReactions = reactions.OrderByDescending(r => r.Count).Take(3);
+                
+                foreach (var reaction in topReactions)
+                {
+                    <span class="reaction-item" title="@reaction.Name: @reaction.Count">
+                        @reaction.Emoji @reaction.Count
+                    </span>
+                }
+            }
+        </div>
+    }
+</div>

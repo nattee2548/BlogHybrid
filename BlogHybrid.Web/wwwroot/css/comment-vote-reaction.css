@@ -1,0 +1,343 @@
+/* ================================================
+   Comment Vote & Reaction System Styles
+   ================================================ */
+
+/* ========================================
+   Vote System
+   ======================================== */
+
+.comment-vote-section {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 0.5rem);
+    margin-right: var(--space-3, 0.75rem);
+}
+
+.vote-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary, #9c9c9c);
+    cursor: pointer;
+    border-radius: var(--radius, 8px);
+    transition: all 0.2s ease;
+    font-size: 1.125rem;
+}
+
+.vote-btn:hover {
+    background: var(--bg-hover, #f6f7f8);
+}
+
+.vote-btn.upvote:hover {
+    color: var(--upvote, #ff4500);
+    background: rgba(255, 69, 0, 0.1);
+}
+
+.vote-btn.downvote:hover {
+    color: var(--downvote, #7193ff);
+    background: rgba(113, 147, 255, 0.1);
+}
+
+/* Active states */
+.vote-btn.active.upvote {
+    color: var(--upvote, #ff4500);
+    background: rgba(255, 69, 0, 0.1);
+}
+
+.vote-btn.active.downvote {
+    color: var(--downvote, #7193ff);
+    background: rgba(113, 147, 255, 0.1);
+}
+
+/* Vote Score */
+.vote-score {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary, #1c1c1c);
+    min-width: 32px;
+    text-align: center;
+    user-select: none;
+}
+
+/* Vote Score Animation */
+@keyframes voteUpdate {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.vote-score.vote-updated {
+    animation: voteUpdate 0.3s ease;
+}
+
+/* ========================================
+   Reaction System
+   ======================================== */
+
+.comment-reaction-section {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 0.5rem);
+}
+
+/* Reaction Button */
+.reaction-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1, 0.25rem);
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--border-primary, #ccc);
+    background: transparent;
+    color: var(--text-secondary, #7c7c7c);
+    border-radius: var(--radius-full, 50px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.reaction-btn:hover {
+    background: var(--bg-hover, #f6f7f8);
+    border-color: var(--primary, #ff4500);
+}
+
+.reaction-btn.active {
+    background: rgba(255, 69, 0, 0.1);
+    border-color: var(--primary, #ff4500);
+    color: var(--primary, #ff4500);
+}
+
+.reaction-btn i {
+    font-size: 1.125rem;
+}
+
+/* Reaction Picker (Dropdown) */
+.reaction-picker {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 0.5rem;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-primary, #ccc);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: var(--shadow-lg, 0 8px 16px rgba(0, 0, 0, 0.15));
+    padding: 0.5rem;
+    display: none;
+    flex-direction: row;
+    gap: 0.25rem;
+    z-index: 100;
+    animation: reactionPickerShow 0.2s ease;
+}
+
+.reaction-picker.show {
+    display: flex;
+}
+
+@keyframes reactionPickerShow {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reaction Items */
+.reaction-item-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius, 8px);
+    cursor: pointer;
+    font-size: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.reaction-item-btn:hover {
+    background: var(--bg-hover, #f6f7f8);
+    transform: scale(1.2);
+}
+
+.reaction-item-btn:active {
+    transform: scale(0.9);
+}
+
+/* Reaction Counts Display */
+.reaction-counts {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 0.5rem);
+    padding: 0.25rem 0.5rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: var(--radius-full, 50px);
+    font-size: 0.8125rem;
+    color: var(--text-secondary, #7c7c7c);
+}
+
+.reaction-counts .reaction-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Total Reaction Count */
+.total-reaction-count {
+    font-weight: 600;
+    color: var(--text-primary, #1c1c1c);
+}
+
+/* Reaction Count Animation */
+@keyframes countUpdate {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+.total-reaction-count.count-updated {
+    animation: countUpdate 0.3s ease;
+}
+
+/* ========================================
+   Comment Actions Layout
+   ======================================== */
+
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3, 0.75rem);
+    margin-top: var(--space-2, 0.5rem);
+    flex-wrap: wrap;
+}
+
+.comment-action-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--border-secondary, #e5e5e5);
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 640px) {
+    .vote-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+    }
+
+    .vote-score {
+        font-size: 0.8125rem;
+        min-width: 28px;
+    }
+
+    .reaction-btn {
+        padding: 0.25rem 0.625rem;
+        font-size: 0.8125rem;
+    }
+
+    .reaction-picker {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .reaction-item-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1.25rem;
+    }
+
+    .reaction-counts {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.375rem;
+    }
+}
+
+/* ========================================
+   Dark Mode Support
+   ======================================== */
+
+[data-theme="dark"] .vote-btn:hover {
+    background: var(--bg-hover, #1c1c1d);
+}
+
+[data-theme="dark"] .vote-btn.active.upvote {
+    background: rgba(255, 69, 0, 0.15);
+}
+
+[data-theme="dark"] .vote-btn.active.downvote {
+    background: rgba(113, 147, 255, 0.15);
+}
+
+[data-theme="dark"] .reaction-btn {
+    border-color: var(--border-primary, #343536);
+}
+
+[data-theme="dark"] .reaction-btn:hover {
+    background: var(--bg-hover, #1c1c1d);
+}
+
+[data-theme="dark"] .reaction-btn.active {
+    background: rgba(255, 69, 0, 0.15);
+}
+
+[data-theme="dark"] .reaction-picker {
+    background: var(--card-bg, #1a1a1b);
+    border-color: var(--border-primary, #343536);
+}
+
+[data-theme="dark"] .reaction-item-btn:hover {
+    background: var(--bg-hover, #1c1c1d);
+}
+
+[data-theme="dark"] .reaction-counts {
+    background: var(--bg-secondary, #0e0e0e);
+}
+
+/* ========================================
+   Accessibility
+   ======================================== */
+
+.vote-btn:focus,
+.reaction-btn:focus,
+.reaction-item-btn:focus {
+    outline: 2px solid var(--border-focus, #0079d3);
+    outline-offset: 2px;
+}
+
+/* Keyboard Navigation */
+.vote-btn:focus-visible,
+.reaction-btn:focus-visible,
+.reaction-item-btn:focus-visible {
+    outline: 2px solid var(--primary, #ff4500);
+    outline-offset: 2px;
+}
+
+/* Screen Reader Text */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}

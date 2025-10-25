@@ -1,20 +1,30 @@
+@* BlogHybrid.Web/Views/Shared/_CommentItem.cshtml *@
 @model BlogHybrid.Application.DTOs.Post.CommentDto
+
 @{
     // คำนวณ time ago
     var timeDiff = DateTime.UtcNow - Model.CreatedAt;
     string timeAgo;
     
-    if (timeDiff.TotalMinutes < 60)
+    if (timeDiff.TotalMinutes < 1)
+    {
+        timeAgo = "เมื่อสักครู่";
+    }
+    else if (timeDiff.TotalHours < 1)
     {
         timeAgo = $"{(int)timeDiff.TotalMinutes} นาทีที่แล้ว";
     }
-    else if (timeDiff.TotalMinutes < 1440) // 24 hours
+    else if (timeDiff.TotalDays < 1)
     {
         timeAgo = $"{(int)timeDiff.TotalHours} ชั่วโมงที่แล้ว";
     }
-    else if (timeDiff.TotalMinutes < 10080) // 7 days
+    else if (timeDiff.TotalDays < 7)
     {
         timeAgo = $"{(int)timeDiff.TotalDays} วันที่แล้ว";
+    }
+    else if (timeDiff.TotalDays < 30)
+    {
+        timeAgo = $"{(int)(timeDiff.TotalDays / 7)} สัปดาห์ที่แล้ว";
     }
     else
     {
@@ -22,56 +32,84 @@
     }
 }
 
-<div class="comment-item @(Model.ParentCommentId != null ? "comment-reply" : "")" id="comment-@Model.Id">
-    <div class="comment-avatar">
-        @if (!string.IsNullOrEmpty(Model.AuthorProfileImageUrl))
-        {
-            <img src="@Model.AuthorProfileImageUrl" alt="@Model.AuthorDisplayName" />
-        }
-        else
-        {
-            <div class="avatar-placeholder">
-                <i class="bi bi-person-circle"></i>
-            </div>
-        }
-    </div>
-    
-    <div class="comment-content">
+<div class="comment-item" id="comment-@Model.Id">
+    <div class="comment-content-wrapper">
+        <!-- Comment Header -->
         <div class="comment-header">
-            <div class="comment-author">
-                <a href="#" class="author-name">@Model.AuthorDisplayName</a>
-                <span class="comment-date">@timeAgo</span>
+            <!-- Author Avatar -->
+            <div class="comment-avatar">
+                @if (!string.IsNullOrEmpty(Model.AuthorProfileImageUrl))
+                {
+                    <img src="@Model.AuthorProfileImageUrl" 
+                         alt="@Model.AuthorDisplayName"
+                         loading="lazy" />
+                }
+                else
+                {
+                    <i class="bi bi-person-circle"></i>
+                }
             </div>
-            
-            @if (Model.CanEdit || Model.CanDelete)
-            {
-                <div class="comment-actions-menu">
-                    <button class="btn-menu" onclick="toggleCommentMenu(@Model.Id)">
-                        <i class="bi bi-three-dots"></i>
-                    </button>
-                    <div class="menu-dropdown" id="menu-@Model.Id">
-                        @if (Model.CanEdit)
-                        {
-                            <button onclick="editComment(@Model.Id)">
-                                <i class="bi bi-pencil"></i> แก้ไข
-                            </button>
-                        }
-                        @if (Model.CanDelete)
-                        {
-                            <button onclick="deleteComment(@Model.Id)" class="text-danger">
-                                <i class="bi bi-trash"></i> ลบ
-                            </button>
-                        }
-                    </div>
+
+            <!-- Author Info & Actions -->
+            <div class="comment-info-section">
+                <div class="comment-author-info">
+                    <span class="comment-author">@Model.AuthorDisplayName</span>
+                    <span class="comment-username">@@@Model.AuthorUserName</span>
+                    <span class="comment-separator">•</span>
+                    <span class="comment-time" title="@Model.CreatedAt.ToString("dd MMM yyyy HH:mm")">
+                        @timeAgo
+                    </span>
+                    @if (Model.UpdatedAt != Model.CreatedAt)
+                    {
+                        <span class="comment-edited">(แก้ไข)</span>
+                    }
                 </div>
-            }
+
+                <!-- Comment Menu (Edit/Delete) -->
+                @if (Model.CanEdit || Model.CanDelete)
+                {
+                    <div class="comment-menu-wrapper">
+                        <button class="btn-menu" onclick="toggleCommentMenu(@Model.Id)">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <div class="comment-menu" id="menu-@Model.Id">
+                            @if (Model.CanEdit)
+                            {
+                                <button onclick="editComment(@Model.Id)">
+                                    <i class="bi bi-pencil"></i> แก้ไข
+                                </button>
+                            }
+                            @if (Model.CanDelete)
+                            {
+                                <button onclick="deleteComment(@Model.Id)" class="danger">
+                                    <i class="bi bi-trash"></i> ลบ
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
-        
-        <div class="comment-text">
-            @Model.Content
+
+        <!-- Comment Body -->
+        <div class="comment-body">
+            <p>@Model.Content</p>
         </div>
-        
-        <div class="comment-footer">
+
+        <!-- Comment Actions (Vote, Reaction, Reply) -->
+        <div class="comment-actions">
+            <!-- Vote Section -->
+            @await Html.PartialAsync("_CommentVoteSection", Model)
+
+            <span class="comment-action-divider"></span>
+
+            <!-- Reaction Section -->
+            @await Html.PartialAsync("_CommentReactionSection", Model)
+
+            <span class="comment-action-divider"></span>
+
+            <!-- Legacy Like Button (Optional - แสดงเฉพาะถ้ายังต้องการ) -->
+            @* 
             <button class="comment-action-btn like-btn @(Model.IsLikedByCurrentUser ? "liked" : "")" 
                     onclick="toggleCommentLike(@Model.Id)">
                 <i class="bi @(Model.IsLikedByCurrentUser ? "bi-heart-fill" : "bi-heart")"></i>
@@ -80,7 +118,9 @@
                     <span>@Model.LikeCount</span>
                 }
             </button>
-            
+            *@
+
+            <!-- Reply Button -->
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <button class="comment-action-btn reply-btn" 
